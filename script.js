@@ -1411,7 +1411,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }, revealOptions);
 
-        const revealElements = document.querySelectorAll('.reveal-element, .reveal-avatar, .stat-card, .timeline-item');
+        const revealElements = document.querySelectorAll('.reveal-element, .reveal-avatar, .stat-card, .timeline-item, .roadmap-item');
         revealElements.forEach(el => {
             el.classList.remove('element-revealed');
             revealObserver.observe(el);
