@@ -2186,4 +2186,146 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ongoing class check every minute
     setInterval(highlightOngoingClass, 60000);
+
+    // --- AI Subject Import Logic ---
+    const aiModal = document.getElementById('ai-import-modal');
+    const aiUploadArea = document.getElementById('ai-upload-area');
+    const aiFileInput = document.getElementById('ai-file-input');
+    const aiProcessingState = document.getElementById('ai-processing-state');
+    const aiPreviewState = document.getElementById('ai-preview-state');
+    const detectedList = document.getElementById('detected-subjects-list');
+    const detectedCount = document.getElementById('detected-count');
+
+    const openAIModal = () => {
+        aiModal.classList.add('active');
+        aiUploadArea.style.display = 'flex';
+        aiProcessingState.style.display = 'none';
+        aiPreviewState.style.display = 'none';
+        aiFileInput.value = '';
+    };
+
+    const homeAIBtn = document.getElementById('home-ai-import-btn');
+    const subjectAIBtn = document.getElementById('ai-import-trigger');
+    if (homeAIBtn) homeAIBtn.addEventListener('click', openAIModal);
+    if (subjectAIBtn) subjectAIBtn.addEventListener('click', openAIModal);
+
+    const closeAIModalBtn = document.getElementById('close-ai-modal');
+    if (closeAIModalBtn) closeAIModalBtn.addEventListener('click', () => aiModal.classList.remove('active'));
+
+    aiUploadArea.addEventListener('click', () => aiFileInput.click());
+    
+    aiFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleAIFile(file);
+    });
+
+    aiUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        aiUploadArea.style.borderColor = '#8b5cf6';
+        aiUploadArea.style.background = 'rgba(139, 92, 246, 0.1)';
+    });
+
+    aiUploadArea.addEventListener('dragleave', () => {
+        aiUploadArea.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+        aiUploadArea.style.background = 'rgba(139, 92, 246, 0.05)';
+    });
+
+    aiUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) handleAIFile(file);
+    });
+
+    const handleAIFile = (file) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const base64Image = e.target.result;
+            aiUploadArea.style.display = 'none';
+            aiProcessingState.style.display = 'block';
+            
+            try {
+                // Pointing to the Vercel function path
+                const response = await fetch('/api/ai_import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64Image })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    renderAIDetected(result.subjects);
+                } else {
+                    throw new Error(result.error || 'AI failed to process image');
+                }
+            } catch (err) {
+                console.error('[AI Import] Error:', err);
+                showToast('AI Detection Failed: ' + err.message);
+                aiUploadArea.style.display = 'flex';
+                aiProcessingState.style.display = 'none';
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const renderAIDetected = (subjects) => {
+        aiProcessingState.style.display = 'none';
+        aiPreviewState.style.display = 'block';
+        detectedCount.textContent = subjects.length;
+        
+        detectedList.innerHTML = '';
+        subjects.forEach((sub) => {
+            const chip = document.createElement('div');
+            chip.className = 'suggestion-chip';
+            chip.style.display = 'flex';
+            chip.style.alignItems = 'center';
+            chip.style.gap = '8px';
+            chip.innerHTML = `
+                <span>${sub}</span>
+                <span style="cursor:pointer; opacity: 0.6;" onclick="this.parentElement.remove()">×</span>
+            `;
+            detectedList.appendChild(chip);
+        });
+    };
+
+    const confirmAIImportBtn = document.getElementById('confirm-ai-import-btn');
+    if (confirmAIImportBtn) {
+        confirmAIImportBtn.addEventListener('click', () => {
+            const finalSubjects = Array.from(detectedList.querySelectorAll('span:first-child'))
+                .map(s => s.textContent.trim());
+            
+            if (finalSubjects.length === 0) {
+                showToast('No subjects selected for import.');
+                return;
+            }
+
+            finalSubjects.forEach(name => {
+                const exists = subjectsData.find(s => s.name.toLowerCase() === name.toLowerCase());
+                if (!exists) {
+                    subjectsData.push({
+                        id: Date.now() + Math.random(),
+                        name: name,
+                        code: '',
+                        teacher: '',
+                        criteria: settingsData.defaultCriteria || 75,
+                        attended: 0,
+                        total: 0
+                    });
+                }
+            });
+
+            localStorage.setItem('tracktaps_subjects', JSON.stringify(subjectsData));
+            renderSubjects();
+            renderHomeDashboard();
+            aiModal.classList.remove('active');
+            showToast(`Successfully imported ${finalSubjects.length} subjects! 🚀`);
+        });
+    }
+
+    const cancelAIImportBtn = document.getElementById('cancel-ai-import-btn');
+    if (cancelAIImportBtn) {
+        cancelAIImportBtn.addEventListener('click', () => {
+            aiUploadArea.style.display = 'flex';
+            aiPreviewState.style.display = 'none';
+        });
+    }
 });
