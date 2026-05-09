@@ -2756,6 +2756,28 @@ body.no-glass * {
     transform: scale(1.05);
 }
 
+/* Responsive Chatbot for Mobile */
+@media (max-width: 768px) {
+    .ai-fab {
+        bottom: 100px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+    }
+    
+    .ai-chat-window {
+        bottom: 170px;
+        right: 15px;
+        width: calc(100vw - 30px);
+        height: 65vh;
+        max-height: 500px;
+    }
+    
+    .ai-chat-header {
+        padding: 16px 20px;
+    }
+}
+
 .send-icon {
     font-size: 18px;
 }
