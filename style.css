@@ -131,7 +131,8 @@ body.no-glass * {
     padding: 32px 24px;
     flex-shrink: 0;
     position: relative;
-    z-index: 1001; /* Above general content, below modals/chat */
+    z-index: 5000 !important; /* Extremely high to beat any overlay */
+    pointer-events: auto !important;
 }
 
 /* Branding */
@@ -238,7 +239,8 @@ body.no-glass * {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    width: 100%;
+    flex: 1; /* Occupy remaining space */
+    width: auto; /* Don't force 100% which might overlap sidebar */
     overflow-y: auto;
     overflow-x: hidden;
     scroll-behavior: smooth;
@@ -2796,7 +2798,7 @@ body.no-glass * {
 
 /* Ensure modals always win z-index */
 .modal.active {
-    z-index: 3000;
+    z-index: 6000;
 }
 
 .modal.active ~ #ai-assistant-wrapper {
@@ -2833,8 +2835,9 @@ body.no-glass * {
 #ai-assistant-wrapper {
     position: fixed;
     inset: 0;
-    pointer-events: none; /* Allow clicks to pass through to sidebar/page */
+    pointer-events: none;
     z-index: 1500;
+    display: none; /* TEMPORARY DEBUG STEP: Hiding to verify sidebar clickability */
 }
 
 .cursor-aura {
