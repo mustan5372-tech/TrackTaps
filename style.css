@@ -93,7 +93,6 @@ body.light-mode .nav-btn:hover:not(.active) {
 body.no-glass * {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    background-opacity: 1 !important;
 }
 
 
@@ -2120,6 +2119,7 @@ body.no-glass * {
 .text-gradient {
     background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
