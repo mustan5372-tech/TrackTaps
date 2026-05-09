@@ -331,6 +331,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetViewId === 'timetable-view') renderTimetable();
         if (targetViewId === 'insights-view') renderInsights();
         if (targetViewId === 'history-view') renderHistory();
+
+        // Smart Chatbot Visibility & Behavior
+        const chatbotWrapper = document.getElementById('ai-assistant-wrapper');
+        const chatWindow = document.getElementById('ai-chat-window');
+        if (chatbotWrapper) {
+            if (targetViewId === 'settings-view' || targetViewId === 'about-view') {
+                chatbotWrapper.classList.add('hidden-on-page');
+                if (chatWindow) chatWindow.classList.remove('active');
+            } else {
+                chatbotWrapper.classList.remove('hidden-on-page');
+            }
+        }
     };
 
     // Make switchView global for onclick attributes
