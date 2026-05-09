@@ -1,0 +1,10 @@
+{
+  "name": "track-taps-new",
+  "version": "1.0.0",
+  "dependencies": {
+    "cookie": "^0.6.0",
+    "axios": "^1.6.0",
+    "tough-cookie": "^4.1.3",
+    "axios-cookiejar-support": "^4.0.3"
+  }
+}

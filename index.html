@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackTaps — Smart Attendance Tracking Platform</title>
+    <meta name="description" content="Modern AI-powered attendance tracking, timetable management, insights, and analytics for students.">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Favicon & App Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/logo.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.tracktaps.online/">
+    <meta property="og:title" content="TrackTaps — Smart Attendance Tracking Platform">
+    <meta property="og:description" content="Modern AI-powered attendance tracking, timetable management, insights, and analytics for students.">
+    <meta property="og:image" content="https://www.tracktaps.online/assets/preview.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.tracktaps.online/">
+    <meta property="twitter:title" content="TrackTaps — Smart Attendance Tracking Platform">
+    <meta property="twitter:description" content="Modern AI-powered attendance tracking, timetable management, insights, and analytics for students.">
+    <meta property="twitter:image" content="https://www.tracktaps.online/assets/preview.png">
+    
+    <meta name="theme-color" content="#8b5cf6">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-branding">
+                <img src="assets/logo.png" alt="TrackTaps Logo" class="sidebar-logo">
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active">Home</button>
+                <button class="nav-btn">Calendar</button>
+                <button class="nav-btn">Timetable</button>
+                <button class="nav-btn">Subjects</button>
+                <button class="nav-btn">Insights</button>
+                <button class="nav-btn">History</button>
+                <button class="nav-btn">About</button>
+                <button class="nav-btn">Settings</button>
+            </nav>
+        </aside>
+
+        <div class="content-wrapper">
+            <!-- Mobile Header -->
+            <header class="mobile-header">
+                <img src="assets/logo.png" alt="TrackTaps" class="mobile-header-logo">
+            </header>
+
+            <!-- Mobile Bottom Nav -->
+            <nav class="mobile-nav">
+                <button class="mobile-nav-btn active" data-view="home-view">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Home</span>
+                </button>
+                <button class="mobile-nav-btn" data-view="timetable-view">
+                    <span class="nav-icon">🕒</span>
+                    <span class="nav-label">Schedule</span>
+                </button>
+                <button class="mobile-nav-btn" data-view="calendar-view">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-label">Calendar</span>
+                </button>
+                <button class="mobile-nav-btn" data-view="subjects-view">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-label">Subjects</span>
+                </button>
+                <button class="mobile-nav-btn" data-view="about-view">
+                    <span class="nav-icon">✨</span>
+                    <span class="nav-label">About</span>
+                </button>
+                <button class="mobile-nav-btn" data-view="settings-view">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Settings</span>
+                </button>
+            </nav>
+
+            <main class="main-content">
+            <!-- Home View -->
+            <div id="home-view" class="view active">
+                <section class="dashboard-hero">
+                    <div class="hero-welcome">
+                        <h2 id="hero-greeting">Good Afternoon,</h2>
+                        <p id="hero-subtitle">Ready to crush your goals today?</p>
+                        <div id="hero-date" style="margin-top: 16px; font-size: 14px; color: #a78bfa; font-weight: 500;">Wednesday, May 6</div>
+                    </div>
+                    <div class="hero-overall-stats">
+                        <span class="overall-percentage" id="hero-overall-perc">0%</span>
+                        <span class="overall-label">Attendance Score</span>
+                        <div id="overall-trend" style="margin-top: 8px; font-size: 12px; color: #10b981;">↑ 2.4% from last week</div>
+                    </div>
+                </section>
+
+                <div class="quick-stats-row">
+                    <div class="stat-pill">
+                        <span class="stat-pill-value" id="stat-total-subjects">0</span>
+                        <span class="stat-pill-label">Total Subjects</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span class="stat-pill-value" style="color: #10b981;" id="stat-safe-subjects">0</span>
+                        <span class="stat-pill-label">Safe</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span class="stat-pill-value" style="color: #f59e0b;" id="stat-warning-subjects">0</span>
+                        <span class="stat-pill-label">Warning</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span class="stat-pill-value" style="color: #ef4444;" id="stat-critical-subjects">0</span>
+                        <span class="stat-pill-label">Critical</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Attendance Overview -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <span class="card-title">Attendance Overview</span>
+                        </div>
+                        <div class="attendance-overview-content">
+                            <div class="progress-ring-container">
+                                <svg class="progress-ring-svg" width="100" height="100">
+                                    <circle class="progress-ring-circle-bg" cx="50" cy="50" r="42"></circle>
+                                    <circle id="progress-ring-bar" class="progress-ring-circle" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"></circle>
+                                </svg>
+                                <span class="progress-percentage-text" id="overview-perc">0%</span>
+                            </div>
+                            <div class="mini-stats">
+                                <div class="mini-stat-item">
+                                    <span class="mini-stat-label">Present</span>
+                                    <span class="mini-stat-value" id="stat-present" style="color: #10b981;">0</span>
+                                </div>
+                                <div class="mini-stat-item">
+                                    <span class="mini-stat-label">Missed</span>
+                                    <span class="mini-stat-value" id="stat-missed" style="color: #ef4444;">0</span>
+                                </div>
+                                <div class="mini-stat-item">
+                                    <span class="mini-stat-label">Total</span>
+                                    <span class="mini-stat-value" id="stat-total">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="trend-chart-container" id="attendance-trend-svg">
+                            <!-- SVG Trend Line will be injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Today's Schedule -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <span class="card-title">Today's Schedule</span>
+                            <span id="today-day-name" style="font-size: 11px; color: var(--text-dim);">Wed</span>
+                        </div>
+                        <div class="schedule-list" id="dashboard-schedule-list">
+                            <!-- Injected Schedule -->
+                        </div>
+                    </div>
+
+                    <!-- Insights & Alerts -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <span class="card-title">Insights & Alerts</span>
+                        </div>
+                        <div class="insight-pills" id="dashboard-insight-pills">
+                            <!-- Injected Insights -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shortcut Grid (Keeping it but styling it slightly better if needed, but the user asked for a new structure) -->
+                <section class="shortcut-section">
+                    <h3 style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; font-weight: 600;">Navigation Shortcuts</h3>
+                    <div class="shortcut-grid">
+                        <div class="shortcut-card" data-route="calendar">
+                            <span class="shortcut-icon">📅</span>
+                            <div class="shortcut-info">
+                                <span class="shortcut-title">Calendar</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-card" data-route="timetable">
+                            <span class="shortcut-icon">🕒</span>
+                            <div class="shortcut-info">
+                                <span class="shortcut-title">Timetable</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-card" data-route="subjects">
+                            <span class="shortcut-icon">📚</span>
+                            <div class="shortcut-info">
+                                <span class="shortcut-title">Subjects</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-card" data-route="insights">
+                            <span class="shortcut-icon">💡</span>
+                            <div class="shortcut-info">
+                                <span class="shortcut-title">Insights</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Calendar View -->
+            <div id="calendar-view" class="view">
+                <header class="calendar-header">
+                    <h2 id="month-year">May 2026</h2>
+                    <div class="calendar-controls">
+                        <button id="prev-month" class="control-btn">←</button>
+                        <button id="next-month" class="control-btn">→</button>
+                    </div>
+                </header>
+                <div class="calendar-card">
+                    <div class="weekdays">
+                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                    </div>
+                    <div id="calendar-grid" class="calendar-grid">
+                        <!-- Days injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subjects View -->
+            <div id="subjects-view" class="view">
+                <header class="view-header">
+                    <h2>My Subjects</h2>
+                    <button id="add-subject-btn" class="primary-btn">+ Add Subject</button>
+                </header>
+                <div id="subjects-grid" class="subjects-grid">
+                    <!-- Subject cards injected here -->
+                </div>
+            </div>
+
+            <!-- Timetable View -->
+            <div id="timetable-view" class="view">
+                <header class="view-header">
+                    <h2>Schedule</h2>
+                </header>
+
+                <!-- Modern Day Tabs (Mobile First) -->
+                <div class="day-tabs-wrapper">
+                    <div class="day-tabs">
+                        <button class="day-tab" data-day="0">MON</button>
+                        <button class="day-tab" data-day="1">TUE</button>
+                        <button class="day-tab" data-day="2">WED</button>
+                        <button class="day-tab" data-day="3">THU</button>
+                        <button class="day-tab" data-day="4">FRI</button>
+                        <button class="day-tab" data-day="5">SAT</button>
+                        <button class="day-tab" data-day="6">SUN</button>
+                    </div>
+                </div>
+
+                <div class="timetable-content">
+                    <div id="timetable-day-view" class="day-schedule">
+                        <!-- Day-specific blocks injected here -->
+                    </div>
+                    
+                    <div class="timetable-card">
+                        <div class="timetable-wrapper">
+                            <div class="timetable-grid" id="timetable-grid">
+                                <!-- Full weekly grid for desktop -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Insights View -->
+            <div id="insights-view" class="view">
+                <header class="view-header">
+                    <h2>Attendance Insights</h2>
+                </header>
+                
+                <section id="overall-summary-card" class="overview-card insight-summary">
+                    <!-- Overall summary injected here -->
+                </section>
+
+                <div id="insights-grid" class="insights-grid">
+                    <!-- Detailed subject insights injected here -->
+                </div>
+            </div>
+
+            <!-- History View -->
+            <div id="history-view" class="view">
+                <header class="view-header">
+                    <h2>Attendance History</h2>
+                </header>
+                <div id="history-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <!-- History entries injected here -->
+                </div>
+            </div>
+            <!-- About View -->
+            <div id="about-view" class="view">
+                <section class="about-hero">
+                    <div class="hero-glow"></div>
+                    <div class="about-hero-content">
+                        <h1 class="reveal-element">TrackTaps — Smart Attendance <span class="text-gradient">Reimagined</span></h1>
+                        <p class="reveal-element reveal-stagger-1">A modern AI-inspired attendance platform designed for students who value precision and premium experiences.</p>
+                        <div class="hero-actions">
+                            <button class="action-btn present" onclick="switchView('home-view')">Back to Dashboard</button>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="mission-container">
+                    <!-- About App Card -->
+                    <div class="about-card glass-card mission-card">
+                        <div class="card-header">
+                            <span class="card-title">The Mission</span>
+                        </div>
+                        <div class="about-card-body">
+                            <p class="reveal-element">TrackTaps was built to bridge the gap between traditional attendance tracking and modern student productivity needs. Our mission is to provide a seamless, beautiful, and intelligent interface for managing your academic life.</p>
+                            <ul class="mission-list">
+                                <li class="reveal-element reveal-stagger-1">✨ Real-time Pod.ai Synchronization</li>
+                                <li class="reveal-element reveal-stagger-2">📊 Deep Attendance Analytics</li>
+                                <li class="reveal-element reveal-stagger-3">🕒 Smart Timetable Management</li>
+                                <li class="reveal-element reveal-stagger-4">📱 Mobile-First SaaS Experience</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="team-section">
+                    <div class="section-divider"></div>
+                    <h2 class="section-title reveal-element">Core <span class="text-gradient">Team</span></h2>
+                    <div class="team-grid-wrapper">
+                        <div class="team-bg-glow"></div>
+                        <div class="team-grid">
+                            <!-- Developer Card -->
+                            <div class="about-card team-card glass-card">
+                                <div class="dev-profile-header">
+                                    <div class="dev-avatar reveal-avatar">
+                                        <span class="avatar-initials">MS</span>
+                                        <div class="avatar-glow"></div>
+                                    </div>
+                                    <div class="dev-info">
+                                        <h3 class="dev-name">Mustansir Sanawad</h3>
+                                        <div class="role-badge">Founder & Lead Developer</div>
+                                    </div>
+                                </div>
+                                <div class="dev-body">
+                                    <p class="reveal-element">AU EV student at Medi-Caps University passionate about building modern SaaS platforms and smart student productivity tools. Mustansir focuses on creating tools that are not just functional, but inspiring to use.</p>
+                                    <div class="dev-socials">
+                                        <a href="mailto:mustansir.sanawad@example.com" class="social-link" title="Email"><span class="social-icon">📧</span></a>
+                                        <a href="https://github.com/mustansirs" target="_blank" class="social-link" title="GitHub"><span class="social-icon">💻</span></a>
+                                        <a href="#" class="social-link" title="LinkedIn"><span class="social-icon">🔗</span></a>
+                                        <a href="#" class="social-link" title="Instagram"><span class="social-icon">📸</span></a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Team Member 2 -->
+                            <div class="about-card team-card glass-card">
+                                <div class="dev-profile-header">
+                                    <div class="dev-avatar reveal-avatar" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);">
+                                        <span class="avatar-initials">PG</span>
+                                        <div class="avatar-glow" style="border-color: rgba(16, 185, 129, 0.5);"></div>
+                                    </div>
+                                    <div class="dev-info">
+                                        <h3 class="dev-name">Pranav Gohel</h3>
+                                        <div class="role-badge">Chief Marketing Officer</div>
+                                    </div>
+                                </div>
+                                <div class="dev-body">
+                                    <p class="reveal-element">AU EV student at Medi-Caps University helping shape the vision and growth of TrackTaps. Pranav is dedicated to ensuring the platform's long-term sustainability and strategic growth.</p>
+                                    <div class="dev-socials">
+                                        <a href="#" class="social-link" title="LinkedIn"><span class="social-icon">🔗</span></a>
+                                        <a href="#" class="social-link" title="Email"><span class="social-icon">📧</span></a>
+                                        <a href="#" class="social-link" title="Instagram"><span class="social-icon">📸</span></a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Team Member 3 -->
+                            <div class="about-card team-card glass-card">
+                                <div class="dev-profile-header">
+                                    <div class="dev-avatar reveal-avatar" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">
+                                        <span class="avatar-initials">PY</span>
+                                        <div class="avatar-glow" style="border-color: rgba(245, 158, 11, 0.5);"></div>
+                                    </div>
+                                    <div class="dev-info">
+                                        <h3 class="dev-name">Purandar Yadav</h3>
+                                        <div class="role-badge">Marketing Executive</div>
+                                    </div>
+                                </div>
+                                <div class="dev-body">
+                                    <p class="reveal-element">Marketing Executive at TrackTaps helping expand outreach, branding, and student engagement initiatives. Purandar is focused on building a strong community around TrackTaps.</p>
+                                    <div class="dev-socials">
+                                        <a href="#" class="social-link" title="LinkedIn"><span class="social-icon">🔗</span></a>
+                                        <a href="#" class="social-link" title="Email"><span class="social-icon">📧</span></a>
+                                        <a href="#" class="social-link" title="Instagram"><span class="social-icon">📸</span></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="vision-section">
+                    <h2 class="section-title reveal-element">Features & <span class="text-gradient">Vision</span></h2>
+                    <div class="vision-grid">
+                        <div class="vision-card glass-card reveal-element reveal-stagger-1">
+                            <span class="vision-icon">📡</span>
+                            <h4>Sync Engine</h4>
+                            <p>Seamlessly connects with Pod.ai to fetch real-time data automatically.</p>
+                        </div>
+                        <div class="vision-card glass-card reveal-element reveal-stagger-2">
+                            <span class="vision-icon">📈</span>
+                            <h4>Smart Insights</h4>
+                            <p>Predictive analytics to help you stay ahead of shortage warnings.</p>
+                        </div>
+                        <div class="vision-card glass-card reveal-element reveal-stagger-3">
+                            <span class="vision-icon">⚡</span>
+                            <h4>Fast Workflow</h4>
+                            <p>Optimized for quick actions so you spend less time tracking and more time learning.</p>
+                        </div>
+                        <div class="vision-card glass-card reveal-element reveal-stagger-4">
+                            <span class="vision-icon">🎨</span>
+                            <h4>Premium UI</h4>
+                            <p>A strictly vanilla, high-performance dark theme inspired by top-tier SaaS tools.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="tech-stack-section">
+                    <h2 class="section-title reveal-element">Built with <span class="text-gradient">Modern Tech</span></h2>
+                    <div class="tech-grid">
+                        <div class="tech-badge reveal-element reveal-stagger-1">HTML5</div>
+                        <div class="tech-badge reveal-element reveal-stagger-2">Vanilla CSS3</div>
+                        <div class="tech-badge reveal-element reveal-stagger-3">JavaScript ES6+</div>
+                        <div class="tech-badge reveal-element reveal-stagger-4">Node.js</div>
+                        <div class="tech-badge reveal-element reveal-stagger-1">Vercel</div>
+                        <div class="tech-badge reveal-element reveal-stagger-2">Pod.ai API</div>
+                    </div>
+                </section>
+
+                <footer class="about-footer">
+                    <div class="footer-divider"></div>
+                    <div class="footer-content">
+                        <div class="footer-branding">
+                            <img src="assets/logo.png" alt="TrackTaps" style="height: 24px;">
+                            <p>© 2024 TrackTaps. Built with passion for students.</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="#" onclick="switchView('settings-view')">Support</a>
+                            <a href="#" onclick="switchView('settings-view')">Feedback</a>
+                            <a href="#" onclick="switchView('home-view')">Dashboard</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settings-view" class="view">
+                <header class="view-header">
+                    <h2>Settings</h2>
+                </header>
+                
+                <div class="settings-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; padding-bottom: 40px;">
+                    
+                    <!-- Profile Settings -->
+                    <div class="dashboard-card settings-card">
+                        <div class="card-header">
+                            <span class="card-title">Profile Settings</span>
+                        </div>
+                        <div class="settings-body" style="display: flex; flex-direction: column; gap: 16px; padding: 20px;">
+                            <div class="input-group">
+                                <label>User Display Name</label>
+                                <input type="text" id="setting-user-name" placeholder="Enter your name">
+                            </div>
+                            <div class="input-group">
+                                <label>College/University</label>
+                                <input type="text" id="setting-college-name" placeholder="Enter college name">
+                            </div>
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label>Academic Year</label>
+                                    <input type="text" id="setting-acad-year" placeholder="2025-26">
+                                </div>
+                                <div class="input-group">
+                                    <label>Semester</label>
+                                    <input type="text" id="setting-semester" placeholder="Autumn">
+                                </div>
+                            </div>
+                            <button id="save-profile-btn" class="action-btn present" style="margin-top: 8px;">Update Profile</button>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Logic -->
+                    <div class="dashboard-card settings-card">
+                        <div class="card-header">
+                            <span class="card-title">Attendance Thresholds</span>
+                        </div>
+                        <div class="settings-body" style="display: flex; flex-direction: column; gap: 16px; padding: 20px;">
+                            <div class="input-group">
+                                <label>Default Criteria (%)</label>
+                                <input type="number" id="setting-default-criteria" value="75" min="0" max="100">
+                            </div>
+                            <div class="input-group">
+                                <label>Warning Threshold (%)</label>
+                                <input type="number" id="setting-warning-threshold" value="80" min="0" max="100">
+                            </div>
+                            <div class="input-group">
+                                <label>Critical Threshold (%)</label>
+                                <input type="number" id="setting-critical-threshold" value="65" min="0" max="100">
+                            </div>
+                            <button id="save-thresholds-btn" class="action-btn present" style="margin-top: 8px;">Save Changes</button>
+                        </div>
+                    </div>
+
+                    <!-- Theme Settings -->
+                    <div class="dashboard-card settings-card">
+                        <div class="card-header">
+                            <span class="card-title">Personalization</span>
+                        </div>
+                        <div class="settings-body" style="padding: 20px;">
+                            <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 16px; border-radius: 16px;">
+                                <div>
+                                    <span style="display: block; font-size: 14px; font-weight: 600; color: var(--text-main);">Display Mode</span>
+                                    <span style="font-size: 11px; color: #94a3b8;">Switch between Dark and Light mode</span>
+                                </div>
+                                <div class="mode-toggle" id="mode-toggle-container" style="position: relative; width: 64px; height: 32px; background: #1e293b; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1);">
+                                    <div id="mode-knob" style="position: absolute; left: 4px; top: 3px; width: 24px; height: 24px; background: #8b5cf6; border-radius: 50%; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; justify-content: center; align-items: center; font-size: 12px;">🌙</div>
+                                </div>
+                            </div>
+
+                            <label style="font-size: 13px; color: #94a3b8; display: block; margin-bottom: 12px;">App Accent Color</label>
+                            <div class="theme-options" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                                <button class="theme-btn active" data-theme="purple" style="background: #2e1065; border: 1px solid #8b5cf6; padding: 12px; border-radius: 12px; color: white; font-size: 11px; cursor: pointer;">Deep Purple</button>
+                                <button class="theme-btn" data-theme="midnight" style="background: #020617; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; color: #94a3b8; font-size: 11px; cursor: pointer;">Midnight</button>
+                                <button class="theme-btn" data-theme="neon" style="background: #000; border: 1px solid #d946ef; padding: 12px; border-radius: 12px; color: #94a3b8; font-size: 11px; cursor: pointer;">Neon Violet</button>
+                                <button class="theme-btn" data-theme="ocean" style="background: #083344; border: 1px solid #06b6d4; padding: 12px; border-radius: 12px; color: #94a3b8; font-size: 11px; cursor: pointer;">Ocean Blue</button>
+                                <button class="theme-btn" data-theme="sunset" style="background: #451a03; border: 1px solid #f97316; padding: 12px; border-radius: 12px; color: #94a3b8; font-size: 11px; cursor: pointer;">Sunset</button>
+                                <button class="theme-btn" data-theme="emerald" style="background: #064e3b; border: 1px solid #10b981; padding: 12px; border-radius: 12px; color: #94a3b8; font-size: 11px; cursor: pointer;">Emerald</button>
+                            </div>
+                            
+                            <div style="margin-top: 24px;">
+                                <label style="font-size: 13px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
+                                    Glassmorphism Effects
+                                    <input type="checkbox" id="setting-glass-effect" checked style="width: 18px; height: 18px; accent-color: #8b5cf6;">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timetable Configuration -->
+                    <div class="dashboard-card settings-card">
+                        <div class="card-header">
+                            <span class="card-title">Timetable Config</span>
+                        </div>
+                        <div class="settings-body" style="display: flex; flex-direction: column; gap: 16px; padding: 20px;">
+                            <div class="input-group">
+                                <label>Default Class Duration (Min)</label>
+                                <input type="number" id="setting-default-duration" value="60">
+                            </div>
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label>Grid Start Hour</label>
+                                    <input type="number" id="setting-start-hour" value="8" min="0" max="23">
+                                </div>
+                                <div class="input-group">
+                                    <label>Grid End Hour</label>
+                                    <input type="number" id="setting-end-hour" value="18" min="0" max="23">
+                                </div>
+                            </div>
+                            <button id="save-timetable-settings-btn" class="action-btn present" style="margin-top: 8px;">Save Grid Settings</button>
+                        </div>
+                    </div>
+
+                    <!-- Notifications (UI Only) -->
+                    <div class="dashboard-card settings-card">
+                        <div class="card-header">
+                            <span class="card-title">Notifications</span>
+                        </div>
+                        <div class="settings-body" style="display: flex; flex-direction: column; gap: 16px; padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 14px; color: #f8fafc;">Attendance Reminders</span>
+                                <input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #8b5cf6;">
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 14px; color: #f8fafc;">Shortage Alerts</span>
+                                <input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #8b5cf6;">
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 14px; color: #f8fafc;">Streak Milestones</span>
+                                <input type="checkbox" style="width: 18px; height: 18px; accent-color: #8b5cf6;">
+                            </div>
+                            <p style="font-size: 11px; color: #64748b; font-style: italic;">Note: Browser notifications are currently being optimized.</p>
+                        </div>
+                    </div>
+
+                    <!-- Pod.ai Integration -->
+                    <div class="dashboard-card settings-card">
+                        <div class="card-header">
+                            <span class="card-title">Pod.ai Integration</span>
+                        </div>
+                        <div class="settings-body" style="display: flex; flex-direction: column; gap: 16px; padding: 20px;">
+                            <div id="podai-status-card" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                    <div id="podai-indicator" style="width: 10px; height: 10px; border-radius: 50%; background: #64748b;"></div>
+                                    <span id="podai-status-text" style="font-size: 13px; font-weight: 600; color: #94a3b8;">Disconnected</span>
+                                </div>
+                                <p style="font-size: 11px; color: #64748b; line-height: 1.4;">Sync your subjects and attendance automatically from Pod.ai portal.</p>
+                            </div>
+                            <button id="open-podai-modal-btn" class="action-btn clear" style="border-color: rgba(139, 92, 246, 0.3);">Configure Connection</button>
+                            <button id="sync-podai-now-btn" class="action-btn present" style="display: none;">Sync Latest Attendance</button>
+                        </div>
+                    </div>
+
+                    <!-- Data Management -->
+                    <div class="dashboard-card settings-card danger-zone">
+                        <div class="card-header">
+                            <span class="card-title">Data & Privacy</span>
+                        </div>
+                        <div class="settings-body" style="display: flex; flex-direction: column; gap: 16px; padding: 20px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <button id="export-btn" class="action-btn clear" style="border-color: rgba(139, 92, 246, 0.3);">📥 Export</button>
+                                <button id="import-btn" class="action-btn clear" style="border-color: rgba(16, 185, 129, 0.3);">📤 Import</button>
+                                <input type="file" id="import-file" style="display: none;" accept=".json">
+                            </div>
+                            <button id="reset-btn" class="action-btn absent" style="margin-top: 12px;">🗑️ Reset All Data</button>
+                            <p style="font-size: 11px; color: #64748b; text-align: center;">V 2.1.0 Premium | Build 2026.05</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div> <!-- content-wrapper -->
+</div> <!-- app-container -->
+
+    <!-- Subject Modal -->
+    <div id="subject-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="subject-modal-title">Add Subject</h3>
+                <div class="modal-form">
+                <div class="input-group">
+                    <label for="subject-name">Subject Name</label>
+                    <input type="text" id="subject-name" placeholder="e.g. Mathematics">
+                </div>
+                <div class="input-group">
+                    <label for="subject-criteria">Attendance Criteria (%)</label>
+                    <input type="number" id="subject-criteria" value="75" min="0" max="100">
+                </div>
+                <div class="modal-actions horizontal">
+                    <button id="save-subject-btn" class="action-btn present">Save Subject</button>
+                    <button id="cancel-subject-btn" class="action-btn clear">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="attendance-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px; width: 95%;">
+            <header style="margin-bottom: 20px; text-align: left;">
+                <h3 id="modal-title" style="font-size: 24px; margin-bottom: 4px;">Daily Attendance</h3>
+                <p id="modal-date" style="color: #94a3b8; font-size: 14px;">Date here</p>
+            </header>
+
+            <!-- Bulk Actions -->
+            <div class="bulk-attendance-actions" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <button class="bulk-action-btn present" data-status="present" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 700;">P ALL</button>
+                <button class="bulk-action-btn absent" data-status="absent" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 700;">A ALL</button>
+                <button class="bulk-action-btn offday" data-status="offday" style="background: rgba(71, 85, 105, 0.1); color: #94a3b8; border: 1px solid rgba(71, 85, 105, 0.2); padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 700;">OFF ALL</button>
+                <button class="bulk-action-btn clear" data-status="clear" style="background: transparent; color: #64748b; border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 700;">CLEAR ALL</button>
+            </div>
+
+            <!-- Subject List -->
+            <div id="modal-subject-list" style="display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 4px; margin-bottom: 24px;">
+                <!-- Subject rows will be injected here -->
+            </div>
+
+            <footer style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                <button class="close-modal" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 10px 20px; border-radius: 12px; font-weight: 600; cursor: pointer;">Close</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Timetable Entry Modal -->
+    <div id="timetable-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="timetable-modal-title">Add Class Slot</h3>
+            <div class="modal-form">
+                <div class="input-group">
+                    <label for="slot-subject">Select Subject</label>
+                    <select id="slot-subject" style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); color: #f8fafc; padding: 12px; border-radius: 10px; font-size: 15px; outline: none;"></select>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="slot-start-time">Start Time</label>
+                        <input type="time" id="slot-start-time">
+                    </div>
+                    <div class="input-group">
+                        <label for="slot-end-time">End Time</label>
+                        <input type="time" id="slot-end-time">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="slot-room">Room (Optional)</label>
+                        <input type="text" id="slot-room" placeholder="e.g. Room 302">
+                    </div>
+                    <div class="input-group">
+                        <label for="slot-teacher">Teacher (Optional)</label>
+                        <input type="text" id="slot-teacher" placeholder="e.g. Dr. Smith">
+                    </div>
+                </div>
+                <div class="modal-actions horizontal">
+                    <button id="save-slot-btn" class="action-btn present">Save</button>
+                    <button id="delete-slot-btn" class="action-btn absent" style="display: none;">Delete</button>
+                    <button id="cancel-slot-btn" class="action-btn clear">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Action Bar -->
+    <div id="bulk-action-bar" class="bulk-bar">
+        <div class="bulk-content">
+            <span id="bulk-count">0 dates selected</span>
+            <div class="bulk-buttons">
+                <button class="bulk-btn present" data-status="present">P</button>
+                <button class="bulk-btn absent" data-status="absent">A</button>
+                <button class="bulk-btn offday" data-status="offday">O</button>
+                <button class="bulk-btn clear" data-status="clear">×</button>
+                <button id="cancel-selection" class="bulk-btn cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <div id="podai-modal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div style="text-align: left; margin-bottom: 24px;">
+                <h3 style="font-size: 24px; margin-bottom: 4px;">Pod.ai Connect</h3>
+                <p style="color: #94a3b8; font-size: 14px;">Securely sync your institutional attendance data.</p>
+            </div>
+            
+            <div id="podai-login-form">
+                <div class="input-group">
+                    <label>Username or Email</label>
+                    <input type="text" id="podai-email" placeholder="student@college.edu or username">
+                </div>
+                <div class="input-group" style="margin-top: 16px;">
+                    <label>Password</label>
+                    <div class="password-field-wrapper">
+                        <input type="password" id="podai-password" placeholder="••••••••">
+                        <button type="button" id="podai-password-toggle" class="password-toggle-btn" aria-label="Toggle password visibility">
+                            <span class="toggle-icon">👁️</span>
+                        </button>
+                    </div>
+                </div>
+                <p style="font-size: 11px; color: #64748b; margin-top: 12px; font-style: italic;">Note: Your password is used only for authentication and is never stored on our servers.</p>
+                <div class="modal-actions horizontal" style="margin-top: 24px;">
+                    <button id="podai-connect-btn" class="action-btn present" style="width: 100%;">Connect Account</button>
+                </div>
+            </div>
+
+            <div id="podai-connected-view" style="display: none;">
+                <div style="background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(16, 185, 129, 0.2); margin-bottom: 24px; text-align: center;">
+                    <div style="font-size: 40px; margin-bottom: 12px;">✅</div>
+                    <h4 style="color: #10b981; font-size: 18px; margin-bottom: 4px;">Account Linked</h4>
+                    <p id="podai-linked-email" style="font-size: 13px; color: #94a3b8;">user@example.com</p>
+                </div>
+                
+                <div id="podai-import-stats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                    <!-- Will be populated after fetch -->
+                </div>
+
+                <div class="modal-actions" style="display: flex; flex-direction: column; gap: 12px;">
+                    <button id="podai-fetch-btn" class="action-btn present">Sync Data Now</button>
+                    <button id="podai-disconnect-btn" class="action-btn absent">Disconnect Account</button>
+                </div>
+            </div>
+
+            <button class="close-modal" style="margin-top: 16px; background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 13px; font-weight: 500;">Maybe Later</button>
+        </div>
+    </div>
+
+    <!-- TrackTaps AI Assistant -->
+    <div id="ai-assistant-wrapper">
+        <button id="ai-fab" class="ai-fab" title="Ask TrackTaps AI">
+            <div class="ai-fab-glow"></div>
+            <span class="ai-icon">✨</span>
+        </button>
+
+        <div id="ai-chat-window" class="ai-chat-window">
+            <header class="ai-chat-header">
+                <div class="ai-header-info">
+                    <span class="ai-status-dot"></span>
+                    <h3>TrackTaps AI</h3>
+                </div>
+                <button id="close-ai-chat" class="ai-close-btn">&times;</button>
+            </header>
+            
+            <div id="ai-chat-messages" class="ai-chat-messages">
+                <div class="ai-message assistant">
+                    <div class="message-content">
+                        Hello! I'm your TrackTaps Assistant. How can I help you with your attendance or schedule today?
+                    </div>
+                    <span class="message-time">Just now</span>
+                </div>
+            </div>
+
+            <div class="ai-chat-footer">
+                <div class="ai-suggestion-chips">
+                    <button class="suggestion-chip">Can I skip tomorrow?</button>
+                    <button class="suggestion-chip">Classes needed for 75%?</button>
+                    <button class="suggestion-chip">What's my schedule?</button>
+                </div>
+                <div class="ai-input-wrapper">
+                    <input type="text" id="ai-input" placeholder="Type a message..." autocomplete="off">
+                    <button id="ai-send-btn" class="ai-send-btn">
+                        <span class="send-icon">🚀</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
