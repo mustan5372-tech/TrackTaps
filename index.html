@@ -296,27 +296,39 @@
             </div>
             <!-- About View -->
             <div id="about-view" class="view">
-                <!-- Aurora Background Elements -->
-                <div class="aurora-bg">
-                    <div class="aurora-orb orb-1"></div>
-                    <div class="aurora-orb orb-2"></div>
-                    <div class="aurora-orb orb-3"></div>
+                <!-- Premium Texture Overlays -->
+                <div class="cinematic-overlay">
+                    <div class="noise-texture"></div>
+                    <div class="grid-overlay"></div>
                 </div>
 
-                <!-- Cinematic Hero Section -->
-                <section class="about-hero-cinematic">
-                    <div class="hero-particles" id="hero-particles"></div>
-                    <div class="hero-content-wrapper">
-                        <div class="ai-badge reveal-element">
-                            <span class="badge-dot"></span>
-                            <span>AI-Powered Platform</span>
+                <!-- Aurora Background Elements (Intensified) -->
+                <div class="aurora-bg">
+                    <div class="aurora-orb orb-1-premium"></div>
+                    <div class="aurora-orb orb-2-premium"></div>
+                    <div class="aurora-orb orb-3-premium"></div>
+                </div>
+
+                <!-- Massive Cinematic Hero -->
+                <section class="hero-massive">
+                    <div class="hero-content">
+                        <div class="badge-premium reveal-element">
+                            <span class="badge-glow"></span>
+                            <span class="badge-text">Next-Gen Attendance Ecosystem</span>
                         </div>
-                        <h1 class="reveal-text">TrackTaps — Smart Attendance <span class="text-gradient">Reimagined</span></h1>
-                        <p class="reveal-element reveal-stagger-1 sub-hero">A futuristic productivity ecosystem for students powered by intelligent insights and premium engineering.</p>
-                        <div class="hero-actions-cinematic reveal-element reveal-stagger-2">
-                            <button class="glow-btn" onclick="switchView('home-view')">
-                                <span>Explore Dashboard</span>
-                                <div class="btn-glow"></div>
+                        <h1 class="mega-title reveal-text-mask">
+                            <span class="line">TrackTaps — Smart</span>
+                            <span class="line text-gradient-cinematic">Attendance</span>
+                            <span class="line">Reimagined.</span>
+                        </h1>
+                        <p class="hero-subtext reveal-element reveal-stagger-1">A futuristic productivity platform for students who demand precision, speed, and premium engineering.</p>
+                        <div class="hero-actions-massive reveal-element reveal-stagger-2">
+                            <button class="btn-premium-glow" onclick="switchView('home-view')">
+                                <span>Get Started</span>
+                                <div class="btn-shine"></div>
+                            </button>
+                            <button class="btn-premium-outline" onclick="document.querySelector('.stats-section').scrollIntoView({behavior:'smooth'})">
+                                <span>Learn More</span>
                             </button>
                         </div>
                     </div>
@@ -446,7 +458,6 @@
                             </div>
                             <h3>Purandar Yadav</h3>
                             <span class="role-badge">Marketing Executive</span>
-                            <p>Expanding outreach and building a strong community around smart tracking.</p>
                             <div class="dev-socials">
                                 <a href="#" class="social-link"><span class="social-icon">📸</span></a>
                                 <a href="#" class="social-link"><span class="social-icon">🔗</span></a>
@@ -457,19 +468,22 @@
 
                 <!-- AI Showcase Section -->
                 <section class="ai-showcase-section">
+                    <h2 class="section-title reveal-element">The Brain Behind TrackTaps</h2>
                     <div class="ai-showcase-content glass-card reveal-element">
                         <div class="ai-orb-container">
                             <div class="ai-main-orb"></div>
                             <div class="orb-ring ring-1"></div>
                             <div class="orb-ring ring-2"></div>
+                            <div class="orb-ring ring-3"></div>
+                            <div class="orb-ring ring-4"></div>
                         </div>
                         <div class="ai-showcase-text">
-                            <h2 class="reveal-element">Meet <span class="text-gradient">TrackTaps AI</span></h2>
-                            <p class="reveal-element reveal-stagger-1">Your intelligent attendance and productivity companion. Get instant insights, skip calculations, and schedule tips in one chat.</p>
-                            <div class="prompt-chips reveal-element reveal-stagger-2">
-                                <span class="chip">"Can I skip tomorrow?"</span>
-                                <span class="chip">"Attendance for 75%?"</span>
-                                <span class="chip">"Analyze my schedule"</span>
+                            <h3>Next-Gen Intelligence</h3>
+                            <p>TrackTaps AI doesn't just show data—it understands your academic life. From predicting attendance shortages to optimizing your study schedule, it's the personal assistant you've always needed.</p>
+                            <div class="prompt-chips">
+                                <span class="chip chip-interactive">"Can I skip tomorrow?"</span>
+                                <span class="chip chip-interactive">"Analyze my attendance"</span>
+                                <span class="chip chip-interactive">"Check my critical subjects"</span>
                             </div>
                         </div>
                     </div>
