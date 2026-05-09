@@ -2023,29 +2023,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     historyResult.forEach(item => {
                         const dateStr = item.date.split('T')[0];
+                        
                         // Find subject in our data
-                        const subject = subjectsData.find(s => 
+                        let subject = subjectsData.find(s => 
                             s.name.toLowerCase() === item.subject.toLowerCase() ||
                             s.name.replace(/\s*\(.*?\)\s*$/, '').trim().toLowerCase() === item.subject.replace(/\s*\(.*?\)\s*$/, '').trim().toLowerCase()
                         );
                         
-                        if (subject) {
-                            // Update attendanceData (Calendar)
-                            if (!attendanceData[dateStr]) attendanceData[dateStr] = {};
-                            attendanceData[dateStr][subject.id] = item.status;
-                            
-                            // Update historyData (Timeline Logs)
-                            const existingHistory = historyData.find(h => h.date.startsWith(dateStr) && h.subjectId === subject.id);
-                            if (!existingHistory) {
-                                historyData.push({
-                                    id: item.id || `pod_hist_${Date.now()}_${Math.random()}`,
-                                    date: item.date,
-                                    subjectId: subject.id,
-                                    subjectName: subject.name,
-                                    status: item.status,
-                                    isSynced: true
-                                });
-                            }
+                        // AUTO-IMPORT SUBJECT FROM HISTORY if not found in live sync
+                        if (!subject) {
+                            console.log(`[Pod.ai Sync] Auto-importing subject from history: ${item.subject}`);
+                            subject = {
+                                id: `pod_sub_${Date.now()}_${Math.random()}`,
+                                name: item.subject,
+                                code: '',
+                                teacher: '',
+                                criteria: settingsData.defaultCriteria || 75,
+                                attended: 0,
+                                total: 0
+                            };
+                            subjectsData.push(subject);
+                            localStorage.setItem('tracktaps_subjects', JSON.stringify(subjectsData));
+                        }
+                        
+                        // Update attendanceData (Calendar)
+                        if (!attendanceData[dateStr]) attendanceData[dateStr] = {};
+                        attendanceData[dateStr][subject.id] = item.status;
+                        
+                        // Update historyData (Timeline Logs)
+                        const existingHistory = historyData.find(h => h.date.startsWith(dateStr) && h.subjectId === subject.id);
+                        if (!existingHistory) {
+                            historyData.push({
+                                id: item.id || `pod_hist_${Date.now()}_${Math.random()}`,
+                                date: item.date,
+                                subjectId: subject.id,
+                                subjectName: subject.name,
+                                status: item.status,
+                                isSynced: true
+                            });
                         }
                     });
                     
@@ -2053,31 +2068,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Sort history descending by date
                     historyData.sort((a, b) => new Date(b.date) - new Date(a.date));
                     localStorage.setItem('tracktaps_history', JSON.stringify(historyData));
+
+                    // Final Success Feedback
+                    showToast(`${subjectsData.length} subjects and ${historyResult.length} attendance records synced successfully. ✅`);
+                } else {
+                    showToast('Live attendance synced successfully. (No historical logs found)');
                 }
             } catch (hError) {
                 console.error('[Pod.ai Sync] History merge failed:', hError);
-                // We don't fail the whole sync if history fails, but we log it
+                showToast('Live attendance synced! (History sync encountered an issue)');
             }
 
-            // 4. Force UI Refresh
+            // 5. Force UI Refresh
             renderSubjects();
             renderTimetable();
             renderHomeDashboard();
             renderInsights();
             renderHistory();
-
-            showToast(`Import Success! 📊 ${attCount} subjects & ${timeCount} classes synced.`);
+            renderCalendar();
 
             const statsDiv = document.getElementById('podai-import-stats');
             if (statsDiv) {
                 statsDiv.innerHTML = `
                     <div style="background: rgba(16, 185, 129, 0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2); text-align: center;">
-                        <span style="display: block; font-size: 18px; font-weight: 700; color: #10b981;">${attCount}</span>
-                        <span style="font-size: 10px; color: #10b981; text-transform: uppercase;">Attendance</span>
+                        <span style="display: block; font-size: 18px; font-weight: 700; color: #10b981;">${subjectsData.length}</span>
+                        <span style="font-size: 10px; color: #10b981; text-transform: uppercase;">Subjects</span>
                     </div>
                     <div style="background: rgba(139, 92, 246, 0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.2); text-align: center;">
-                        <span style="display: block; font-size: 18px; font-weight: 700; color: #a78bfa;">${timeCount}</span>
-                        <span style="font-size: 10px; color: #a78bfa; text-transform: uppercase;">Timetable</span>
+                        <span style="display: block; font-size: 18px; font-weight: 700; color: #a78bfa;">${historyData.length}</span>
+                        <span style="font-size: 10px; color: #a78bfa; text-transform: uppercase;">History Logs</span>
                     </div>
                 `;
             }
