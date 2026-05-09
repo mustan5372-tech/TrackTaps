@@ -119,6 +119,34 @@
                     </div>
                 </div>
 
+                <!-- AI Prediction Widgets Row -->
+                <div class="prediction-widgets-grid">
+                    <div class="prediction-card safe-to-skip">
+                        <div class="pred-header">
+                            <span class="pred-icon">✅</span>
+                            <span class="pred-title">Safe to Skip</span>
+                        </div>
+                        <div class="pred-value" id="pred-safe-skip">None</div>
+                        <div class="pred-desc">Subjects you can miss today</div>
+                    </div>
+                    <div class="prediction-card critical-risk">
+                        <div class="pred-header">
+                            <span class="pred-icon">⚠️</span>
+                            <span class="pred-title">Critical Risk</span>
+                        </div>
+                        <div class="pred-value" id="pred-critical-risk">None</div>
+                        <div class="pred-desc">Needs immediate attention</div>
+                    </div>
+                    <div class="prediction-card recovery-needed">
+                        <div class="pred-header">
+                            <span class="pred-icon">🩹</span>
+                            <span class="pred-title">Recovery Goal</span>
+                        </div>
+                        <div class="pred-value" id="pred-recovery-goal">None</div>
+                        <div class="pred-desc">Classes to reach target</div>
+                    </div>
+                </div>
+
                 <div class="dashboard-grid">
                     <!-- Attendance Overview -->
                     <div class="dashboard-card">
@@ -150,6 +178,17 @@
                         </div>
                         <div class="trend-chart-container" id="attendance-trend-svg">
                             <!-- SVG Trend Line will be injected here -->
+                        </div>
+                    </div>
+
+                    <!-- AI Insights List -->
+                    <div class="dashboard-card ai-insights-card">
+                        <div class="card-header">
+                            <span class="card-title">AI Performance Insights</span>
+                            <span class="ai-badge-small">AI ACTIVE</span>
+                        </div>
+                        <div class="ai-insights-list" id="dashboard-ai-insights">
+                            <!-- Injected by JS -->
                         </div>
                     </div>
 

@@ -104,6 +104,38 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.head.appendChild(style);
 
+    // --- AI Prediction Engine ---
+    const getSafeMisses = (attended, total, criteria) => {
+        if (total === 0) return 0;
+        const criteriaFrac = criteria / 100;
+        const missable = Math.floor((attended / criteriaFrac) - total);
+        return Math.max(0, missable);
+    };
+
+    const getRequiredClasses = (attended, total, criteria) => {
+        const criteriaFrac = criteria / 100;
+        if ((attended / total) * 100 >= criteria) return 0;
+        // Formula: (criteria * total - attended) / (1 - criteria)
+        const required = Math.ceil((criteriaFrac * total - attended) / (1 - criteriaFrac));
+        return Math.max(0, required);
+    };
+
+    const getRiskStatus = (percentage, criteria) => {
+        const warningThreshold = criteria + 5;
+        const criticalThreshold = criteria;
+
+        if (percentage >= warningThreshold) return { label: 'SAFE', class: 'status-safe', color: '#10b981' };
+        if (percentage >= criticalThreshold) return { label: 'WARNING', class: 'status-warning', color: '#f59e0b' };
+        return { label: 'CRITICAL', class: 'status-critical', color: '#ef4444' };
+    };
+
+    const getPredictedSemesterPerc = (attended, total) => {
+        if (total === 0) return 0;
+        // Projecting current trend to 100 classes
+        const currentRate = attended / total;
+        return (currentRate * 100).toFixed(1);
+    };
+
     // --- Core UI Functions ---
     const renderHomeDashboard = () => {
         const heroGreeting = document.getElementById('hero-greeting');
@@ -122,6 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const scheduleList = document.getElementById('dashboard-schedule-list');
         const insightPills = document.getElementById('dashboard-insight-pills');
         const todayDayName = document.getElementById('today-day-name');
+        
+        // AI Prediction Widgets
+        const predSafeSkip = document.getElementById('pred-safe-skip');
+        const predCriticalRisk = document.getElementById('pred-critical-risk');
+        const predRecoveryGoal = document.getElementById('pred-recovery-goal');
+        const dashboardAiInsights = document.getElementById('dashboard-ai-insights');
 
         if (!heroGreeting) return;
 
@@ -211,7 +249,61 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 4. Insights & Alerts
+        // 5. AI Prediction & Insights (Enhanced)
+        if (subjectsData.length > 0) {
+            // Calculate Safe to Skip
+            const safeSubjects = subjectsData.filter(s => {
+                const perc = s.total > 0 ? (s.attended / s.total * 100) : 0;
+                const criteria = s.criteria || settingsData.defaultCriteria || 75;
+                return getSafeMisses(s.attended, s.total, criteria) > 0;
+            });
+            if (predSafeSkip) predSafeSkip.textContent = safeSubjects.length > 0 ? `${safeSubjects.length} Subjects` : "None";
+
+            // Calculate Critical Risk
+            const criticalSubs = subjectsData.filter(s => {
+                const perc = s.total > 0 ? (s.attended / s.total * 100) : 0;
+                const criteria = s.criteria || settingsData.defaultCriteria || 75;
+                return perc < criteria;
+            });
+            const mostCritical = [...criticalSubs].sort((a,b) => (a.attended/a.total) - (b.attended/b.total))[0];
+            if (predCriticalRisk) predCriticalRisk.textContent = mostCritical ? mostCritical.name : "None";
+
+            // Calculate Recovery Goal
+            if (predRecoveryGoal) {
+                if (mostCritical) {
+                    const criteria = mostCritical.criteria || settingsData.defaultCriteria || 75;
+                    const req = getRequiredClasses(mostCritical.attended, mostCritical.total, criteria);
+                    predRecoveryGoal.textContent = `${req} Classes`;
+                } else {
+                    predRecoveryGoal.textContent = "Goal Met";
+                }
+            }
+
+            // AI Insights List
+            if (dashboardAiInsights) {
+                let insights = [];
+                subjectsData.forEach(s => {
+                    const perc = s.total > 0 ? (s.attended / s.total * 100) : 0;
+                    const criteria = s.criteria || settingsData.defaultCriteria || 75;
+                    const predicted = getPredictedSemesterPerc(s.attended, s.total);
+                    
+                    if (perc < criteria) {
+                        insights.push(`<div class="ai-insight-item critical"><span>📉 <strong>${s.name}</strong> is at risk. Forecast: ${predicted}%</span></div>`);
+                    } else if (perc < criteria + 5) {
+                        insights.push(`<div class="ai-insight-item warning"><span>⏳ <strong>${s.name}</strong> is nearing limit. Stay consistent.</span></div>`);
+                    } else {
+                        const safe = getSafeMisses(s.attended, s.total, criteria);
+                        if (safe > 2) {
+                            insights.push(`<div class="ai-insight-item safe"><span>✨ <strong>${s.name}</strong> is safe. You have ${safe} skip credits.</span></div>`);
+                        }
+                    }
+                });
+                
+                dashboardAiInsights.innerHTML = insights.slice(0, 4).join('') || '<p style="color: #64748b; font-size: 13px; text-align: center;">No insights available yet.</p>';
+            }
+        }
+
+        // 6. Insights & Alerts (Pills)
         if (insightPills) {
             let pillsHtml = '';
 
@@ -507,43 +599,46 @@ document.addEventListener('DOMContentLoaded', () => {
         subjectsGrid.innerHTML = '';
 
         subjectsData.forEach(subject => {
-            const percentage = subject.total > 0 ? ((subject.attended / subject.total) * 100).toFixed(1) : 0;
-            const criteria = subject.criteria || 75;
+            const percentage = subject.total > 0 ? (subject.attended / subject.total * 100) : 0;
+            const criteria = subject.criteria || settingsData.defaultCriteria || 75;
             const missed = subject.total - subject.attended;
-
-            let status = 'SAFE';
-            let colorClass = 'percentage-safe';
-            let message = '';
-
-            if (percentage < (criteria - 10)) {
-                status = 'CRITICAL';
-                colorClass = 'percentage-danger';
-                const recovery = Math.ceil((criteria / 100 * subject.total - subject.attended) / (1 - criteria / 100));
-                message = `Attend ${recovery} more classes to recover`;
-            } else if (percentage < criteria) {
-                status = 'WARNING';
-                colorClass = 'percentage-warning';
-                const recovery = Math.ceil((criteria / 100 * subject.total - subject.attended) / (1 - criteria / 100));
-                message = `Attend ${recovery} more classes to stay safe`;
-            } else {
-                const missable = Math.floor((subject.attended / (criteria / 100)) - subject.total);
-                message = missable > 0 ? `You can miss ${missable} more classes safely` : "Don't miss the next class!";
-            }
+            
+            const risk = getRiskStatus(percentage, criteria);
+            const safeMisses = getSafeMisses(subject.attended, subject.total, criteria);
+            const required = getRequiredClasses(subject.attended, subject.total, criteria);
+            const predicted = getPredictedSemesterPerc(subject.attended, subject.total);
 
             const card = document.createElement('div');
             card.classList.add('subject-card');
+            card.classList.add(risk.class); // For glow effects
+            
             card.innerHTML = `
                 <div class="subject-info">
-                    <div>
+                    <div class="subject-main-info">
                         <span class="subject-name">${subject.name}</span>
-                        <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Goal: ${criteria}%</div>
+                        <div class="subject-badges">
+                            <span class="badge criteria-badge">Goal: ${criteria}%</span>
+                            <span class="badge prediction-badge">AI Forecast: ${predicted}%</span>
+                        </div>
                     </div>
-                    <div style="text-align: right;">
-                        <span class="subject-percentage ${colorClass}">${percentage}%</span>
-                        <div class="status-label ${colorClass.replace('percentage', 'status')}" style="font-size: 9px; margin-top: 4px; padding: 2px 6px;">${status}</div>
+                    <div class="subject-percentage-wrapper">
+                        <span class="subject-percentage" style="color: ${risk.color}">${percentage.toFixed(1)}%</span>
+                        <span class="status-indicator ${risk.class}">${risk.label}</span>
                     </div>
                 </div>
-                <div style="font-size: 11px; color: ${status === 'SAFE' ? '#10b981' : (status === 'WARNING' ? '#f59e0b' : '#ef4444')}; font-weight: 500;">${message}</div>
+
+                <div class="risk-meter-container">
+                    <div class="risk-meter-bar" style="width: ${Math.min(100, percentage)}%; background: ${risk.color}; box-shadow: 0 0 10px ${risk.color}44;"></div>
+                    <div class="criteria-marker" style="left: ${criteria}%"></div>
+                </div>
+
+                <div class="ai-insight-row">
+                    ${percentage >= criteria 
+                        ? `<span class="ai-msg safe">✨ You can safely miss <strong>${safeMisses}</strong> more class${safeMisses !== 1 ? 'es' : ''}.</span>`
+                        : `<span class="ai-msg critical">⚠️ Attend <strong>${required}</strong> classes to recover to ${criteria}%.</span>`
+                    }
+                </div>
+
                 <div class="subject-stats">
                     <div class="stat-box">
                         <span class="label">Attended</span>
@@ -558,10 +653,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="value">${subject.total}</span>
                     </div>
                 </div>
+
                 <div class="subject-actions">
                     <div class="attendance-controls">
-                        <button class="primary-btn present-btn" style="padding: 6px 12px; font-size: 11px; background: #10b981; min-width: 65px;">Present</button>
-                        <button class="primary-btn absent-btn" style="padding: 6px 12px; font-size: 11px; background: #ef4444; min-width: 65px;">Absent</button>
+                        <button class="icon-btn plus present-btn" title="Mark Present"><span>+</span></button>
+                        <button class="icon-btn minus absent-btn" title="Mark Absent"><span>-</span></button>
                     </div>
                     <div class="edit-delete">
                         <button class="text-btn edit">Edit</button>
@@ -816,43 +912,47 @@ document.addEventListener('DOMContentLoaded', () => {
             totalAttended += subject.attended;
             totalClasses += subject.total;
 
-            let status = 'Critical';
-            let statusClass = 'status-critical';
-            let predictionText = '';
-            let predictionClass = 'critical';
+            const criteria = subject.criteria || settingsData.defaultCriteria || 75;
+            const risk = getRiskStatus(percentage, criteria);
+            const safeMisses = getSafeMisses(subject.attended, subject.total, criteria);
+            const required = getRequiredClasses(subject.attended, subject.total, criteria);
+            const predicted = getPredictedSemesterPerc(subject.attended, subject.total);
 
-            if (percentage >= 75) {
-                status = 'Safe';
-                statusClass = 'status-safe';
-                safeCount++;
-                const missable = Math.floor((subject.attended / 0.75) - subject.total);
-                predictionText = missable > 0 ? `You can miss <strong>${missable}</strong> more class${missable > 1 ? 'es' : ''} while staying safe.` : "Don't miss the next class to stay safe!";
-                predictionClass = 'safe';
-            } else if (percentage >= 65) {
-                status = 'Warning';
-                statusClass = 'status-warning';
-                const recovery = Math.ceil((0.75 * subject.total - subject.attended) / 0.25);
-                predictionText = `Attend <strong>${recovery}</strong> more consecutive class${recovery > 1 ? 'es' : ''} to reach 75%.`;
-                predictionClass = 'warning';
-            } else {
-                status = 'Critical';
-                statusClass = 'status-critical';
-                criticalCount++;
-                const recovery = Math.ceil((0.75 * subject.total - subject.attended) / 0.25);
-                predictionText = `Attend <strong>${recovery}</strong> more classes to recover to 75%.`;
-                predictionClass = 'critical';
-            }
+            if (risk.label === 'SAFE') safeCount++;
+            else if (risk.label === 'CRITICAL') criticalCount++;
 
             const card = document.createElement('div');
             card.classList.add('insight-item-card');
+            card.classList.add(risk.class);
             card.innerHTML = `
                 <div class="insight-header">
                     <span class="subject-name">${subject.name}</span>
-                    <span class="status-label ${statusClass}">${status}</span>
+                    <span class="status-label ${risk.class}">${risk.label}</span>
                 </div>
                 <div class="subject-percentage" style="font-size: 32px; font-weight: 700; color: #f8fafc; margin: 8px 0;">${percentage.toFixed(1)}%</div>
-                <div class="prediction-box ${predictionClass}">
-                    <p class="prediction-text">${predictionText}</p>
+                
+                <div class="prediction-stats-row">
+                    <div class="pred-stat">
+                        <span class="p-label">Safe Skips</span>
+                        <span class="p-value">${safeMisses}</span>
+                    </div>
+                    <div class="pred-stat">
+                        <span class="p-label">Goal</span>
+                        <span class="p-value">${criteria}%</span>
+                    </div>
+                    <div class="pred-stat">
+                        <span class="p-label">Forecast</span>
+                        <span class="p-value">${predicted}%</span>
+                    </div>
+                </div>
+
+                <div class="prediction-box ${risk.class}">
+                    <p class="prediction-text">
+                        ${percentage >= criteria 
+                            ? `You can miss <strong>${safeMisses}</strong> more classes safely.`
+                            : `Attend <strong>${required}</strong> more classes to reach ${criteria}%.`
+                        }
+                    </p>
                 </div>
             `;
             insightsGrid.appendChild(card);
