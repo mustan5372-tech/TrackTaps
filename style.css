@@ -128,11 +128,10 @@ body.no-glass * {
     border-right: 1px solid rgba(139, 92, 246, 0.1);
     display: flex;
     flex-direction: column;
-    padding: 32px 24px;
     flex-shrink: 0;
     position: relative;
-    z-index: 5000 !important; /* Extremely high to beat any overlay */
-    pointer-events: auto !important;
+    z-index: 2000; /* Safe elevation above main content */
+    pointer-events: auto;
 }
 
 /* Branding */
@@ -2835,9 +2834,8 @@ body.no-glass * {
 #ai-assistant-wrapper {
     position: fixed;
     inset: 0;
-    pointer-events: none;
+    pointer-events: none; /* Allow clicks to pass through to sidebar/page */
     z-index: 1500;
-    display: none; /* TEMPORARY DEBUG STEP: Hiding to verify sidebar clickability */
 }
 
 .cursor-aura {

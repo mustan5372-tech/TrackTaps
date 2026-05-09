@@ -735,12 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHomeDashboard();
     };
 
-    const saveAndSync = () => {
-        localStorage.setItem('tracktaps_attendance', JSON.stringify(attendanceData));
-        localStorage.setItem('tracktaps_subjects', JSON.stringify(subjectsData));
-        localStorage.setItem('tracktaps_history', JSON.stringify(historyData));
-        localStorage.setItem('tracktaps_timetable', JSON.stringify(timetableData));
-    };
+
 
     const updateShortageAlerts = () => {
         renderHomeDashboard();
@@ -782,34 +777,6 @@ document.addEventListener('DOMContentLoaded', () => {
             card.querySelector('.delete-history').addEventListener('click', () => deleteHistoryEntry(entry.id));
             historyList.appendChild(card);
         });
-    };
-
-    const deleteHistoryEntry = (entryId) => {
-        if (!confirm('Delete this history record?')) return;
-
-        const index = historyData.findIndex(h => h.id === entryId);
-        if (index === -1) return;
-
-        const entry = historyData[index];
-        const subject = subjectsData.find(s => s.id === entry.subjectId);
-
-        if (subject) {
-            if (entry.status === 'present') {
-                subject.attended = Math.max(0, subject.attended - 1);
-                subject.total = Math.max(0, subject.total - 1);
-            } else {
-                subject.total = Math.max(0, subject.total - 1);
-            }
-        }
-
-        historyData.splice(index, 1);
-        localStorage.setItem('tracktaps_subjects', JSON.stringify(subjectsData));
-        localStorage.setItem('tracktaps_history', JSON.stringify(historyData));
-
-        renderSubjects();
-        renderInsights();
-        renderHistory();
-        renderHomeDashboard();
     };
 
     const exportData = () => {
