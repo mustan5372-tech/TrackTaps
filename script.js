@@ -298,6 +298,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Reset scroll position on view switch
+        const contentWrapper = document.querySelector('.content-wrapper');
+        if (contentWrapper) {
+            contentWrapper.scrollTo({ top: 0, behavior: 'instant' });
+        }
+
         // Update nav buttons active state
         navButtons.forEach(btn => {
             const viewName = btn.innerText.toLowerCase().trim();
