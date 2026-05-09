@@ -677,32 +677,69 @@ document.addEventListener('DOMContentLoaded', () => {
         updateShortageAlerts();
     };
 
-    const recordAttendance = (subjectId, status) => {
-        const subject = subjectsData.find(s => s.id === subjectId);
+    const recordAttendance = (subjectId, status, dateStr = null) => {
+        const subject = subjectsData.find(s => s.id == subjectId);
         if (!subject) return;
 
-        const entry = {
-            id: Date.now(),
-            subjectId: subject.id,
-            subjectName: subject.name,
-            status: status,
-            date: new Date().toISOString()
-        };
+        const date = dateStr ? new Date(dateStr) : new Date();
+        const finalDateStr = date.toISOString().split('T')[0];
 
+        // 1. Update Attendance Data (Daily Map for Calendar)
+        if (!attendanceData[finalDateStr]) attendanceData[finalDateStr] = {};
+        
+        // Prevent double counting if status is the same
+        const oldStatus = attendanceData[finalDateStr][subjectId];
+        if (oldStatus === status) return;
+
+        // If replacing an old status, we need to subtract first
+        if (oldStatus && oldStatus !== 'offday' && oldStatus !== 'clear') {
+            if (oldStatus === 'present') {
+                subject.attended = Math.max(0, subject.attended - 1);
+                subject.total = Math.max(0, subject.total - 1);
+            } else if (oldStatus === 'absent') {
+                subject.total = Math.max(0, subject.total - 1);
+            }
+        }
+
+        // 2. Update Subject Stats (Permanent Counts)
         if (status === 'present') {
             subject.attended++;
             subject.total++;
-        } else {
+        } else if (status === 'absent') {
             subject.total++;
         }
 
-        historyData.unshift(entry);
-        localStorage.setItem('tracktaps_subjects', JSON.stringify(subjectsData));
-        localStorage.setItem('tracktaps_history', JSON.stringify(historyData));
+        // 3. Update Daily Map
+        if (status === 'clear') {
+            delete attendanceData[finalDateStr][subjectId];
+            if (Object.keys(attendanceData[finalDateStr]).length === 0) delete attendanceData[finalDateStr];
+        } else {
+            attendanceData[finalDateStr][subjectId] = status;
+        }
 
+        // 4. Update History Log
+        const entry = {
+            id: Date.now() + Math.random(),
+            subjectId: subject.id,
+            subjectName: subject.name,
+            status: status,
+            date: date.toISOString()
+        };
+        historyData.unshift(entry);
+
+        saveAndSync();
         renderSubjects();
         renderInsights();
-        updateShortageAlerts();
+        renderCalendar();
+        renderHistory();
+        renderHomeDashboard();
+    };
+
+    const saveAndSync = () => {
+        localStorage.setItem('tracktaps_attendance', JSON.stringify(attendanceData));
+        localStorage.setItem('tracktaps_subjects', JSON.stringify(subjectsData));
+        localStorage.setItem('tracktaps_history', JSON.stringify(historyData));
+        localStorage.setItem('tracktaps_timetable', JSON.stringify(timetableData));
     };
 
     const updateShortageAlerts = () => {
@@ -854,8 +891,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!name) return alert('Please enter subject name');
 
         if (editingSubjectId) {
-            const index = subjectsData.findIndex(s => s.id === editingSubjectId);
+            const index = subjectsData.findIndex(s => s.id == editingSubjectId);
+            const oldName = subjectsData[index].name;
             subjectsData[index] = { ...subjectsData[index], name, criteria };
+            
+            // Update timetable entries with new name
+            timetableData = timetableData.map(slot => {
+                if (slot.subjectId == editingSubjectId) {
+                    return { ...slot, subject: name };
+                }
+                return slot;
+            });
+            localStorage.setItem('tracktaps_timetable', JSON.stringify(timetableData));
         } else {
             subjectsData.push({
                 id: Date.now(),
@@ -1300,20 +1347,39 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedDateStr = dateStr;
         if (!isMultiSelectMode) {
             document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
-            targetEl.classList.add('selected');
+            if (targetEl) targetEl.classList.add('selected');
         }
 
         modalDateText.textContent = `${monthName} ${day}, ${year}`;
         const subjectList = document.getElementById('modal-subject-list');
         subjectList.innerHTML = '';
 
-        if (subjectsData.length === 0) {
-            subjectList.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">No subjects found. Add subjects to mark attendance.</p>';
+        // Determine Weekday for Timetable Filtering
+        const dateObj = new Date(dateStr);
+        const dayIndex = dateObj.getDay();
+        const adjustedDayIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+
+        // Get subjects scheduled for this day
+        const scheduledSlots = timetableData.filter(slot => slot.dayIndex === adjustedDayIndex);
+        
+        // Use a Set to avoid duplicates if multiple slots exist for same subject
+        const scheduledSubjectIds = [...new Set(scheduledSlots.map(slot => slot.subjectId))];
+
+        if (scheduledSubjectIds.length === 0) {
+            subjectList.innerHTML = `
+                <div style="text-align: center; padding: 30px 20px;">
+                    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 12px;">No classes scheduled for this day in your timetable.</p>
+                    <button class="primary-btn" onclick="switchView('timetable-view')" style="padding: 8px 16px; font-size: 12px;">Go to Timetable</button>
+                </div>
+            `;
         } else {
             const dailyData = attendanceData[dateStr] || {};
 
-            subjectsData.forEach(subject => {
-                const status = typeof dailyData === 'string' ? (dailyData === 'present' ? 'present' : (dailyData === 'absent' ? 'absent' : '')) : dailyData[subject.id] || '';
+            scheduledSubjectIds.forEach(subId => {
+                const subject = subjectsData.find(s => s.id == subId);
+                if (!subject) return;
+
+                const status = dailyData[subId] || '';
                 const row = document.createElement('div');
                 row.classList.add('modal-subject-row');
                 row.innerHTML = `
@@ -1329,10 +1395,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
 
-                row.querySelector('.present').addEventListener('click', () => markSubjectAttendance(dateStr, subject.id, 'present'));
-                row.querySelector('.absent').addEventListener('click', () => markSubjectAttendance(dateStr, subject.id, 'absent'));
-                row.querySelector('.offday').addEventListener('click', () => markSubjectAttendance(dateStr, subject.id, 'offday'));
-                row.querySelector('.clear').addEventListener('click', () => markSubjectAttendance(dateStr, subject.id, 'clear'));
+                row.querySelector('.present').addEventListener('click', () => recordAttendance(subject.id, 'present', dateStr));
+                row.querySelector('.absent').addEventListener('click', () => recordAttendance(subject.id, 'absent', dateStr));
+                row.querySelector('.offday').addEventListener('click', () => recordAttendance(subject.id, 'offday', dateStr));
+                row.querySelector('.clear').addEventListener('click', () => recordAttendance(subject.id, 'clear', dateStr));
 
                 subjectList.appendChild(row);
             });
@@ -1341,66 +1407,33 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.classList.add('active');
     };
 
-    const markSubjectAttendance = (dateStr, subjectId, status) => {
-        if (!attendanceData[dateStr] || typeof attendanceData[dateStr] === 'string') {
-            attendanceData[dateStr] = {};
+    const deleteHistoryEntry = (entryId) => {
+        const entry = historyData.find(h => h.id === entryId);
+        if (!entry) return;
+
+        const dateStr = new Date(entry.date).toISOString().split('T')[0];
+        
+        // Remove from subjectsData counts
+        const subject = subjectsData.find(s => s.id == entry.subjectId);
+        if (subject) {
+            if (entry.status === 'present') {
+                subject.attended = Math.max(0, subject.attended - 1);
+                subject.total = Math.max(0, subject.total - 1);
+            } else if (entry.status === 'absent') {
+                subject.total = Math.max(0, subject.total - 1);
+            }
         }
 
-        const oldStatus = attendanceData[dateStr][subjectId] || '';
-        if (oldStatus === status) return;
-
-        // Revert old status from subjectsData and historyData
-        updateSubjectStatsAndHistory(dateStr, subjectId, oldStatus, 'remove');
-
-        // Apply new status
-        if (status === 'clear') {
-            delete attendanceData[dateStr][subjectId];
+        // Remove from attendanceData daily map
+        if (attendanceData[dateStr]) {
+            delete attendanceData[dateStr][entry.subjectId];
             if (Object.keys(attendanceData[dateStr]).length === 0) delete attendanceData[dateStr];
-        } else {
-            attendanceData[dateStr][subjectId] = status;
-            updateSubjectStatsAndHistory(dateStr, subjectId, status, 'add');
         }
+
+        // Remove from history
+        historyData = historyData.filter(h => h.id !== entryId);
 
         saveAndSync();
-
-        // Refresh modal
-        const day = new Date(dateStr).getDate();
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const monthName = monthNames[new Date(dateStr).getMonth()];
-        const year = new Date(dateStr).getFullYear();
-        openAttendanceModal(dateStr, day, monthName, year, document.querySelector(`.calendar-day:not(.empty)`)); // Target is handled by dateStr
-    };
-
-    const updateSubjectStatsAndHistory = (dateStr, subjectId, status, action) => {
-        const subject = subjectsData.find(s => s.id == subjectId);
-        if (!subject || !status || status === 'clear' || status === 'offday') return;
-
-        const multiplier = action === 'add' ? 1 : -1;
-
-        if (status === 'present') {
-            subject.attended += (1 * multiplier);
-            subject.total += (1 * multiplier);
-        } else if (status === 'absent') {
-            subject.total += (1 * multiplier);
-        }
-
-        if (action === 'add') {
-            const entry = {
-                id: Date.now() + Math.random(),
-                subjectId: subject.id,
-                subjectName: subject.name,
-                status: status,
-                date: new Date(dateStr).toISOString()
-            };
-            historyData.unshift(entry);
-        } else {
-            // Remove entry from history for this date and subject
-            const historyIndex = historyData.findIndex(h => {
-                const hDate = new Date(h.date).toISOString().split('T')[0];
-                return hDate === dateStr && h.subjectId == subjectId && h.status === status;
-            });
-            if (historyIndex > -1) historyData.splice(historyIndex, 1);
-        }
     };
 
     const saveAndSync = () => {
@@ -1428,37 +1461,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const dates = selectedDates.length > 0 ? selectedDates : [selectedDateStr];
 
-        dates.forEach(date => {
-            subjectsData.forEach(subject => {
-                // If status is 'clear', we clear everything for that day/subjects
-                // If status is present/absent/offday, we mark it
-                if (status === 'clear') {
-                    const oldStatus = (attendanceData[date] && typeof attendanceData[date] !== 'string') ? attendanceData[date][subject.id] : '';
-                    if (oldStatus) {
-                        updateSubjectStatsAndHistory(date, subject.id, oldStatus, 'remove');
-                        if (attendanceData[date]) delete attendanceData[date][subject.id];
-                    }
-                } else {
-                    const oldStatus = (attendanceData[date] && typeof attendanceData[date] !== 'string') ? attendanceData[date][subject.id] : '';
-                    if (oldStatus !== status) {
-                        if (oldStatus) updateSubjectStatsAndHistory(date, subject.id, oldStatus, 'remove');
+        dates.forEach(dateStr => {
+            // Determine Weekday for Timetable Filtering
+            const dateObj = new Date(dateStr);
+            const dayIndex = dateObj.getDay();
+            const adjustedDayIndex = dayIndex === 0 ? 6 : dayIndex - 1;
 
-                        if (!attendanceData[date] || typeof attendanceData[date] === 'string') attendanceData[date] = {};
-                        attendanceData[date][subject.id] = status;
-                        updateSubjectStatsAndHistory(date, subject.id, status, 'add');
-                    }
-                }
-            });
-            if (attendanceData[date] && Object.keys(attendanceData[date]).length === 0) delete attendanceData[date];
+            // Get subjects scheduled for this day
+            const scheduledSlots = timetableData.filter(slot => slot.dayIndex === adjustedDayIndex);
+            const scheduledSubjectIds = [...new Set(scheduledSlots.map(slot => slot.subjectId))];
+
+            if (scheduledSubjectIds.length > 0) {
+                scheduledSubjectIds.forEach(subId => {
+                    recordAttendance(subId, status, dateStr);
+                });
+            }
         });
 
-        saveAndSync();
         if (selectedDateStr) {
             const d = new Date(selectedDateStr);
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             openAttendanceModal(selectedDateStr, d.getDate(), monthNames[d.getMonth()], d.getFullYear(), null);
         } else {
             closeAttendanceModal();
+            clearSelection();
         }
     };
 
