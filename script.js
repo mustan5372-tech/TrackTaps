@@ -1389,105 +1389,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Cinematic Interactions & Reveal Animations ---
     const initCinematicInteractions = () => {
-        // 1. Scroll Progress Bar
-        const progressBar = document.createElement('div');
-        progressBar.className = 'scroll-progress';
-        progressBar.style.cssText = 'position:fixed; top:0; left:0; height:4px; background:linear-gradient(to right, #8b5cf6, #d946ef); z-index:10001; width:0%; transition: width 0.1s;';
-        document.body.appendChild(progressBar);
+        // 1. Reveal Animations with Stat Counting
+        const revealOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
 
-        window.addEventListener('scroll', () => {
-            if (document.getElementById('about-view').style.display !== 'none') {
-                const winScroll = document.documentElement.scrollTop;
-                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-                const scrolled = (winScroll / height) * 100;
-                progressBar.style.width = scrolled + "%";
-                progressBar.style.opacity = '1';
-            } else {
-                progressBar.style.opacity = '0';
-            }
-        });
-
-        // 2. Reveal Animations with Stat Counting
-        const revealOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
         const revealObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('element-revealed');
+                    
+                    // Trigger stat counter if it's a stat card
                     if (entry.target.classList.contains('stat-card')) {
                         const numEl = entry.target.querySelector('.stat-number');
                         if (numEl) animateValue(numEl);
                     }
+                    
                     revealObserver.unobserve(entry.target);
                 }
             });
         }, revealOptions);
 
-        document.querySelectorAll('.reveal-element, .reveal-avatar, .stat-card, .timeline-item').forEach(el => {
+        const revealElements = document.querySelectorAll('.reveal-element, .reveal-avatar, .stat-card, .timeline-item');
+        revealElements.forEach(el => {
             el.classList.remove('element-revealed');
             revealObserver.observe(el);
         });
 
-        // 3. Stat Counter
+        // 2. Stat Counter Logic
         function animateValue(obj) {
             const target = parseInt(obj.getAttribute('data-target'));
-            let current = 0;
-            const step = target / 50;
-            const interval = setInterval(() => {
-                current += step;
-                if (current >= target) {
+            let start = 0;
+            const duration = 2000;
+            const stepTime = Math.abs(Math.floor(duration / target));
+            
+            const timer = setInterval(() => {
+                start += Math.ceil(target / 100);
+                if (start >= target) {
                     obj.textContent = target.toLocaleString() + (obj.textContent.includes('%') ? '%' : '');
-                    clearInterval(interval);
+                    clearInterval(timer);
                 } else {
-                    obj.textContent = Math.floor(current).toLocaleString();
+                    obj.textContent = start.toLocaleString();
                 }
-            }, 30);
+            }, 20);
         }
 
-        // 4. Parallax Orbs & Cursor Aura
-        const orbs = document.querySelectorAll('.aurora-orb');
+        // 3. 3D Tilt & Mouse Glow Effect for Team Cards
+        const tiltCards = document.querySelectorAll('.tilt-card');
+        tiltCards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const xPct = (x / rect.width - 0.5) * 20; // 20deg max tilt
+                const yPct = (y / rect.height - 0.5) * -20;
+                
+                card.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
+                card.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
+                card.style.transform = `perspective(1000px) rotateX(${yPct}deg) rotateY(${xPct}deg) translateY(-10px)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+            });
+        });
+
+        // 4. Cursor Aura Effect
         const cursorAura = document.createElement('div');
         cursorAura.className = 'cursor-aura';
         document.body.appendChild(cursorAura);
 
         document.addEventListener('mousemove', (e) => {
+            // Only show aura in About section or generally if premium feel is wanted
             if (document.getElementById('about-view').style.display !== 'none') {
-                const x = e.clientX;
-                const y = e.clientY;
-                
-                // Cursor Aura
                 cursorAura.style.opacity = '1';
-                cursorAura.style.left = `${x}px`;
-                cursorAura.style.top = `${y}px`;
-
-                // Parallax Orbs
-                orbs.forEach((orb, index) => {
-                    const speed = (index + 1) * 0.02;
-                    const ox = (window.innerWidth / 2 - x) * speed;
-                    const oy = (window.innerHeight / 2 - y) * speed;
-                    orb.style.transform = `translate(${ox}px, ${oy}px)`;
-                });
+                cursorAura.style.left = `${e.clientX}px`;
+                cursorAura.style.top = `${e.clientY}px`;
             } else {
                 cursorAura.style.opacity = '0';
             }
-        });
-
-        // 5. Aggressive 3D Tilt
-        document.querySelectorAll('.tilt-card').forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = (e.clientX - rect.left) / rect.width;
-                const y = (e.clientY - rect.top) / rect.height;
-                const tiltX = (y - 0.5) * -30;
-                const tiltY = (x - 0.5) * 30;
-                
-                card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.05, 1.05, 1.05)`;
-                card.style.setProperty('--mouse-x', `${x * 100}%`);
-                card.style.setProperty('--mouse-y', `${y * 100}%`);
-            });
-
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
-            });
         });
     };
 
