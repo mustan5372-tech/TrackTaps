@@ -1952,8 +1952,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (attCount === 0 && subCount === 0) {
-                showToast('No live data found. Check your Pod.ai dashboard or try again later.');
-                return;
+                console.warn('[Pod.ai Sync] No live totals found, proceeding to history fetch...');
             }
 
             // 1. Sync Subjects and Attendance (Combine sources)

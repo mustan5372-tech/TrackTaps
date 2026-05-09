@@ -29,7 +29,15 @@ export default async function handler(req, res) {
 
       // 4. Activity Logs (Sometimes used for attendance)
       podFetch('https://api.pod.ai/v4/api/classrooms/student-activity/attendance/index-list/', {}, token, req.headers.cookie)
-        .catch(e => ({ error: e.message, type: 'activity_attendance' }))
+        .catch(e => ({ error: e.message, type: 'activity_attendance' })),
+
+      // 5. Direct Classroom Attendance
+      podFetch('https://api.pod.ai/v4/api/classrooms/student-attendance/', {}, token, req.headers.cookie)
+        .catch(e => ({ error: e.message, type: 'direct_attendance' })),
+      
+      // 6. Community Specific Timeline
+      podFetch(`https://api.pod.ai/v4/api/community/${collegeId}/attendance/student/v2/`, {}, token, req.headers.cookie)
+        .catch(e => ({ error: e.message, type: 'community_v2' }))
     ];
 
     const results = await Promise.all(fetchPromises);

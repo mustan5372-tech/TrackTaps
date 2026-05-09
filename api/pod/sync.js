@@ -20,7 +20,10 @@ export default async function handler(req, res) {
       podFetch('https://api.pod.ai/v4/api/classrooms/index-list/?class_group_type=1', {}, token, req.headers.cookie).catch(e => ({ error: e.message, type: 'classrooms_v1' })),
       podFetch('https://api.pod.ai/v4/api/classrooms/student-attendance/index-list/', {}, token, req.headers.cookie).catch(e => ({ error: e.message, type: 'classrooms_attendance' })),
       podFetch(`https://api.pod.ai/v4/api/community/${collegeId}/community-user-counts/`, {}, token, req.headers.cookie).catch(e => ({ error: e.message, type: 'stats' })),
-      podFetch('https://api.pod.ai/v4/api/classrooms/student-timetable/', {}, token, req.headers.cookie).catch(e => ({ error: e.message, type: 'timetable' }))
+      podFetch('https://api.pod.ai/v4/api/classrooms/student-timetable/', {}, token, req.headers.cookie).catch(e => ({ error: e.message, type: 'timetable' })),
+      // Newly discovered endpoints for exhaustive search
+      podFetch(`https://api.pod.ai/v4/api/community/${collegeId}/attendance/student/v2/`, {}, token, req.headers.cookie).catch(e => ({ error: e.message, type: 'attendance_v2' })),
+      podFetch(`https://api.pod.ai/v4/api/community/${collegeId}/classroom-attendance/`, {}, token, req.headers.cookie).catch(e => ({ error: e.message, type: 'classroom_attendance_alt' }))
     ];
 
     const results = await Promise.all(fetchPromises);
