@@ -1829,6 +1829,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        fetchHistory: async () => {
+            console.log('[Pod.ai Client] Requesting historical data...');
+            try {
+                const response = await fetch('/api/pod/history', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Failed to fetch history');
+                return result.data;
+            } catch (error) {
+                console.error('[Pod.ai Client] History Exception:', error);
+                throw error;
+            }
+        },
+
         logout: async () => {
             console.log('[Pod.ai Client] Logging out...');
             try {
@@ -1997,6 +2013,51 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('tracktaps_subjects', JSON.stringify(subjectsData));
             podAIState.lastSync = new Date().toISOString();
             savePodAIState();
+
+            // 4. Sync History (Dates & Calendar)
+            buttons.forEach(b => b.innerHTML = '<span class="loading-spinner"></span> Syncing History...');
+            try {
+                const historyResult = await PodAIService.fetchHistory();
+                if (historyResult && historyResult.length > 0) {
+                    console.log(`[Pod.ai Sync] Merging ${historyResult.length} historical records.`);
+                    
+                    historyResult.forEach(item => {
+                        const dateStr = item.date.split('T')[0];
+                        // Find subject in our data
+                        const subject = subjectsData.find(s => 
+                            s.name.toLowerCase() === item.subject.toLowerCase() ||
+                            s.name.replace(/\s*\(.*?\)\s*$/, '').trim().toLowerCase() === item.subject.replace(/\s*\(.*?\)\s*$/, '').trim().toLowerCase()
+                        );
+                        
+                        if (subject) {
+                            // Update attendanceData (Calendar)
+                            if (!attendanceData[dateStr]) attendanceData[dateStr] = {};
+                            attendanceData[dateStr][subject.id] = item.status;
+                            
+                            // Update historyData (Timeline Logs)
+                            const existingHistory = historyData.find(h => h.date.startsWith(dateStr) && h.subjectId === subject.id);
+                            if (!existingHistory) {
+                                historyData.push({
+                                    id: item.id || `pod_hist_${Date.now()}_${Math.random()}`,
+                                    date: item.date,
+                                    subjectId: subject.id,
+                                    subjectName: subject.name,
+                                    status: item.status,
+                                    isSynced: true
+                                });
+                            }
+                        }
+                    });
+                    
+                    localStorage.setItem('tracktaps_attendance', JSON.stringify(attendanceData));
+                    // Sort history descending by date
+                    historyData.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    localStorage.setItem('tracktaps_history', JSON.stringify(historyData));
+                }
+            } catch (hError) {
+                console.error('[Pod.ai Sync] History merge failed:', hError);
+                // We don't fail the whole sync if history fails, but we log it
+            }
 
             // 4. Force UI Refresh
             renderSubjects();
