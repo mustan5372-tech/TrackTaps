@@ -130,6 +130,8 @@ body.no-glass * {
     flex-direction: column;
     padding: 32px 24px;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1001; /* Above general content, below modals/chat */
 }
 
 /* Branding */
@@ -2512,6 +2514,7 @@ body.no-glass * {
     justify-content: center;
     align-items: center;
     box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+    pointer-events: auto; /* Re-enable clicks for the button */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -2824,6 +2827,27 @@ body.no-glass * {
 @keyframes typing {
     0%, 80%, 100% { transform: translateY(0); }
     40% { transform: translateY(-6px); }
+}
+
+/* AI Wrapper Fix - CRITICAL for Navigation */
+#ai-assistant-wrapper {
+    position: fixed;
+    inset: 0;
+    pointer-events: none; /* Allow clicks to pass through to sidebar/page */
+    z-index: 1500;
+}
+
+.cursor-aura {
+    position: fixed;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none; /* Never block clicks */
+    z-index: 9999;
+    mix-blend-mode: screen;
+    transition: opacity 0.3s ease;
 }
 
 
