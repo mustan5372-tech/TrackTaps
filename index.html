@@ -296,161 +296,212 @@
             </div>
             <!-- About View -->
             <div id="about-view" class="view">
-                <section class="about-hero">
-                    <div class="hero-glow"></div>
-                    <div class="about-hero-content">
-                        <h1 class="reveal-element">TrackTaps — Smart Attendance <span class="text-gradient">Reimagined</span></h1>
-                        <p class="reveal-element reveal-stagger-1">A modern AI-inspired attendance platform designed for students who value precision and premium experiences.</p>
-                        <div class="hero-actions">
-                            <button class="action-btn present" onclick="switchView('home-view')">Back to Dashboard</button>
-                        </div>
-                    </div>
-                </section>
-
-                <div class="mission-container">
-                    <!-- About App Card -->
-                    <div class="about-card glass-card mission-card">
-                        <div class="card-header">
-                            <span class="card-title">The Mission</span>
-                        </div>
-                        <div class="about-card-body">
-                            <p class="reveal-element">TrackTaps was built to bridge the gap between traditional attendance tracking and modern student productivity needs. Our mission is to provide a seamless, beautiful, and intelligent interface for managing your academic life.</p>
-                            <ul class="mission-list">
-                                <li class="reveal-element reveal-stagger-1">✨ Real-time Pod.ai Synchronization</li>
-                                <li class="reveal-element reveal-stagger-2">📊 Deep Attendance Analytics</li>
-                                <li class="reveal-element reveal-stagger-3">🕒 Smart Timetable Management</li>
-                                <li class="reveal-element reveal-stagger-4">📱 Mobile-First SaaS Experience</li>
-                            </ul>
-                        </div>
-                    </div>
+                <!-- Aurora Background Elements -->
+                <div class="aurora-bg">
+                    <div class="aurora-orb orb-1"></div>
+                    <div class="aurora-orb orb-2"></div>
+                    <div class="aurora-orb orb-3"></div>
                 </div>
 
-                <section class="team-section">
-                    <div class="section-divider"></div>
-                    <h2 class="section-title reveal-element">Core <span class="text-gradient">Team</span></h2>
-                    <div class="team-grid-wrapper">
-                        <div class="team-bg-glow"></div>
-                        <div class="team-grid">
-                            <!-- Developer Card -->
-                            <div class="about-card team-card glass-card">
-                                <div class="dev-profile-header">
-                                    <div class="dev-avatar reveal-avatar">
-                                        <span class="avatar-initials">MS</span>
-                                        <div class="avatar-glow"></div>
-                                    </div>
-                                    <div class="dev-info">
-                                        <h3 class="dev-name">Mustansir Sanawad</h3>
-                                        <div class="role-badge">Founder & Lead Developer</div>
-                                    </div>
-                                </div>
-                                <div class="dev-body">
-                                    <p class="reveal-element">AU EV student at Medi-Caps University passionate about building modern SaaS platforms and smart student productivity tools. Mustansir focuses on creating tools that are not just functional, but inspiring to use.</p>
-                                    <div class="dev-socials">
-                                        <a href="mailto:mustansir.sanawad@example.com" class="social-link" title="Email"><span class="social-icon">📧</span></a>
-                                        <a href="https://github.com/mustansirs" target="_blank" class="social-link" title="GitHub"><span class="social-icon">💻</span></a>
-                                        <a href="#" class="social-link" title="LinkedIn"><span class="social-icon">🔗</span></a>
-                                        <a href="#" class="social-link" title="Instagram"><span class="social-icon">📸</span></a>
-                                    </div>
-                                </div>
-                            </div>
+                <!-- Cinematic Hero Section -->
+                <section class="about-hero-cinematic">
+                    <div class="hero-particles" id="hero-particles"></div>
+                    <div class="hero-content-wrapper">
+                        <div class="ai-badge reveal-element">
+                            <span class="badge-dot"></span>
+                            <span>AI-Powered Platform</span>
+                        </div>
+                        <h1 class="reveal-text">TrackTaps — Smart Attendance <span class="text-gradient">Reimagined</span></h1>
+                        <p class="reveal-element reveal-stagger-1 sub-hero">A futuristic productivity ecosystem for students powered by intelligent insights and premium engineering.</p>
+                        <div class="hero-actions-cinematic reveal-element reveal-stagger-2">
+                            <button class="glow-btn" onclick="switchView('home-view')">
+                                <span>Explore Dashboard</span>
+                                <div class="btn-glow"></div>
+                            </button>
+                        </div>
+                    </div>
+                </section>
 
-                            <!-- Team Member 2 -->
-                            <div class="about-card team-card glass-card">
-                                <div class="dev-profile-header">
-                                    <div class="dev-avatar reveal-avatar" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);">
-                                        <span class="avatar-initials">PG</span>
-                                        <div class="avatar-glow" style="border-color: rgba(16, 185, 129, 0.5);"></div>
-                                    </div>
-                                    <div class="dev-info">
-                                        <h3 class="dev-name">Pranav Gohel</h3>
-                                        <div class="role-badge">Chief Marketing Officer</div>
-                                    </div>
-                                </div>
-                                <div class="dev-body">
-                                    <p class="reveal-element">AU EV student at Medi-Caps University helping shape the vision and growth of TrackTaps. Pranav is dedicated to ensuring the platform's long-term sustainability and strategic growth.</p>
-                                    <div class="dev-socials">
-                                        <a href="#" class="social-link" title="LinkedIn"><span class="social-icon">🔗</span></a>
-                                        <a href="#" class="social-link" title="Email"><span class="social-icon">📧</span></a>
-                                        <a href="#" class="social-link" title="Instagram"><span class="social-icon">📸</span></a>
-                                    </div>
-                                </div>
-                            </div>
+                <!-- Animated Stats Section -->
+                <section class="stats-section">
+                    <div class="stats-grid">
+                        <div class="stat-card glass-card reveal-element reveal-stagger-1">
+                            <div class="stat-icon">📅</div>
+                            <h3 class="stat-number" data-target="15000">0</h3>
+                            <p class="stat-label">Classes Tracked</p>
+                        </div>
+                        <div class="stat-card glass-card reveal-element reveal-stagger-2">
+                            <div class="stat-icon">🔄</div>
+                            <h3 class="stat-number" data-target="2400">0</h3>
+                            <p class="stat-label">Attendance Synced</p>
+                        </div>
+                        <div class="stat-card glass-card reveal-element reveal-stagger-3">
+                            <div class="stat-icon">🚀</div>
+                            <h3 class="stat-number" data-target="12">0</h3>
+                            <p class="stat-label">Active Features</p>
+                        </div>
+                        <div class="stat-card glass-card reveal-element reveal-stagger-4">
+                            <div class="stat-icon">📈</div>
+                            <h3 class="stat-number" data-target="98">0</h3>
+                            <p class="stat-label">Productivity Boost%</p>
+                        </div>
+                    </div>
+                </section>
 
-                            <!-- Team Member 3 -->
-                            <div class="about-card team-card glass-card">
-                                <div class="dev-profile-header">
-                                    <div class="dev-avatar reveal-avatar" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">
-                                        <span class="avatar-initials">PY</span>
-                                        <div class="avatar-glow" style="border-color: rgba(245, 158, 11, 0.5);"></div>
-                                    </div>
-                                    <div class="dev-info">
-                                        <h3 class="dev-name">Purandar Yadav</h3>
-                                        <div class="role-badge">Marketing Executive</div>
-                                    </div>
-                                </div>
-                                <div class="dev-body">
-                                    <p class="reveal-element">Marketing Executive at TrackTaps helping expand outreach, branding, and student engagement initiatives. Purandar is focused on building a strong community around TrackTaps.</p>
-                                    <div class="dev-socials">
-                                        <a href="#" class="social-link" title="LinkedIn"><span class="social-icon">🔗</span></a>
-                                        <a href="#" class="social-link" title="Email"><span class="social-icon">📧</span></a>
-                                        <a href="#" class="social-link" title="Instagram"><span class="social-icon">📸</span></a>
-                                    </div>
-                                </div>
+                <!-- Journey Timeline -->
+                <section class="journey-section">
+                    <h2 class="section-title reveal-element">The TrackTaps <span class="text-gradient">Journey</span></h2>
+                    <div class="timeline-container">
+                        <div class="timeline-line"></div>
+                        
+                        <div class="timeline-item reveal-element">
+                            <div class="timeline-node"></div>
+                            <div class="timeline-content glass-card">
+                                <span class="timeline-date">Jan 2026</span>
+                                <h4>Idea Started</h4>
+                                <p>Conceptualizing a smarter way for students to handle attendance.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item reveal-element">
+                            <div class="timeline-node"></div>
+                            <div class="timeline-content glass-card">
+                                <span class="timeline-date">Feb 2026</span>
+                                <h4>First Prototype</h4>
+                                <p>Building the core architecture using vanilla technologies.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item reveal-element">
+                            <div class="timeline-node"></div>
+                            <div class="timeline-content glass-card">
+                                <span class="timeline-date">Mar 2026</span>
+                                <h4>SaaS UI Launch</h4>
+                                <p>Introducing the futuristic purple design system.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item reveal-element">
+                            <div class="timeline-node"></div>
+                            <div class="timeline-content glass-card">
+                                <span class="timeline-date">Apr 2026</span>
+                                <h4>Pod.ai Integration</h4>
+                                <p>Seamless real-time synchronization with institutional data.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item reveal-element">
+                            <div class="timeline-node"></div>
+                            <div class="timeline-content glass-card highlight">
+                                <span class="timeline-date">May 2026</span>
+                                <h4>TrackTaps AI Launch</h4>
+                                <p>A revolutionary AI assistant integrated for student help.</p>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section class="vision-section">
-                    <h2 class="section-title reveal-element">Features & <span class="text-gradient">Vision</span></h2>
-                    <div class="vision-grid">
-                        <div class="vision-card glass-card reveal-element reveal-stagger-1">
-                            <span class="vision-icon">📡</span>
-                            <h4>Sync Engine</h4>
-                            <p>Seamlessly connects with Pod.ai to fetch real-time data automatically.</p>
+                <!-- Core Team Spotlight -->
+                <section class="team-section-cinematic">
+                    <h2 class="section-title reveal-element">Meet the <span class="text-gradient">Visionaries</span></h2>
+                    <div class="team-grid-cinematic">
+                        <!-- Mustansir -->
+                        <div class="team-card-premium glass-card reveal-element tilt-card" data-tilt>
+                            <div class="card-glow"></div>
+                            <div class="dev-avatar reveal-avatar">
+                                <span class="avatar-initials">MS</span>
+                                <div class="avatar-glow"></div>
+                            </div>
+                            <h3>Mustansir Sanawad</h3>
+                            <span class="role-badge">Founder & Lead Dev</span>
+                            <p>Architecting the future of student productivity with premium SaaS experiences.</p>
+                            <div class="dev-socials">
+                                <a href="#" class="social-link"><span class="social-icon">💻</span></a>
+                                <a href="#" class="social-link"><span class="social-icon">🔗</span></a>
+                            </div>
                         </div>
-                        <div class="vision-card glass-card reveal-element reveal-stagger-2">
-                            <span class="vision-icon">📈</span>
-                            <h4>Smart Insights</h4>
-                            <p>Predictive analytics to help you stay ahead of shortage warnings.</p>
+
+                        <!-- Pranav -->
+                        <div class="team-card-premium glass-card reveal-element reveal-stagger-1 tilt-card" data-tilt>
+                            <div class="card-glow"></div>
+                            <div class="dev-avatar reveal-avatar" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);">
+                                <span class="avatar-initials">PG</span>
+                                <div class="avatar-glow" style="border-color: rgba(16, 185, 129, 0.5);"></div>
+                            </div>
+                            <h3>Pranav Gohel</h3>
+                            <span class="role-badge">Chief Marketing Officer</span>
+                            <p>Ensuring sustainable growth and strategic alignment for the TrackTaps ecosystem.</p>
+                            <div class="dev-socials">
+                                <a href="#" class="social-link"><span class="social-icon">📧</span></a>
+                                <a href="#" class="social-link"><span class="social-icon">🔗</span></a>
+                            </div>
                         </div>
-                        <div class="vision-card glass-card reveal-element reveal-stagger-3">
-                            <span class="vision-icon">⚡</span>
-                            <h4>Fast Workflow</h4>
-                            <p>Optimized for quick actions so you spend less time tracking and more time learning.</p>
-                        </div>
-                        <div class="vision-card glass-card reveal-element reveal-stagger-4">
-                            <span class="vision-icon">🎨</span>
-                            <h4>Premium UI</h4>
-                            <p>A strictly vanilla, high-performance dark theme inspired by top-tier SaaS tools.</p>
+
+                        <!-- Purandar -->
+                        <div class="team-card-premium glass-card reveal-element reveal-stagger-2 tilt-card" data-tilt>
+                            <div class="card-glow"></div>
+                            <div class="dev-avatar reveal-avatar" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">
+                                <span class="avatar-initials">PY</span>
+                                <div class="avatar-glow" style="border-color: rgba(245, 158, 11, 0.5);"></div>
+                            </div>
+                            <h3>Purandar Yadav</h3>
+                            <span class="role-badge">Marketing Executive</span>
+                            <p>Expanding outreach and building a strong community around smart tracking.</p>
+                            <div class="dev-socials">
+                                <a href="#" class="social-link"><span class="social-icon">📸</span></a>
+                                <a href="#" class="social-link"><span class="social-icon">🔗</span></a>
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                <section class="tech-stack-section">
-                    <h2 class="section-title reveal-element">Built with <span class="text-gradient">Modern Tech</span></h2>
-                    <div class="tech-grid">
-                        <div class="tech-badge reveal-element reveal-stagger-1">HTML5</div>
-                        <div class="tech-badge reveal-element reveal-stagger-2">Vanilla CSS3</div>
-                        <div class="tech-badge reveal-element reveal-stagger-3">JavaScript ES6+</div>
-                        <div class="tech-badge reveal-element reveal-stagger-4">Node.js</div>
-                        <div class="tech-badge reveal-element reveal-stagger-1">Vercel</div>
-                        <div class="tech-badge reveal-element reveal-stagger-2">Pod.ai API</div>
+                <!-- AI Showcase Section -->
+                <section class="ai-showcase-section">
+                    <div class="ai-showcase-content glass-card reveal-element">
+                        <div class="ai-orb-container">
+                            <div class="ai-main-orb"></div>
+                            <div class="orb-ring ring-1"></div>
+                            <div class="orb-ring ring-2"></div>
+                        </div>
+                        <div class="ai-showcase-text">
+                            <h2 class="reveal-element">Meet <span class="text-gradient">TrackTaps AI</span></h2>
+                            <p class="reveal-element reveal-stagger-1">Your intelligent attendance and productivity companion. Get instant insights, skip calculations, and schedule tips in one chat.</p>
+                            <div class="prompt-chips reveal-element reveal-stagger-2">
+                                <span class="chip">"Can I skip tomorrow?"</span>
+                                <span class="chip">"Attendance for 75%?"</span>
+                                <span class="chip">"Analyze my schedule"</span>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                <footer class="about-footer">
-                    <div class="footer-divider"></div>
-                    <div class="footer-content">
-                        <div class="footer-branding">
-                            <img src="assets/logo.png" alt="TrackTaps" style="height: 24px;">
-                            <p>© 2024 TrackTaps. Built with passion for students.</p>
-                        </div>
-                        <div class="footer-links">
-                            <a href="#" onclick="switchView('settings-view')">Support</a>
-                            <a href="#" onclick="switchView('settings-view')">Feedback</a>
-                            <a href="#" onclick="switchView('home-view')">Dashboard</a>
-                        </div>
+                <!-- Tech Stack Section -->
+                <section class="tech-stack-cinematic">
+                    <h2 class="section-title reveal-element">The <span class="text-gradient">Stack</span></h2>
+                    <div class="tech-pills-container">
+                        <div class="tech-pill-float reveal-element reveal-stagger-1">HTML5</div>
+                        <div class="tech-pill-float reveal-element reveal-stagger-2">CSS3</div>
+                        <div class="tech-pill-float reveal-element reveal-stagger-3">JS ES6+</div>
+                        <div class="tech-pill-float reveal-element reveal-stagger-4">Python</div>
+                        <div class="tech-pill-float reveal-element reveal-stagger-1">Vercel</div>
+                        <div class="tech-pill-float reveal-element reveal-stagger-2">FastAPI</div>
+                        <div class="tech-pill-float reveal-element reveal-stagger-3">Pod.ai</div>
+                    </div>
+                </section>
+
+                <footer class="about-footer-cinematic">
+                    <div class="footer-glow"></div>
+                    <div class="footer-logo-cinematic">
+                        <span class="text-gradient">TrackTaps</span>
+                    </div>
+                    <p>Built with passion at Medi-Caps University</p>
+                    <div class="footer-social-icons">
+                        <a href="#" class="social-btn">🐦</a>
+                        <a href="#" class="social-btn">🔗</a>
+                        <a href="#" class="social-btn">💻</a>
+                    </div>
+                    <div class="footer-bottom-line">
+                        <span>&copy; 2026 TrackTaps. All rights reserved.</span>
                     </div>
                 </footer>
             </div>

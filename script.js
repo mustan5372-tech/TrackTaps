@@ -1387,8 +1387,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeAttendanceModal(); });
     if (subjectModal) subjectModal.addEventListener('click', (e) => { if (e.target === subjectModal) subjectModal.classList.remove('active'); });
 
-    // --- Reveal Animations Logic ---
-    const initRevealAnimations = () => {
+    // --- Cinematic Interactions & Reveal Animations ---
+    const initCinematicInteractions = () => {
+        // 1. Reveal Animations with Stat Counting
         const revealOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -1398,19 +1399,82 @@ document.addEventListener('DOMContentLoaded', () => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('element-revealed');
-                    // Once revealed, no need to observe anymore
+                    
+                    // Trigger stat counter if it's a stat card
+                    if (entry.target.classList.contains('stat-card')) {
+                        const numEl = entry.target.querySelector('.stat-number');
+                        if (numEl) animateValue(numEl);
+                    }
+                    
                     revealObserver.unobserve(entry.target);
                 }
             });
         }, revealOptions);
 
-        const revealElements = document.querySelectorAll('.reveal-element, .reveal-avatar');
+        const revealElements = document.querySelectorAll('.reveal-element, .reveal-avatar, .stat-card, .timeline-item');
         revealElements.forEach(el => {
-            // Remove the revealed class in case it was there from a previous session/refresh
             el.classList.remove('element-revealed');
             revealObserver.observe(el);
         });
+
+        // 2. Stat Counter Logic
+        function animateValue(obj) {
+            const target = parseInt(obj.getAttribute('data-target'));
+            let start = 0;
+            const duration = 2000;
+            const stepTime = Math.abs(Math.floor(duration / target));
+            
+            const timer = setInterval(() => {
+                start += Math.ceil(target / 100);
+                if (start >= target) {
+                    obj.textContent = target.toLocaleString() + (obj.textContent.includes('%') ? '%' : '');
+                    clearInterval(timer);
+                } else {
+                    obj.textContent = start.toLocaleString();
+                }
+            }, 20);
+        }
+
+        // 3. 3D Tilt & Mouse Glow Effect for Team Cards
+        const tiltCards = document.querySelectorAll('.tilt-card');
+        tiltCards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const xPct = (x / rect.width - 0.5) * 20; // 20deg max tilt
+                const yPct = (y / rect.height - 0.5) * -20;
+                
+                card.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
+                card.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
+                card.style.transform = `perspective(1000px) rotateX(${yPct}deg) rotateY(${xPct}deg) translateY(-10px)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+            });
+        });
+
+        // 4. Cursor Aura Effect
+        const cursorAura = document.createElement('div');
+        cursorAura.className = 'cursor-aura';
+        document.body.appendChild(cursorAura);
+
+        document.addEventListener('mousemove', (e) => {
+            // Only show aura in About section or generally if premium feel is wanted
+            if (document.getElementById('about-view').style.display !== 'none') {
+                cursorAura.style.opacity = '1';
+                cursorAura.style.left = `${e.clientX}px`;
+                cursorAura.style.top = `${e.clientY}px`;
+            } else {
+                cursorAura.style.opacity = '0';
+            }
+        });
     };
+
+    // Replace the old call with the new cinematic init
+    const initRevealAnimations = initCinematicInteractions;
 
     // --- TrackTaps AI Assistant Logic ---
     const aiFab = document.getElementById('ai-fab');
