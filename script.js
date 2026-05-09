@@ -2236,35 +2236,133 @@ document.addEventListener('DOMContentLoaded', () => {
         if (file && file.type.startsWith('image/')) handleAIFile(file);
     });
 
-    const handleAIFile = (file) => {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const base64Image = e.target.result;
-            aiUploadArea.style.display = 'none';
-            aiProcessingState.style.display = 'block';
+    const handleAIFile = async (file) => {
+        aiUploadArea.style.display = 'none';
+        aiProcessingState.style.display = 'block';
+        const progressText = aiProcessingState.querySelector('p');
+        const detailText = aiProcessingState.querySelector('span');
+        const progressBar = document.getElementById('ocr-progress-bar');
+        
+        try {
+            console.log('[OCR] Starting Tesseract.js processing...');
+            progressText.textContent = 'Initializing AI Engine...';
+            if (progressBar) progressBar.style.width = '5%';
             
-            try {
-                // Pointing to the Vercel function path
-                const response = await fetch('/api/ai_import', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: base64Image })
-                });
-                
-                const result = await response.json();
-                if (result.success) {
-                    renderAIDetected(result.subjects);
-                } else {
-                    throw new Error(result.error || 'AI failed to process image');
+            // 1. Create Tesseract Worker
+            const worker = await Tesseract.createWorker('eng', 1, {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        const progress = Math.round(m.progress * 100);
+                        progressText.textContent = `Analyzing Screenshot: ${progress}%`;
+                        detailText.textContent = 'Extracting academic patterns...';
+                        if (progressBar) progressBar.style.width = `${progress}%`;
+                    }
                 }
-            } catch (err) {
-                console.error('[AI Import] Error:', err);
-                showToast('AI Detection Failed: ' + err.message);
-                aiUploadArea.style.display = 'flex';
-                aiProcessingState.style.display = 'none';
+            });
+
+            // 2. Perform OCR
+            const { data: { text } } = await worker.recognize(file);
+            await worker.terminate();
+            
+            console.log('[OCR] Raw Text:', text);
+
+            // 3. Intelligent Parsing Logic
+            const subjects = parseSubjectsFromText(text);
+            
+            if (subjects.length > 0) {
+                renderAIDetected(subjects);
+                showToast(`Detected ${subjects.length} subjects!`);
+            } else {
+                throw new Error('No valid subjects detected. Try a clearer screenshot.');
             }
-        };
-        reader.readAsDataURL(file);
+
+        } catch (err) {
+            console.error('[OCR] Error:', err);
+            showToast('AI Detection Failed: ' + err.message);
+            aiUploadArea.style.display = 'flex';
+            aiProcessingState.style.display = 'none';
+        }
+    };
+
+    const parseSubjectsFromText = (text) => {
+        console.log('[OCR] --- Pipeline Started ---');
+        console.log('[OCR] Raw Input Length:', text.length);
+        
+        // 1. Global Pre-Cleaning (Search & Destroy)
+        let cleaned = text;
+
+        // A. Remove Subject Codes (e.g., AU3CO58, EN3HS04, EN3NG10, AU3EL31)
+        // Rule: 2+ Uppercase letters followed by numbers and optional characters
+        const codeRegex = /[A-Z]{2,}\d+[A-Z]*\d*/g;
+        const codesFound = cleaned.match(codeRegex) || [];
+        console.log('[OCR] Codes Detected & Removed:', codesFound);
+        cleaned = cleaned.replace(codeRegex, ' ');
+
+        // B. Remove Suffixes: (P), (T), (Q), (Theory), (Practical)
+        cleaned = cleaned.replace(/\((P|T|Q|THEORY|PRACTICAL)\)/gi, ' ');
+
+        // C. Remove Metadata Labels (Academic Noise)
+        const noise = [
+            'CORE', 'ELECTIVE', 'NON GRADIAL', 'ENGINEERING SCIENCE', 'HUMANITIES',
+            'CREDIT', 'GRADE', 'CATEGORY', 'OPEN ELECTIVE', 'SEMESTER', 'GROUP',
+            'LECTURE', 'LAB', 'YEAR', 'TIME', 'DATE', 'ROOM', 'TRACKTAPS', 'UNIVERSITY',
+            'PRESENT', 'ABSENT', 'LATE', 'TOTAL', 'ATTENDANCE', 'MONDAY', 'TUESDAY',
+            'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY', 'SAVE', 'SETTINGS'
+        ];
+        noise.forEach(kw => {
+            const re = new RegExp(`\\b${kw}\\b`, 'gi');
+            cleaned = cleaned.replace(re, ' ');
+        });
+
+        // 2. Split into Lines and Phrases
+        // We split by newlines, commas, semicolons, and pipes
+        const chunks = cleaned.split(/\n|,|;|\|/);
+        let subjects = [];
+
+        chunks.forEach(chunk => {
+            // Further split by multiple spaces (typical in table-based OCR)
+            const phrases = chunk.split(/\s{2,}/);
+            
+            phrases.forEach(phrase => {
+                let trimmed = phrase.trim()
+                    .replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '') // Strip leading/trailing symbols
+                    .replace(/\s+/g, ' '); // Normalize spaces
+
+                // Validation Rules:
+                // - Length > 3
+                // - Not just numbers or symbols
+                // - Contains at least 2 letters
+                // - Does not match the code pattern (final safety check)
+                if (trimmed.length > 3 && 
+                    !/^\d+$/.test(trimmed) && 
+                    (trimmed.match(/[a-zA-Z]/g) || []).length >= 2 &&
+                    !codeRegex.test(trimmed)) {
+                    
+                    subjects.push(trimmed);
+                }
+            });
+        });
+
+        // 3. Normalization & Deduplication
+        const normalized = subjects.map(s => {
+            return s.split(' ')
+                .map(word => {
+                    // Keep small academic suffixes/roman numerals uppercase (e.g. II, EV, CNC)
+                    if (word.length <= 3 && /^[A-Z]+$/.test(word)) return word.toUpperCase();
+                    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+                })
+                .join(' ');
+        });
+
+        // Filter out short junk and deduplicate
+        const finalResults = [...new Set(normalized)]
+            .filter(s => s.length > 4)
+            .sort();
+
+        console.log('[OCR] Final Extracted Subjects:', finalResults);
+        console.log('[OCR] --- Pipeline Finished ---');
+        
+        return finalResults;
     };
 
     const renderAIDetected = (subjects) => {
@@ -2275,13 +2373,18 @@ document.addEventListener('DOMContentLoaded', () => {
         detectedList.innerHTML = '';
         subjects.forEach((sub) => {
             const chip = document.createElement('div');
-            chip.className = 'suggestion-chip';
+            chip.className = 'suggestion-chip editable-chip';
             chip.style.display = 'flex';
             chip.style.alignItems = 'center';
             chip.style.gap = '8px';
+            chip.style.padding = '8px 12px';
+            chip.style.background = 'rgba(139, 92, 246, 0.1)';
+            chip.style.borderRadius = '10px';
+            chip.style.border = '1px solid rgba(139, 92, 246, 0.2)';
+            
             chip.innerHTML = `
-                <span>${sub}</span>
-                <span style="cursor:pointer; opacity: 0.6;" onclick="this.parentElement.remove()">×</span>
+                <span contenteditable="true" style="outline: none; color: #f8fafc; font-weight: 600;">${sub}</span>
+                <span style="cursor:pointer; opacity: 0.6; font-size: 16px; font-weight: bold;" onclick="this.parentElement.remove()">×</span>
             `;
             detectedList.appendChild(chip);
         });
