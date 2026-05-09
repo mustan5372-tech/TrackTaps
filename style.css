@@ -3034,6 +3034,43 @@ section {
 }
 
 /* Team Cards Refined */
+/* Team Intro Refinements */
+.team-intro-container {
+    max-width: 800px;
+    margin: 0 auto 64px;
+    text-align: center;
+}
+
+.team-description-shared {
+    font-size: 18px;
+    color: #94a3b8;
+    line-height: 1.7;
+    margin-bottom: 24px;
+}
+
+.team-tagline-wrapper {
+    margin-bottom: 32px;
+}
+
+.tagline-pill {
+    padding: 6px 16px;
+    background: rgba(124, 58, 237, 0.1);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #a78bfa;
+    font-style: italic;
+}
+
+.team-glow-divider {
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #7c3aed, transparent);
+    margin: 40px auto 0;
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.5);
+}
+
 .team-grid-cinematic {
     gap: 24px;
 }
