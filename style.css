@@ -2525,10 +2525,17 @@ body.no-glass * {
     box-shadow: 0 12px 40px rgba(124, 58, 237, 0.5);
 }
 
-.ai-icon {
-    font-size: 28px;
+.ai-icon, .ai-fab-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
     position: relative;
     z-index: 1;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2));
+}
+
+.ai-fab-logo {
+    border-radius: 50%;
 }
 
 .ai-chat-window {
