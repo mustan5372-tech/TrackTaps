@@ -3498,3 +3498,153 @@ section {
         gap: 12px;
     }
 }
+
+/* --- Bunk Simulator Styles --- */
+.simulator-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.sim-mode-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.sim-mode-btn.active {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+#sim-range {
+    height: 6px;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.1);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+#sim-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #8b5cf6;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+    transition: all 0.2s;
+}
+
+#sim-range::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+@media (max-width: 768px) {
+    .simulator-body {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 16px !important;
+    }
+    
+    .sim-result-card {
+        padding: 20px !important;
+    }
+    
+    #sim-result-perc {
+        font-size: 36px !important;
+    }
+}
+
+/* --- Achievement Styles --- */
+.achievement-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.achievement-card.locked {
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+.achievement-card:not(.locked) {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.ach-icon {
+    font-size: 32px;
+    transition: transform 0.3s ease;
+}
+
+.achievement-card:not(.locked) .ach-icon {
+    animation: ach-bounce 2s infinite ease-in-out;
+}
+
+.ach-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.ach-desc {
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+@keyframes ach-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* --- Premium Themes --- */
+body.theme-oled {
+    --bg-deep: #000000;
+    --card-bg: rgba(0, 0, 0, 0.8);
+    --primary: #8b5cf6;
+    --glass-border: rgba(139, 92, 246, 0.4);
+    background: #000 !important;
+}
+
+body.theme-oled .dashboard-card {
+    border-color: rgba(139, 92, 246, 0.2);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+}
+
+body.theme-holographic {
+    --bg-deep: #0f172a;
+    --primary: #22d3ee;
+    --primary-light: #818cf8;
+    --glass-border: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
+}
+
+body.theme-holographic::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(34, 211, 238, 0.05), rgba(217, 70, 239, 0.05), rgba(139, 92, 246, 0.05));
+    background-size: 400% 400%;
+    animation: holographic-bg 15s ease infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes holographic-bg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}

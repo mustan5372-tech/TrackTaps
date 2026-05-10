@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isMultiSelectMode = false;
     let timetableData = JSON.parse(localStorage.getItem('tracktaps_timetable')) || [];
     let historyData = JSON.parse(localStorage.getItem('tracktaps_history')) || [];
+    let unlockedAchievements = JSON.parse(localStorage.getItem('tracktaps_achievements')) || [];
     let editingSlotId = null;
     let settingsData = JSON.parse(localStorage.getItem('tracktaps_settings')) || {
         userName: '',
@@ -136,6 +137,50 @@ document.addEventListener('DOMContentLoaded', () => {
         return (currentRate * 100).toFixed(1);
     };
 
+    const calculateStreak = () => {
+        const dates = Object.keys(attendanceData).sort((a, b) => new Date(b) - new Date(a));
+        if (dates.length === 0) return 0;
+
+        let streak = 0;
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        let checkDate = new Date(today);
+        
+        // If no data for today, check yesterday to see if streak is still alive
+        const todayStr = today.toISOString().split('T')[0];
+        if (!attendanceData[todayStr]) {
+            checkDate.setDate(checkDate.getDate() - 1);
+        }
+
+        while (true) {
+            const dateStr = checkDate.toISOString().split('T')[0];
+            const dayData = attendanceData[dateStr];
+
+            if (dayData) {
+                const statuses = Object.values(dayData);
+                // Streak continues if they attended at least one class and missed NONE
+                // Or if it was an "offday" for all subjects
+                const hasPresent = statuses.includes('present');
+                const hasAbsent = statuses.includes('absent');
+                
+                if (hasPresent && !hasAbsent) {
+                    streak++;
+                } else if (!hasPresent && !hasAbsent && statuses.includes('offday')) {
+                    // Off days don't break the streak, but don't increment it? 
+                    // Let's say they don't break it.
+                } else {
+                    break;
+                }
+            } else {
+                // Gap in data breaks the streak (unless it's a weekend, but let's keep it simple for now)
+                break;
+            }
+            checkDate.setDate(checkDate.getDate() - 1);
+        }
+        return streak;
+    };
+
     // --- Core UI Functions ---
     const renderHomeDashboard = () => {
         const heroGreeting = document.getElementById('hero-greeting');
@@ -222,6 +267,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (statSafeSubjects) statSafeSubjects.textContent = safeCount;
         if (statWarningSubjects) statWarningSubjects.textContent = warningCount;
         if (statCriticalSubjects) statCriticalSubjects.textContent = criticalCount;
+
+        // Streak logic
+        const currentStreak = calculateStreak();
+        const streakPill = document.getElementById('stat-streak');
+        if (streakPill) {
+            streakPill.textContent = currentStreak;
+            const streakContainer = streakPill.closest('.stat-pill');
+            if (currentStreak > 0) {
+                streakContainer.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)';
+                streakContainer.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+            }
+        }
 
         // 3. Today's Schedule
         if (scheduleList) {
@@ -992,6 +1049,267 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="summary-value" style="color: #ef4444;">${criticalCount}</span>
             </div>
         `;
+
+        initBunkSimulator();
+        renderAchievements();
+        renderAttendanceHeatmap();
+        renderRadarChart();
+    };
+
+    let radarChartInstance = null;
+
+    const renderRadarChart = () => {
+        const ctx = document.getElementById('radarChart');
+        if (!ctx) return;
+
+        if (radarChartInstance) {
+            radarChartInstance.destroy();
+        }
+
+        if (subjectsData.length < 3) {
+            // Radar chart needs at least 3 subjects to look good
+            ctx.style.display = 'none';
+            ctx.parentElement.innerHTML = '<p style="color: #64748b; font-size: 13px; text-align: center; padding-top: 100px;">Add at least 3 subjects for radar analysis.</p>';
+            return;
+        }
+
+        const labels = subjectsData.map(s => s.name);
+        const data = subjectsData.map(s => {
+            const perc = s.total > 0 ? (s.attended / s.total * 100) : 0;
+            return perc;
+        });
+
+        radarChartInstance = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Attendance %',
+                    data: data,
+                    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                    borderColor: 'rgba(139, 92, 246, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(139, 92, 246, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        pointLabels: { color: '#94a3b8', font: { size: 10 } },
+                        ticks: { display: false, stepSize: 20 },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    };
+
+    const renderAttendanceHeatmap = () => {
+        const container = document.getElementById('heatmap-container');
+        if (!container) return;
+
+        const weeks = 12; // Show last 12 weeks
+        const days = 7;
+        const cellSize = 12;
+        const cellGap = 4;
+        
+        let svg = `<svg width="${weeks * (cellSize + cellGap)}" height="${days * (cellSize + cellGap)}">`;
+        
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Start from 12 weeks ago (Sunday)
+        let startDate = new Date(today);
+        startDate.setDate(today.getDate() - (weeks * 7) + (6 - today.getDay()));
+        
+        for (let w = 0; w < weeks; w++) {
+            for (let d = 0; d < days; d++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + (w * 7) + d);
+                
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const dayData = attendanceData[dateStr];
+                
+                let intensity = 0.05;
+                if (dayData) {
+                    const count = Object.keys(dayData).length;
+                    intensity = Math.min(1, 0.3 + (count * 0.2));
+                }
+                
+                const x = w * (cellSize + cellGap);
+                const y = d * (cellSize + cellGap);
+                const color = dayData ? `rgba(139, 92, 246, ${intensity})` : 'rgba(255,255,255,0.05)';
+                const title = `${dateStr}: ${dayData ? Object.keys(dayData).length + ' classes' : 'No data'}`;
+                
+                svg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2" fill="${color}">
+                            <title>${title}</title>
+                        </rect>`;
+            }
+        }
+        
+        svg += '</svg>';
+        container.innerHTML = svg;
+    };
+
+    const checkAchievements = () => {
+        const streak = calculateStreak();
+        const totalHistory = historyData.length;
+        let newlyUnlocked = false;
+
+        const unlock = (id) => {
+            if (!unlockedAchievements.includes(id)) {
+                unlockedAchievements.push(id);
+                newlyUnlocked = true;
+                showToast(`🏆 Achievement Unlocked: ${getAchievementName(id)}!`);
+            }
+        };
+
+        if (totalHistory >= 1) unlock('ach-1');
+        if (streak >= 3) unlock('ach-2');
+        if (streak >= 7) unlock('ach-4');
+
+        // Subject specific
+        subjectsData.forEach(s => {
+            const perc = s.total > 0 ? (s.attended / s.total * 100) : 0;
+            if (s.name.toLowerCase().includes('math') && perc === 100 && s.total >= 5) unlock('ach-3');
+            if (perc >= 75 && s.total >= 10 && historyData.some(h => h.subjectId == s.id && h.status === 'present')) {
+                // Check for comeback (was critical now safe)
+                // This is complex, but let's assume if safe and total classes are high.
+            }
+        });
+
+        if (newlyUnlocked) {
+            localStorage.setItem('tracktaps_achievements', JSON.stringify(unlockedAchievements));
+            renderAchievements();
+        }
+    };
+
+    const getAchievementName = (id) => {
+        const names = {
+            'ach-1': 'Fresh Start',
+            'ach-2': '3-Day Streak',
+            'ach-3': 'Maths Master',
+            'ach-4': 'Perfect Week',
+            'ach-5': 'Great Comeback',
+            'ach-6': 'Night Owl'
+        };
+        return names[id] || 'New Achievement';
+    };
+
+    const renderAchievements = () => {
+        const countEl = document.getElementById('achievement-count');
+        if (countEl) countEl.textContent = `${unlockedAchievements.length} / 6 Unlocked`;
+
+        for (let i = 1; i <= 6; i++) {
+            const el = document.getElementById(`ach-${i}`);
+            if (el) {
+                if (unlockedAchievements.includes(`ach-${i}`)) {
+                    el.classList.remove('locked');
+                } else {
+                    el.classList.add('locked');
+                }
+            }
+        }
+    };
+
+    // --- Bunk Simulator Logic ---
+    let simMode = 'miss'; // 'miss' or 'attend'
+
+    const initBunkSimulator = () => {
+        const select = document.getElementById('sim-subject-select');
+        const range = document.getElementById('sim-range');
+        const missBtn = document.getElementById('sim-mode-miss');
+        const attendBtn = document.getElementById('sim-mode-attend');
+
+        if (!select || !range) return;
+
+        // Populate dropdown
+        select.innerHTML = subjectsData.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        if (subjectsData.length === 0) {
+            select.innerHTML = '<option value="">No subjects added</option>';
+        }
+
+        // Mode toggles
+        missBtn.onclick = () => {
+            simMode = 'miss';
+            missBtn.style.background = '#ef4444';
+            missBtn.style.color = 'white';
+            attendBtn.style.background = 'transparent';
+            attendBtn.style.color = '#94a3b8';
+            updateBunkSimulation();
+        };
+
+        attendBtn.onclick = () => {
+            simMode = 'attend';
+            attendBtn.style.background = '#10b981';
+            attendBtn.style.color = 'white';
+            missBtn.style.background = 'transparent';
+            missBtn.style.color = '#94a3b8';
+            updateBunkSimulation();
+        };
+
+        // Listeners
+        select.onchange = updateBunkSimulation;
+        range.oninput = (e) => {
+            document.getElementById('sim-count-display').textContent = e.target.value;
+            updateBunkSimulation();
+        };
+
+        updateBunkSimulation();
+    };
+
+    const updateBunkSimulation = () => {
+        const subjectId = document.getElementById('sim-subject-select').value;
+        const count = parseInt(document.getElementById('sim-range').value);
+        const resultPercEl = document.getElementById('sim-result-perc');
+        const adviceEl = document.getElementById('sim-advice-text');
+
+        const subject = subjectsData.find(s => s.id == subjectId);
+        if (!subject) {
+            resultPercEl.textContent = '--%';
+            adviceEl.textContent = 'Add subjects to start simulating.';
+            return;
+        }
+
+        let projectedPerc = 0;
+        const criteria = subject.criteria || 75;
+
+        if (simMode === 'attend') {
+            projectedPerc = ((subject.attended + count) / (subject.total + count)) * 100;
+        } else {
+            projectedPerc = (subject.attended / (subject.total + count)) * 100;
+        }
+
+        resultPercEl.textContent = `${projectedPerc.toFixed(1)}%`;
+        
+        // Dynamic Color
+        if (projectedPerc >= criteria) {
+            resultPercEl.style.color = '#10b981';
+            adviceEl.innerHTML = simMode === 'miss' 
+                ? `You can safely miss ${count} classes. You'll still be above your ${criteria}% goal. ✨`
+                : `Attending ${count} more classes will boost your standing significantly! 🚀`;
+        } else if (projectedPerc >= (criteria - 5)) {
+            resultPercEl.style.color = '#f59e0b';
+            adviceEl.innerHTML = simMode === 'miss'
+                ? `Warning: Missing ${count} classes will put you at risk of falling below ${criteria}%. ⚠️`
+                : `Even after ${count} classes, you'll still be close to the limit. Keep going! ⏳`;
+        } else {
+            resultPercEl.style.color = '#ef4444';
+            adviceEl.innerHTML = simMode === 'miss'
+                ? `Critical: Missing ${count} classes will drop you to ${projectedPerc.toFixed(1)}%. Avoid this! ❌`
+                : `You need more than ${count} classes to reach your ${criteria}% goal. Don't give up! 🩹`;
+        }
     };
 
     const updateHomeBadges = (overall, attended, total, criticals) => {
@@ -1408,6 +1726,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('tracktaps_subjects', JSON.stringify(subjectsData));
         localStorage.setItem('tracktaps_history', JSON.stringify(historyData));
 
+        checkAchievements();
         renderCalendar();
         renderSubjects();
         renderInsights();
@@ -1789,7 +2108,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const applyTheme = (theme) => {
         // Remove old theme classes
-        const themeClasses = ['theme-purple', 'theme-midnight', 'theme-neon', 'theme-ocean', 'theme-sunset', 'theme-emerald'];
+        const themeClasses = ['theme-purple', 'theme-midnight', 'theme-neon', 'theme-ocean', 'theme-sunset', 'theme-emerald', 'theme-oled', 'theme-holographic'];
         themeClasses.forEach(cls => document.body.classList.remove(cls));
 
         document.body.classList.add(`theme-${theme}`);
