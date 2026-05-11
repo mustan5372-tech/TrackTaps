@@ -26,6 +26,8 @@ class PodAiService {
    */
   static async login(username, password) {
     try {
+      console.log('[Pod.ai] Starting login for:', username);
+
       const response = await fetch(POD_AI_CONFIG.loginUrl, {
         method: 'POST',
         headers: {
@@ -37,19 +39,42 @@ class PodAiService {
         body: JSON.stringify({
           username,
           password
-        })
+        }),
+        credentials: 'include' // Include cookies for session-based auth
+      });
+
+      console.log('[Pod.ai] Login response status:', response.status);
+      console.log('[Pod.ai] Login response headers:', {
+        contentType: response.headers.get('content-type'),
+        setCookie: response.headers.get('set-cookie')
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Pod.ai] Login failed:', response.statusText, errorText.substring(0, 200));
         throw new Error(`Authentication failed: ${response.statusText}`);
       }
 
+      // Check content type
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('[Pod.ai] Invalid content type from login:', contentType);
+        const text = await response.text();
+        console.error('[Pod.ai] Response body:', text.substring(0, 200));
+        throw new Error(`Invalid response type: ${contentType}`);
+      }
+
       const data = await response.json();
+      console.log('[Pod.ai] Login response data keys:', Object.keys(data));
+
       const authToken = data.auth_token;
 
       if (!authToken) {
+        console.error('[Pod.ai] No auth token in response');
         throw new Error('No auth token received from Pod.ai');
       }
+
+      console.log('[Pod.ai] Auth token received:', authToken.substring(0, 20) + '...');
 
       // Store credentials securely
       localStorage.setItem(STORAGE_KEYS.authToken, authToken);
@@ -61,6 +86,8 @@ class PodAiService {
         username: username
       }));
 
+      console.log('[Pod.ai] Credentials stored successfully');
+
       return {
         success: true,
         message: 'Successfully connected to Pod.ai',
@@ -70,7 +97,8 @@ class PodAiService {
       console.error('Pod.ai login error:', error);
       return {
         success: false,
-        message: error.message || 'Failed to authenticate with Pod.ai'
+        message: error.message || 'Failed to authenticate with Pod.ai',
+        error: error.toString()
       };
     }
   }
@@ -153,11 +181,7 @@ class PodAiService {
         throw new Error('Not connected to Pod.ai');
       }
 
-      const headers = {
-        'Authorization': `Token ${token}`,
-        'Content-Type': 'application/json',
-        'X-College-Id': POD_AI_CONFIG.collegeId,
-      };
+      console.log('[Pod.ai] Starting attendance fetch with token:', token.substring(0, 20) + '...');
 
       const allActivities = [];
       let got401 = false;
@@ -177,31 +201,82 @@ class PodAiService {
             url.searchParams.append('include_status_stats', 'true');
             url.searchParams.append('page', page);
 
-            const response = await fetch(url.toString(), { headers });
+            console.log(`[Pod.ai] Fetching ${status} page ${page}:`, url.toString());
+
+            const response = await fetch(url.toString(), {
+              method: 'GET',
+              headers: {
+                'Authorization': `Token ${token}`,
+                'Content-Type': 'application/json',
+                'X-College-Id': POD_AI_CONFIG.collegeId,
+                'Origin': 'https://medicaps.pod.ai',
+                'Referer': 'https://medicaps.pod.ai/',
+              },
+              credentials: 'include' // Include cookies for session-based auth
+            });
+
+            console.log(`[Pod.ai] Response status: ${response.status}`);
+            console.log(`[Pod.ai] Response headers:`, {
+              contentType: response.headers.get('content-type'),
+              contentLength: response.headers.get('content-length')
+            });
 
             if (response.status === 401) {
+              console.warn('[Pod.ai] Got 401 - attempting token refresh');
               // Try to refresh token
               const refreshed = await this.refreshToken();
               if (refreshed) {
+                console.log('[Pod.ai] Token refreshed, retrying...');
                 // Retry with new token
-                const newHeaders = {
-                  ...headers,
-                  'Authorization': `Token ${this.getAuthToken()}`
-                };
-                const retryResponse = await fetch(url.toString(), { headers: newHeaders });
+                const newToken = this.getAuthToken();
+                const retryResponse = await fetch(url.toString(), {
+                  method: 'GET',
+                  headers: {
+                    'Authorization': `Token ${newToken}`,
+                    'Content-Type': 'application/json',
+                    'X-College-Id': POD_AI_CONFIG.collegeId,
+                    'Origin': 'https://medicaps.pod.ai',
+                    'Referer': 'https://medicaps.pod.ai/',
+                  },
+                  credentials: 'include'
+                });
                 if (!retryResponse.ok) {
+                  console.error('[Pod.ai] Retry failed with status:', retryResponse.status);
                   got401 = true;
                   break;
                 }
               } else {
+                console.error('[Pod.ai] Token refresh failed');
                 got401 = true;
                 break;
               }
             }
 
-            if (!response.ok) break;
+            if (!response.ok) {
+              console.error(`[Pod.ai] Response not OK: ${response.status} ${response.statusText}`);
+              // Check if response is HTML (login page)
+              const contentType = response.headers.get('content-type');
+              if (contentType && contentType.includes('text/html')) {
+                throw new Error('Received HTML instead of JSON - likely redirected to login page');
+              }
+              break;
+            }
+
+            // Check content type
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+              console.error('[Pod.ai] Invalid content type:', contentType);
+              const text = await response.text();
+              console.error('[Pod.ai] Response body:', text.substring(0, 200));
+              throw new Error(`Invalid content type: ${contentType}`);
+            }
 
             const data = await response.json();
+            console.log('[Pod.ai] Parsed response:', {
+              resultsCount: data.results?.length || 0,
+              pagination: data.pagination
+            });
+
             const results = data.results || [];
             const pagination = data.pagination || {};
 
@@ -220,10 +295,11 @@ class PodAiService {
             const currentPage = pagination.current_page_number || 1;
             const lastPage = pagination.last_page_number || 1;
             hasMore = currentPage < lastPage;
+            console.log(`[Pod.ai] Page ${currentPage}/${lastPage}, hasMore: ${hasMore}`);
             page++;
           } catch (error) {
             console.error('Error fetching page:', error);
-            break;
+            throw error;
           }
         }
       }
@@ -232,8 +308,12 @@ class PodAiService {
         throw new Error('Session expired. Please reconnect to Pod.ai');
       }
 
+      console.log('[Pod.ai] Total activities fetched:', allActivities.length);
+
       // Remove duplicates and sort
       const uniqueActivities = this.deduplicateActivities(allActivities);
+      console.log('[Pod.ai] Unique activities after dedup:', uniqueActivities.length);
+
       return {
         success: true,
         data: uniqueActivities,
@@ -244,7 +324,8 @@ class PodAiService {
       return {
         success: false,
         message: error.message || 'Failed to fetch attendance data',
-        data: []
+        data: [],
+        error: error.toString()
       };
     }
   }
