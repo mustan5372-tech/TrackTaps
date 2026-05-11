@@ -24,13 +24,19 @@ function Subjects() {
     if (editingIdx !== null) {
       newSubjects[editingIdx] = { ...formData };
     } else {
-      newSubjects.push({ ...formData, attendance: 0, present: 0, total: 0 });
+      newSubjects.push({ 
+        ...formData, 
+        attendance: 0, 
+        present: 0, 
+        total: 0,
+        color: formData.color || '#8b5cf6'
+      });
     }
 
     setSubjects(newSubjects);
     localStorage.setItem('tracktaps_subjects', JSON.stringify(newSubjects));
     setShowModal(false);
-    setFormData({ name: '', criteria: 75 });
+    setFormData({ name: '', criteria: 75, color: '#8b5cf6' });
     setEditingIdx(null);
   };
 
@@ -43,7 +49,7 @@ function Subjects() {
 
   const handleEditSubject = (idx) => {
     setEditingIdx(idx);
-    setFormData(subjects[idx]);
+    setFormData({ ...subjects[idx], color: subjects[idx].color || '#8b5cf6' });
     setShowModal(true);
   };
 
@@ -184,6 +190,27 @@ function Subjects() {
                   }}
                   placeholder="e.g., Mathematics"
                 />
+              </div>
+
+              <div>
+                <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Color</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444'].map(color => (
+                    <button
+                      key={color}
+                      onClick={() => setFormData({ ...formData, color })}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        background: color,
+                        border: formData.color === color ? '3px solid #f8fafc' : '1px solid rgba(255,255,255,0.2)',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
 
               <div>
