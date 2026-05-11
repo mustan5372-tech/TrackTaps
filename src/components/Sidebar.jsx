@@ -19,7 +19,7 @@ function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-branding">
         <Link to="/">
-          <img src="assets/logo.png" alt="TrackTaps Logo" className="sidebar-logo" />
+          <img src="/assets/logo.png" alt="TrackTaps Logo" className="sidebar-logo" />
         </Link>
       </div>
       <nav className="nav-menu">
