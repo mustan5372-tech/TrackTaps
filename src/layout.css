@@ -44,6 +44,7 @@
     width: 100%;
     max-width: 100%;
     min-height: 100%;
+    padding: 32px;
 }
 
 /* Mobile Header - Sticky Top */
@@ -82,45 +83,6 @@
     color: #a78bfa;
 }
 
-/* Chatbot Wrapper - CRITICAL: Never Block Clicks */
-.chatbot-wrapper {
-    position: fixed;
-    inset: 0;
-    pointer-events: none !important;
-    z-index: 1500;
-}
-
-/* Chatbot Button & Window - Allow Clicks */
-.ai-fab,
-.ai-chat-window {
-    pointer-events: auto !important;
-}
-
-.ai-fab {
-    position: fixed;
-    bottom: 32px;
-    right: 32px;
-    z-index: 1000;
-}
-
-.ai-chat-window {
-    position: fixed;
-    bottom: 110px;
-    right: 32px;
-    z-index: 999;
-}
-
-.ai-chat-window.active {
-    pointer-events: auto;
-}
-
-/* Hide Chatbot on Settings/About */
-.chatbot-wrapper.hidden-on-page {
-    opacity: 0.3;
-    pointer-events: none !important;
-    transform: scale(0.8);
-}
-
 /* Shortcut Cards - MUST USE LINKS */
 .shortcut-card {
     text-decoration: none;
@@ -147,20 +109,10 @@
         display: flex;
     }
 
-    .ai-fab {
-        bottom: 100px;
-        right: 20px;
-        z-index: 1500;
-    }
-
-    .ai-chat-window {
-        bottom: 165px;
-        right: 15px;
-        z-index: 1501;
+    .main-content {
+        padding: 16px;
     }
 }
-
-
 
 /* Link Styling - Remove default underlines */
 a {

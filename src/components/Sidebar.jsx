@@ -18,8 +18,19 @@ function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-branding">
-        <Link to="/">
-          <img src="/assets/logo.png" alt="TrackTaps Logo" className="sidebar-logo" />
+        <Link to="/" className="logo-link">
+          <img 
+            src="/assets/logo.png" 
+            alt="TrackTaps Logo" 
+            className="sidebar-logo"
+            style={{
+              width: '140px',
+              height: 'auto',
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 0 15px rgba(139, 92, 246, 0.3))',
+              transition: 'all 0.3s ease'
+            }}
+          />
         </Link>
       </div>
       <nav className="nav-menu">
