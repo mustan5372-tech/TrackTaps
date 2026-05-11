@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PodAiService from '../services/podaiService';
 
 function Subjects() {
   const [subjects, setSubjects] = useState([]);
@@ -8,10 +9,16 @@ function Subjects() {
     name: '',
     criteria: 75
   });
+  const [podaiConnected, setPodaiConnected] = useState(false);
+  const [podaiSyncing, setPodaiSyncing] = useState(false);
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('tracktaps_subjects') || '[]');
     setSubjects(saved);
+    
+    // Check Pod.ai connection status
+    const connected = PodAiService.isConnected();
+    setPodaiConnected(connected);
   }, []);
 
   const handleSaveSubject = () => {
@@ -64,11 +71,37 @@ function Subjects() {
     return '#ef4444';
   };
 
+  const handlePodaiSync = async () => {
+    setPodaiSyncing(true);
+    const result = await PodAiService.syncSubjects();
+    
+    if (result.success) {
+      // Reload subjects from localStorage
+      const updated = JSON.parse(localStorage.getItem('tracktaps_subjects') || '[]');
+      setSubjects(updated);
+      alert(`✅ ${result.message}`);
+    } else {
+      alert(`❌ Sync failed: ${result.message}`);
+    }
+    
+    setPodaiSyncing(false);
+  };
+
   return (
     <div className="subjects-view">
       <header className="view-header">
         <h2>My Subjects</h2>
         <div style={{ display: 'flex', gap: '12px' }}>
+          {podaiConnected && (
+            <button 
+              onClick={handlePodaiSync}
+              disabled={podaiSyncing}
+              className="action-btn present" 
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', padding: '10px 16px', opacity: podaiSyncing ? 0.6 : 1, cursor: podaiSyncing ? 'not-allowed' : 'pointer' }}
+            >
+              <span>{podaiSyncing ? '🔄' : '🔗'}</span> {podaiSyncing ? 'Syncing...' : 'Sync Pod.ai'}
+            </button>
+          )}
           <button id="ai-import-trigger" className="action-btn present" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', padding: '10px 16px' }}>
             <span>✨</span> AI Import
           </button>

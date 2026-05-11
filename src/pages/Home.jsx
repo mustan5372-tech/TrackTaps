@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import PodAiService from '../services/podaiService';
 
 function Home() {
   const [stats, setStats] = useState({
@@ -17,6 +18,19 @@ function Home() {
     // Load stats from localStorage
     const savedStats = JSON.parse(localStorage.getItem('attendanceStats') || '{}');
     setStats(prev => ({ ...prev, ...savedStats }));
+
+    // If Pod.ai is connected, auto-sync on page load
+    if (PodAiService.isConnected()) {
+      PodAiService.syncSubjects().then(result => {
+        if (result.success) {
+          // Reload stats after sync
+          const subjects = JSON.parse(localStorage.getItem('tracktaps_subjects') || '[]');
+          PodAiService.updateAttendanceStats(subjects);
+          const updatedStats = JSON.parse(localStorage.getItem('attendanceStats') || '{}');
+          setStats(prev => ({ ...prev, ...updatedStats }));
+        }
+      });
+    }
   }, []);
 
   const shortcuts = [

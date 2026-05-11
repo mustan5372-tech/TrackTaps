@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PodAiService from '../services/podaiService';
 
 function Settings() {
   const [settings, setSettings] = useState({
@@ -17,11 +18,24 @@ function Settings() {
     gridEndHour: 18
   });
 
+  const [podaiEmail, setPodaiEmail] = useState('');
+  const [podaiPassword, setPodaiPassword] = useState('');
+  const [podaiConnected, setPodaiConnected] = useState(false);
+  const [podaiLoading, setPodaiLoading] = useState(false);
+  const [podaiMessage, setPodaiMessage] = useState('');
+  const [podaiSyncing, setPodaiSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState('');
+
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('tracktaps_settings') || '{}');
     setSettings(prev => ({ ...prev, ...saved }));
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.body.className = `${savedTheme}-mode`;
+
+    // Check Pod.ai connection status
+    const connected = PodAiService.isConnected();
+    setPodaiConnected(connected);
+    setLastSyncTime(PodAiService.formatLastSyncTime());
   }, []);
 
   const handleChange = (key, value) => {
@@ -76,6 +90,68 @@ function Settings() {
       }
     };
     reader.readAsText(file);
+  };
+
+  const handlePodaiConnect = async () => {
+    if (!podaiEmail.trim() || !podaiPassword.trim()) {
+      setPodaiMessage('Please enter email and password');
+      return;
+    }
+
+    setPodaiLoading(true);
+    setPodaiMessage('Connecting to Pod.ai...');
+
+    const result = await PodAiService.login(podaiEmail, podaiPassword);
+
+    if (result.success) {
+      setPodaiConnected(true);
+      setPodaiMessage('✅ Connected to Pod.ai! Syncing subjects...');
+      setPodaiEmail('');
+      setPodaiPassword('');
+
+      // Auto-sync subjects
+      const syncResult = await PodAiService.syncSubjects();
+      if (syncResult.success) {
+        setPodaiMessage(`✅ ${syncResult.message}`);
+        setLastSyncTime(PodAiService.formatLastSyncTime());
+        // Trigger page refresh to show new subjects
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setPodaiMessage(`⚠️ Connected but sync failed: ${syncResult.message}`);
+      }
+    } else {
+      setPodaiMessage(`❌ ${result.message}`);
+    }
+
+    setPodaiLoading(false);
+  };
+
+  const handlePodaiSync = async () => {
+    setPodaiSyncing(true);
+    setPodaiMessage('Syncing with Pod.ai...');
+
+    const result = await PodAiService.syncSubjects();
+
+    if (result.success) {
+      setPodaiMessage(`✅ ${result.message}`);
+      setLastSyncTime(PodAiService.formatLastSyncTime());
+      // Trigger page refresh to show updated subjects
+      setTimeout(() => window.location.reload(), 1500);
+    } else {
+      setPodaiMessage(`❌ Sync failed: ${result.message}`);
+    }
+
+    setPodaiSyncing(false);
+  };
+
+  const handlePodaiDisconnect = () => {
+    if (window.confirm('Are you sure you want to disconnect from Pod.ai?')) {
+      PodAiService.disconnect();
+      setPodaiConnected(false);
+      setPodaiMessage('Disconnected from Pod.ai');
+      setPodaiEmail('');
+      setPodaiPassword('');
+    }
   };
 
   return (
@@ -275,6 +351,129 @@ function Settings() {
               />
               ✨ Glass Effect
             </label>
+          </div>
+        </div>
+
+        {/* Pod.ai Integration */}
+        <div className="dashboard-card">
+          <div className="card-header">
+            <span className="card-title">🔗 Pod.ai Integration</span>
+            {podaiConnected && (
+              <span style={{ fontSize: '11px', color: '#10b981', fontWeight: '600', background: 'rgba(16, 185, 129, 0.2)', padding: '4px 12px', borderRadius: '8px' }}>
+                ✓ Connected
+              </span>
+            )}
+          </div>
+          <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {!podaiConnected ? (
+              <>
+                <div>
+                  <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Pod.ai Email</label>
+                  <input
+                    type="email"
+                    value={podaiEmail}
+                    onChange={(e) => setPodaiEmail(e.target.value)}
+                    disabled={podaiLoading}
+                    style={{
+                      width: '100%',
+                      background: '#1e293b',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#f8fafc',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      fontFamily: 'inherit',
+                      opacity: podaiLoading ? 0.6 : 1
+                    }}
+                    placeholder="your.email@medicaps.ac.in"
+                  />
+                </div>
+                <div>
+                  <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Pod.ai Password</label>
+                  <input
+                    type="password"
+                    value={podaiPassword}
+                    onChange={(e) => setPodaiPassword(e.target.value)}
+                    disabled={podaiLoading}
+                    style={{
+                      width: '100%',
+                      background: '#1e293b',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#f8fafc',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      fontFamily: 'inherit',
+                      opacity: podaiLoading ? 0.6 : 1
+                    }}
+                    placeholder="Your password"
+                  />
+                </div>
+                <button
+                  onClick={handlePodaiConnect}
+                  disabled={podaiLoading}
+                  style={{
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: podaiLoading ? 'rgba(139, 92, 246, 0.5)' : 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)',
+                    color: '#f8fafc',
+                    cursor: podaiLoading ? 'not-allowed' : 'pointer',
+                    fontWeight: '600',
+                    opacity: podaiLoading ? 0.7 : 1
+                  }}
+                >
+                  {podaiLoading ? '🔄 Connecting...' : '🔗 Connect to Pod.ai'}
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Last Synced</div>
+                  <div style={{ fontSize: '14px', color: '#10b981', fontWeight: '600' }}>{lastSyncTime}</div>
+                </div>
+                <button
+                  onClick={handlePodaiSync}
+                  disabled={podaiSyncing}
+                  style={{
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(139, 92, 246, 0.3)',
+                    background: podaiSyncing ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.15)',
+                    color: '#a78bfa',
+                    cursor: podaiSyncing ? 'not-allowed' : 'pointer',
+                    fontWeight: '600',
+                    opacity: podaiSyncing ? 0.7 : 1
+                  }}
+                >
+                  {podaiSyncing ? '🔄 Syncing...' : '🔄 Sync Now'}
+                </button>
+                <button
+                  onClick={handlePodaiDisconnect}
+                  style={{
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #ef4444',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  🔓 Disconnect
+                </button>
+              </>
+            )}
+            {podaiMessage && (
+              <div style={{
+                padding: '12px',
+                borderRadius: '8px',
+                background: podaiMessage.includes('❌') ? 'rgba(239, 68, 68, 0.1)' : podaiMessage.includes('✅') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                border: podaiMessage.includes('❌') ? '1px solid rgba(239, 68, 68, 0.2)' : podaiMessage.includes('✅') ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(245, 158, 11, 0.2)',
+                color: podaiMessage.includes('❌') ? '#ef4444' : podaiMessage.includes('✅') ? '#10b981' : '#f59e0b',
+                fontSize: '13px'
+              }}>
+                {podaiMessage}
+              </div>
+            )}
           </div>
         </div>
 
