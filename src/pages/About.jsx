@@ -44,32 +44,43 @@ const BlurRevealText = ({ children, delay = 0 }) => {
   );
 };
 
-// Premium Team Card Component
-const TeamCard = ({ name, role, description, initials }) => {
+// Premium Founders & Core Team Card Component
+const FounderCard = ({ name, role, description, initials, index }) => {
   const [ref, isVisible] = useScrollReveal();
   const [isHovered, setIsHovered] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+  };
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isVisible ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6 }}
+      initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }}
+      animate={isVisible ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
+      transition={{ duration: 0.7, delay: index * 0.15 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
+      onMouseMove={handleMouseMove}
       style={{
-        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(168, 85, 247, 0.08) 100%)',
-        border: '1px solid rgba(139, 92, 246, 0.3)',
-        borderRadius: '20px',
-        padding: '32px',
+        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%)',
+        border: '1.5px solid rgba(139, 92, 246, 0.4)',
+        borderRadius: '24px',
+        padding: '48px 40px',
         textAlign: 'center',
         position: 'relative',
         overflow: 'hidden',
         cursor: 'pointer',
+        backdropFilter: 'blur(10px)',
         transition: 'all 0.3s ease'
       }}
     >
-      {/* Glow effect on hover */}
+      {/* Animated gradient border on hover */}
       {isHovered && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -77,94 +88,157 @@ const TeamCard = ({ name, role, description, initials }) => {
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.2) 0%, transparent 70%)',
-            pointerEvents: 'none'
+            borderRadius: '24px',
+            padding: '1.5px',
+            background: `linear-gradient(135deg, rgba(139, 92, 246, 0.8) 0%, rgba(168, 85, 247, 0.4) 100%)`,
+            pointerEvents: 'none',
+            zIndex: -1
           }}
         />
       )}
 
-      {/* Avatar with glow */}
+      {/* Spotlight effect on hover */}
+      {isHovered && (
+        <motion.div
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          style={{
+            position: 'absolute',
+            width: '300px',
+            height: '300px',
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)',
+            borderRadius: '50%',
+            left: mousePosition.x - 150,
+            top: mousePosition.y - 150,
+            pointerEvents: 'none',
+            filter: 'blur(40px)'
+          }}
+        />
+      )}
+
+      {/* Glow background */}
       <motion.div
-        animate={isHovered ? { scale: 1.1 } : { scale: 1 }}
+        animate={isHovered ? { opacity: 0.8 } : { opacity: 0.3 }}
+        transition={{ duration: 0.3 }}
         style={{
-          width: '80px',
-          height: '80px',
-          margin: '0 auto 20px',
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%)',
+          pointerEvents: 'none'
+        }}
+      />
+
+      {/* Avatar with premium glow */}
+      <motion.div
+        animate={isHovered ? { scale: 1.15, y: -10 } : { scale: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        style={{
+          width: '100px',
+          height: '100px',
+          margin: '0 auto 28px',
           background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '32px',
-          fontWeight: '700',
+          fontSize: '40px',
+          fontWeight: '800',
           color: '#f8fafc',
-          boxShadow: isHovered ? '0 0 30px rgba(139, 92, 246, 0.6)' : '0 0 20px rgba(139, 92, 246, 0.3)',
+          boxShadow: isHovered 
+            ? '0 0 50px rgba(139, 92, 246, 0.8), 0 0 100px rgba(168, 85, 247, 0.4)' 
+            : '0 0 30px rgba(139, 92, 246, 0.5)',
           position: 'relative',
-          zIndex: 1
+          zIndex: 2
         }}
       >
         {initials}
       </motion.div>
 
-      {/* Role Badge */}
+      {/* Role Badge with animation */}
       <motion.div
-        animate={isHovered ? { scale: 1.05 } : { scale: 1 }}
+        animate={isHovered ? { scale: 1.08, y: -5 } : { scale: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
         style={{
           display: 'inline-block',
-          background: 'rgba(139, 92, 246, 0.2)',
-          border: '1px solid rgba(139, 92, 246, 0.4)',
+          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(168, 85, 247, 0.15) 100%)',
+          border: '1px solid rgba(139, 92, 246, 0.5)',
           color: '#a78bfa',
-          padding: '6px 16px',
-          borderRadius: '20px',
-          fontSize: '12px',
-          fontWeight: '600',
-          marginBottom: '16px',
+          padding: '8px 20px',
+          borderRadius: '24px',
+          fontSize: '11px',
+          fontWeight: '700',
+          marginBottom: '20px',
           textTransform: 'uppercase',
-          letterSpacing: '0.05em'
+          letterSpacing: '0.08em',
+          position: 'relative',
+          zIndex: 1
         }}
       >
         {role}
       </motion.div>
 
-      <h3 style={{ color: '#f8fafc', fontSize: '20px', fontWeight: '700', marginBottom: '12px' }}>
+      <motion.h3 
+        animate={isHovered ? { y: -5 } : { y: 0 }}
+        style={{ 
+          color: '#f8fafc', 
+          fontSize: '22px', 
+          fontWeight: '800', 
+          marginBottom: '12px',
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
         {name}
-      </h3>
-      <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', marginBottom: '20px' }}>
-        {description}
-      </p>
+      </motion.h3>
 
-      {/* Social Icons */}
-      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+      <motion.p 
+        animate={isHovered ? { y: -3 } : { y: 0 }}
+        style={{ 
+          color: '#cbd5e1', 
+          fontSize: '15px', 
+          lineHeight: '1.7', 
+          marginBottom: '24px',
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
+        {description}
+      </motion.p>
+
+      {/* Social Icons with hover effects */}
+      <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
         <motion.div
-          whileHover={{ scale: 1.2 }}
+          whileHover={{ scale: 1.3, rotate: 10 }}
           style={{
-            width: '36px',
-            height: '36px',
-            background: 'rgba(139, 92, 246, 0.2)',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
+            width: '40px',
+            height: '40px',
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(168, 85, 247, 0.15) 100%)',
+            border: '1px solid rgba(139, 92, 246, 0.4)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            fontSize: '16px'
+            fontSize: '18px',
+            transition: 'all 0.3s'
           }}
         >
           🔗
         </motion.div>
         <motion.div
-          whileHover={{ scale: 1.2 }}
+          whileHover={{ scale: 1.3, rotate: -10 }}
           style={{
-            width: '36px',
-            height: '36px',
-            background: 'rgba(139, 92, 246, 0.2)',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
+            width: '40px',
+            height: '40px',
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(168, 85, 247, 0.15) 100%)',
+            border: '1px solid rgba(139, 92, 246, 0.4)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            fontSize: '16px'
+            fontSize: '18px',
+            transition: 'all 0.3s'
           }}
         >
           💼
@@ -177,107 +251,175 @@ const TeamCard = ({ name, role, description, initials }) => {
 // Premium Roadmap Phase Component
 const RoadmapPhase = ({ phase, items, index }) => {
   const [ref, isVisible] = useScrollReveal();
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
-      animate={isVisible ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
+      initial={{ opacity: 0, x: index % 2 === 0 ? -40 : 40, filter: 'blur(10px)' }}
+      animate={isVisible ? { opacity: 1, x: 0, filter: 'blur(0px)' } : {}}
+      transition={{ duration: 0.7, delay: index * 0.15 }}
       style={{
         position: 'relative',
-        paddingLeft: index % 2 === 0 ? '0' : '40px',
-        paddingRight: index % 2 === 0 ? '40px' : '0'
+        paddingLeft: index % 2 === 0 ? '0' : '50px',
+        paddingRight: index % 2 === 0 ? '50px' : '0'
       }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
     >
-      {/* Timeline connector */}
-      <div
+      {/* Animated Timeline connector with glow */}
+      <motion.div
+        animate={isHovered ? { opacity: 1 } : { opacity: 0.5 }}
         style={{
           position: 'absolute',
           left: '50%',
           top: 0,
           bottom: 0,
-          width: '2px',
-          background: 'linear-gradient(180deg, rgba(139, 92, 246, 0.5) 0%, rgba(139, 92, 246, 0.1) 100%)',
-          transform: 'translateX(-50%)'
+          width: '3px',
+          background: 'linear-gradient(180deg, rgba(139, 92, 246, 0.8) 0%, rgba(139, 92, 246, 0.2) 100%)',
+          transform: 'translateX(-50%)',
+          boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)'
         }}
       />
 
-      {/* Timeline dot */}
+      {/* Animated Timeline dot with pulsing glow */}
       <motion.div
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ duration: 2, repeat: Infinity }}
+        animate={{ scale: [1, 1.3, 1], opacity: [0.8, 1, 0.8] }}
+        transition={{ duration: 2.5, repeat: Infinity }}
         style={{
           position: 'absolute',
           left: '50%',
-          top: '20px',
-          width: '16px',
-          height: '16px',
+          top: '24px',
+          width: '20px',
+          height: '20px',
           background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
           borderRadius: '50%',
           transform: 'translateX(-50%)',
-          boxShadow: '0 0 20px rgba(139, 92, 246, 0.8)',
-          zIndex: 2
+          boxShadow: '0 0 30px rgba(139, 92, 246, 0.9), 0 0 60px rgba(168, 85, 247, 0.5)',
+          zIndex: 3
         }}
       />
 
-      {/* Phase card */}
+      {/* Phase card with premium styling */}
       <motion.div
-        whileHover={{ scale: 1.02, y: -5 }}
+        whileHover={{ scale: 1.03, y: -8 }}
+        transition={{ duration: 0.3 }}
         style={{
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(168, 85, 247, 0.06) 100%)',
-          border: '1px solid rgba(139, 92, 246, 0.25)',
-          borderRadius: '16px',
-          padding: '28px',
-          marginBottom: '40px',
+          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.18) 0%, rgba(168, 85, 247, 0.08) 100%)',
+          border: '1.5px solid rgba(139, 92, 246, 0.35)',
+          borderRadius: '20px',
+          padding: '36px',
+          marginBottom: '50px',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          backdropFilter: 'blur(10px)',
+          cursor: 'pointer'
         }}
       >
-        {/* Glow background */}
+        {/* Animated gradient border on hover */}
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: '20px',
+              padding: '1.5px',
+              background: `linear-gradient(135deg, rgba(139, 92, 246, 0.6) 0%, rgba(168, 85, 247, 0.3) 100%)`,
+              pointerEvents: 'none',
+              zIndex: -1
+            }}
+          />
+        )}
+
+        {/* Pulsing glow background */}
         <motion.div
-          animate={{ opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 3, repeat: Infinity }}
+          animate={{ opacity: isHovered ? 0.8 : 0.4 }}
+          transition={{ duration: 0.3 }}
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%)',
+            background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%)',
             pointerEvents: 'none'
           }}
         />
 
+        {/* Floating particles effect */}
+        {isHovered && (
+          <>
+            <motion.div
+              animate={{ y: [0, -20, 0], opacity: [0, 1, 0] }}
+              transition={{ duration: 3, repeat: Infinity }}
+              style={{
+                position: 'absolute',
+                width: '4px',
+                height: '4px',
+                background: 'rgba(139, 92, 246, 0.6)',
+                borderRadius: '50%',
+                left: '20%',
+                top: '30%',
+                pointerEvents: 'none'
+              }}
+            />
+            <motion.div
+              animate={{ y: [0, -25, 0], opacity: [0, 1, 0] }}
+              transition={{ duration: 3.5, repeat: Infinity, delay: 0.5 }}
+              style={{
+                position: 'absolute',
+                width: '3px',
+                height: '3px',
+                background: 'rgba(168, 85, 247, 0.5)',
+                borderRadius: '50%',
+                right: '25%',
+                top: '40%',
+                pointerEvents: 'none'
+              }}
+            />
+          </>
+        )}
+
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <h4 style={{
-            color: '#a78bfa',
-            fontSize: '14px',
-            fontWeight: '700',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            marginBottom: '12px'
-          }}>
+          <motion.h4 
+            animate={isHovered ? { y: -5 } : { y: 0 }}
+            style={{
+              color: '#a78bfa',
+              fontSize: '13px',
+              fontWeight: '800',
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em',
+              marginBottom: '16px'
+            }}
+          >
             {phase}
-          </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          </motion.h4>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {items.map((item, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, x: -10 }}
-                animate={isVisible ? { opacity: 1, x: 0 } : {}}
-                transition={{ delay: 0.2 + idx * 0.1 }}
+                initial={{ opacity: 0, x: -15, filter: 'blur(5px)' }}
+                animate={isVisible ? { opacity: 1, x: 0, filter: 'blur(0px)' } : {}}
+                transition={{ delay: 0.25 + idx * 0.12 }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px',
-                  color: '#94a3b8',
-                  fontSize: '14px'
+                  gap: '12px',
+                  color: '#cbd5e1',
+                  fontSize: '15px',
+                  fontWeight: '500'
                 }}
               >
-                <span style={{
-                  width: '6px',
-                  height: '6px',
-                  background: '#a78bfa',
-                  borderRadius: '50%'
-                }} />
+                <motion.span 
+                  animate={isHovered ? { scale: 1.5 } : { scale: 1 }}
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    background: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)',
+                    borderRadius: '50%',
+                    boxShadow: '0 0 10px rgba(139, 92, 246, 0.5)'
+                  }}
+                />
                 {item}
               </motion.div>
             ))}
@@ -293,19 +435,19 @@ function About() {
 
   const roadmapPhases = [
     {
-      phase: 'PHASE 1',
-      items: ['Smart Attendance Tracking', 'Timetable Management', 'AI Assistant']
+      phase: 'PHASE 1 — FOUNDATION',
+      items: ['Smart Attendance Tracking', 'Timetable System', 'Analytics Dashboard']
     },
     {
-      phase: 'PHASE 2',
-      items: ['POD.ai Integration', 'Smart Insights', 'Attendance Analytics']
+      phase: 'PHASE 2 — AI & AUTOMATION',
+      items: ['AI Assistant', 'Attendance Insights', 'POD.ai Integration']
     },
     {
-      phase: 'PHASE 3',
-      items: ['AI Prediction Engine', 'Cross-Platform Sync', 'APK + PWA Support']
+      phase: 'PHASE 3 — PLATFORM EXPANSION',
+      items: ['Android APK', 'PWA Support', 'Cross-device Sync']
     },
     {
-      phase: 'PHASE 4',
+      phase: 'PHASE 4 — FUTURE ECOSYSTEM',
       items: ['AI Study Planner', 'Smart Notifications', 'Academic Productivity Ecosystem']
     }
   ];
@@ -566,42 +708,60 @@ function About() {
           </div>
         </motion.section>
 
-        {/* TEAM SECTION */}
-        <motion.section style={{ marginBottom: '120px' }}>
+        {/* TEAM SECTION - FOUNDERS & CORE TEAM */}
+        <motion.section style={{ marginBottom: '140px' }}>
           <BlurRevealText>
             <h2 style={{
               fontSize: '48px',
               fontWeight: '800',
               textAlign: 'center',
-              marginBottom: '60px',
+              marginBottom: '16px',
               color: '#f8fafc'
             }}>
-              Meet the Team
+              Founders & Core Team
             </h2>
+          </BlurRevealText>
+
+          <BlurRevealText delay={0.2}>
+            <p style={{
+              fontSize: '16px',
+              color: '#94a3b8',
+              textAlign: 'center',
+              maxWidth: '600px',
+              margin: '0 auto 80px',
+              lineHeight: '1.7'
+            }}>
+              Built by passionate AU EV students from Medicaps University focused on redefining academic productivity.
+            </p>
           </BlurRevealText>
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '32px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gap: '40px',
+            maxWidth: '1200px',
+            margin: '0 auto'
           }}>
-            <TeamCard
+            <FounderCard
               name="Mustansir Sanawad"
               role="Lead Developer"
               initials="MS"
-              description="AU EV student at Medicaps University building the future of intelligent academic productivity systems."
+              description="AU EV student at Medicaps University building the future of intelligent academic productivity systems through TrackTaps."
+              index={0}
             />
-            <TeamCard
+            <FounderCard
               name="Pranav Gohel"
-              role="CFO"
+              role="CMO"
               initials="PG"
-              description="AU EV student at Medicaps University leading strategic growth and operational planning for TrackTaps."
+              description="AU EV student at Medicaps University leading operational strategy, growth planning, and business direction for TrackTaps."
+              index={1}
             />
-            <TeamCard
+            <FounderCard
               name="Purandar Yadav"
               role="Marketing Executive"
               initials="PY"
-              description="AU EV student at Medicaps University focused on community building and platform outreach."
+              description="AU EV student at Medicaps University focused on community engagement, outreach, and growth of the TrackTaps ecosystem."
+              index={2}
             />
           </div>
         </motion.section>
