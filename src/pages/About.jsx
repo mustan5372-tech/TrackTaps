@@ -453,7 +453,7 @@ function About() {
   ];
 
   return (
-    <div className="about-view" style={{ position: 'relative', overflow: 'hidden' }}>
+    <div className="about-view" style={{ position: 'relative', overflow: 'visible', width: '100%' }}>
       {/* Animated Background */}
       <div style={{
         position: 'fixed',
@@ -500,7 +500,7 @@ function About() {
         />
       </div>
 
-      <div className="about-container" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="about-container" style={{ position: 'relative', zIndex: 1, padding: '60px 40px' }}>
         {/* HERO SECTION */}
         <motion.section
           initial={{ opacity: 0 }}
