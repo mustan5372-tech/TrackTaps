@@ -1,37 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PodAiService from '../services/podaiService';
+import useAppStore from '../store/appStore';
 
 function Home() {
-  const [stats, setStats] = useState({
-    totalSubjects: 0,
-    streak: 0,
-    safeSubjects: 0,
-    criticalSubjects: 0,
-    overallPercentage: 0,
-    present: 0,
-    missed: 0,
-    total: 0
-  });
+  const {
+    dashboardStats,
+    insights,
+    getSafeSubjects,
+    getCriticalSubjects,
+    getTodaySchedule,
+    fullSync
+  } = useAppStore();
 
+  // Sync on mount and when data changes
   useEffect(() => {
-    // Load stats from localStorage
-    const savedStats = JSON.parse(localStorage.getItem('attendanceStats') || '{}');
-    setStats(prev => ({ ...prev, ...savedStats }));
-
-    // If Pod.ai is connected, auto-sync on page load
-    if (PodAiService.isConnected()) {
-      PodAiService.syncSubjects().then(result => {
-        if (result.success) {
-          // Reload stats after sync
-          const subjects = JSON.parse(localStorage.getItem('tracktaps_subjects') || '[]');
-          PodAiService.updateAttendanceStats(subjects);
-          const updatedStats = JSON.parse(localStorage.getItem('attendanceStats') || '{}');
-          setStats(prev => ({ ...prev, ...updatedStats }));
-        }
-      });
-    }
-  }, []);
+    fullSync();
+  }, [fullSync]);
 
   const shortcuts = [
     { icon: '📅', title: 'Calendar', path: '/calendar' },
@@ -68,7 +53,7 @@ function Home() {
           textAlign: 'center',
           minWidth: '200px'
         }}>
-          <span className="overall-percentage" id="hero-overall-perc" style={{ fontSize: '48px', fontWeight: '800', color: '#a78bfa', display: 'block' }}>{stats.overallPercentage}%</span>
+          <span className="overall-percentage" id="hero-overall-perc" style={{ fontSize: '48px', fontWeight: '800', color: '#a78bfa', display: 'block' }}>{dashboardStats.overallPercentage}%</span>
           <span className="overall-label" style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginTop: '8px' }}>Attendance Score</span>
           <div id="overall-trend" style={{ marginTop: '12px', fontSize: '12px', color: '#10b981', fontWeight: '600' }}>↑ 2.4% from last week</div>
         </div>
@@ -87,7 +72,7 @@ function Home() {
           padding: '20px',
           textAlign: 'center'
         }}>
-          <span className="stat-pill-value" id="stat-total-subjects" style={{ fontSize: '28px', fontWeight: '800', color: '#a78bfa', display: 'block' }}>{stats.totalSubjects}</span>
+          <span className="stat-pill-value" id="stat-total-subjects" style={{ fontSize: '28px', fontWeight: '800', color: '#a78bfa', display: 'block' }}>{dashboardStats.totalSubjects}</span>
           <span className="stat-pill-label" style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px', display: 'block' }}>Total Subjects</span>
         </div>
         <div className="stat-pill" style={{
@@ -97,7 +82,7 @@ function Home() {
           padding: '20px',
           textAlign: 'center'
         }}>
-          <span className="stat-pill-value" id="stat-streak" style={{ fontSize: '28px', fontWeight: '800', color: '#f59e0b', display: 'block' }}>{stats.streak}</span>
+          <span className="stat-pill-value" id="stat-streak" style={{ fontSize: '28px', fontWeight: '800', color: '#f59e0b', display: 'block' }}>{dashboardStats.streak}</span>
           <span className="stat-pill-label" style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px', display: 'block' }}>🔥 Day Streak</span>
         </div>
         <div className="stat-pill" style={{
@@ -107,7 +92,7 @@ function Home() {
           padding: '20px',
           textAlign: 'center'
         }}>
-          <span className="stat-pill-value" id="stat-safe-subjects" style={{ fontSize: '28px', fontWeight: '800', color: '#10b981', display: 'block' }}>{stats.safeSubjects}</span>
+          <span className="stat-pill-value" id="stat-safe-subjects" style={{ fontSize: '28px', fontWeight: '800', color: '#10b981', display: 'block' }}>{dashboardStats.safeSubjects}</span>
           <span className="stat-pill-label" style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px', display: 'block' }}>Safe</span>
         </div>
         <div className="stat-pill" style={{
@@ -117,7 +102,7 @@ function Home() {
           padding: '20px',
           textAlign: 'center'
         }}>
-          <span className="stat-pill-value" id="stat-critical-subjects" style={{ fontSize: '28px', fontWeight: '800', color: '#ef4444', display: 'block' }}>{stats.criticalSubjects}</span>
+          <span className="stat-pill-value" id="stat-critical-subjects" style={{ fontSize: '28px', fontWeight: '800', color: '#ef4444', display: 'block' }}>{dashboardStats.criticalSubjects}</span>
           <span className="stat-pill-label" style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px', display: 'block' }}>Critical</span>
         </div>
       </div>
@@ -138,8 +123,8 @@ function Home() {
             <span className="pred-icon" style={{ fontSize: '24px' }}>✅</span>
             <span className="pred-title" style={{ fontSize: '14px', fontWeight: '600', color: '#10b981' }}>Safe to Skip</span>
           </div>
-          <div className="pred-value" id="pred-safe-skip" style={{ fontSize: '24px', fontWeight: '800', color: '#10b981', marginBottom: '8px' }}>None</div>
-          <div className="pred-desc" style={{ fontSize: '12px', color: '#94a3b8' }}>Subjects you can miss today</div>
+          <div className="pred-value" id="pred-safe-skip" style={{ fontSize: '24px', fontWeight: '800', color: '#10b981', marginBottom: '8px' }}>{getSafeSubjects().length}</div>
+          <div className="pred-desc" style={{ fontSize: '12px', color: '#94a3b8' }}>Subjects you can safely skip</div>
         </div>
         <div className="prediction-card" style={{
           background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%)',
@@ -151,7 +136,7 @@ function Home() {
             <span className="pred-icon" style={{ fontSize: '24px' }}>⚠️</span>
             <span className="pred-title" style={{ fontSize: '14px', fontWeight: '600', color: '#ef4444' }}>Critical Risk</span>
           </div>
-          <div className="pred-value" id="pred-critical-risk" style={{ fontSize: '24px', fontWeight: '800', color: '#ef4444', marginBottom: '8px' }}>None</div>
+          <div className="pred-value" id="pred-critical-risk" style={{ fontSize: '24px', fontWeight: '800', color: '#ef4444', marginBottom: '8px' }}>{getCriticalSubjects().length}</div>
           <div className="pred-desc" style={{ fontSize: '12px', color: '#94a3b8' }}>Needs immediate attention</div>
         </div>
         <div className="prediction-card" style={{
@@ -164,7 +149,7 @@ function Home() {
             <span className="pred-icon" style={{ fontSize: '24px' }}>🩹</span>
             <span className="pred-title" style={{ fontSize: '14px', fontWeight: '600', color: '#f59e0b' }}>Recovery Goal</span>
           </div>
-          <div className="pred-value" id="pred-recovery-goal" style={{ fontSize: '24px', fontWeight: '800', color: '#f59e0b', marginBottom: '8px' }}>None</div>
+          <div className="pred-value" id="pred-recovery-goal" style={{ fontSize: '24px', fontWeight: '800', color: '#f59e0b', marginBottom: '8px' }}>{getCriticalSubjects().length}</div>
           <div className="pred-desc" style={{ fontSize: '12px', color: '#94a3b8' }}>Classes to reach target</div>
         </div>
       </div>
@@ -190,20 +175,20 @@ function Home() {
                 <circle className="progress-ring-circle-bg" cx="50" cy="50" r="42" fill="none" stroke="rgba(139, 92, 246, 0.1)" strokeWidth="4"></circle>
                 <circle id="progress-ring-bar" className="progress-ring-circle" cx="50" cy="50" r="42" fill="none" stroke="url(#gradient)" strokeWidth="4" strokeDasharray="263.89" strokeDashoffset="263.89"></circle>
               </svg>
-              <span className="progress-percentage-text" id="overview-perc" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: '800', color: '#a78bfa' }}>{stats.overallPercentage}%</span>
+              <span className="progress-percentage-text" id="overview-perc" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: '800', color: '#a78bfa' }}>{dashboardStats.overallPercentage}%</span>
             </div>
             <div className="mini-stats" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div className="mini-stat-item">
                 <span className="mini-stat-label" style={{ fontSize: '12px', color: '#94a3b8' }}>Present</span>
-                <span className="mini-stat-value" id="stat-present" style={{ fontSize: '20px', fontWeight: '800', color: '#10b981' }}>{stats.present}</span>
+                <span className="mini-stat-value" id="stat-present" style={{ fontSize: '20px', fontWeight: '800', color: '#10b981' }}>{dashboardStats.present}</span>
               </div>
               <div className="mini-stat-item">
                 <span className="mini-stat-label" style={{ fontSize: '12px', color: '#94a3b8' }}>Missed</span>
-                <span className="mini-stat-value" id="stat-missed" style={{ fontSize: '20px', fontWeight: '800', color: '#ef4444' }}>{stats.missed}</span>
+                <span className="mini-stat-value" id="stat-missed" style={{ fontSize: '20px', fontWeight: '800', color: '#ef4444' }}>{dashboardStats.missed}</span>
               </div>
               <div className="mini-stat-item">
                 <span className="mini-stat-label" style={{ fontSize: '12px', color: '#94a3b8' }}>Total</span>
-                <span className="mini-stat-value" id="stat-total" style={{ fontSize: '20px', fontWeight: '800', color: '#a78bfa' }}>{stats.total}</span>
+                <span className="mini-stat-value" id="stat-total" style={{ fontSize: '20px', fontWeight: '800', color: '#a78bfa' }}>{dashboardStats.total}</span>
               </div>
             </div>
           </div>
@@ -220,7 +205,24 @@ function Home() {
             <span className="ai-badge-small" style={{ fontSize: '10px', fontWeight: '700', color: '#a78bfa', background: 'rgba(139, 92, 246, 0.2)', padding: '4px 12px', borderRadius: '8px' }}>AI ACTIVE</span>
           </div>
           <div className="ai-insights-list" id="dashboard-ai-insights">
-            <p style={{ color: '#94a3b8', fontSize: '14px' }}>No insights yet. Add subjects to get started!</p>
+            {insights.length === 0 ? (
+              <p style={{ color: '#94a3b8', fontSize: '14px' }}>No insights yet. Add subjects to get started!</p>
+            ) : (
+              insights.slice(0, 3).map((insight, idx) => (
+                <div key={idx} style={{
+                  padding: '12px',
+                  background: insight.type === 'critical' ? 'rgba(239, 68, 68, 0.1)' : insight.type === 'warning' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                  border: insight.type === 'critical' ? '1px solid rgba(239, 68, 68, 0.2)' : insight.type === 'warning' ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(16, 185, 129, 0.2)',
+                  borderRadius: '8px',
+                  marginBottom: '8px',
+                  fontSize: '12px',
+                  color: insight.type === 'critical' ? '#fca5a5' : insight.type === 'warning' ? '#fcd34d' : '#86efac'
+                }}>
+                  <div style={{ fontWeight: '600', marginBottom: '4px' }}>{insight.icon} {insight.title}</div>
+                  <div style={{ fontSize: '11px', opacity: 0.8 }}>{insight.message}</div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -237,7 +239,24 @@ function Home() {
             </span>
           </div>
           <div className="schedule-list" id="dashboard-schedule-list">
-            <p style={{ color: '#94a3b8', fontSize: '14px' }}>No classes scheduled for today</p>
+            {getTodaySchedule().length === 0 ? (
+              <p style={{ color: '#94a3b8', fontSize: '14px' }}>No classes scheduled for today</p>
+            ) : (
+              getTodaySchedule().map((event, idx) => (
+                <div key={idx} style={{
+                  padding: '12px',
+                  background: 'rgba(139, 92, 246, 0.1)',
+                  border: '1px solid rgba(139, 92, 246, 0.2)',
+                  borderRadius: '8px',
+                  marginBottom: '8px',
+                  fontSize: '12px',
+                  color: '#f8fafc'
+                }}>
+                  <div style={{ fontWeight: '600', marginBottom: '4px' }}>{event.subjectName}</div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>{event.timeSlot}</div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
