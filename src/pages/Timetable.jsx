@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import AttendanceEngine from '../services/attendanceEngine';
 
 function Timetable() {
   const [subjects, setSubjects] = useState([]);
@@ -37,23 +38,23 @@ function Timetable() {
 
   // Sync timetable to calendar
   const syncToCalendar = (timetable) => {
-    const calendarEvents = [];
-    Object.entries(timetable).forEach(([cellKey, subject]) => {
-      const [dayIdx, timeSlot] = cellKey.split('-');
-      const dayNum = parseInt(dayIdx);
-      const dayName = days[dayNum];
-      
-      calendarEvents.push({
-        id: cellKey,
-        subject: subject.name,
-        day: dayNum,
-        dayName: dayName,
-        time: timeSlot,
-        color: subject.color || '#8b5cf6'
-      });
-    });
-    
+    const subjects = JSON.parse(localStorage.getItem('tracktaps_subjects') || '[]');
+    const calendarEvents = AttendanceEngine.generateCalendarEventsFromTimetable(timetable, subjects);
     localStorage.setItem('tracktaps_calendar_events', JSON.stringify(calendarEvents));
+    
+    // Update dashboard stats
+    const attendanceData = JSON.parse(localStorage.getItem('tracktaps_attendance_data') || '{}');
+    const stats = AttendanceEngine.calculateOverallStats(subjects, calendarEvents, attendanceData);
+    localStorage.setItem('attendanceStats', JSON.stringify({
+      totalSubjects: subjects.length,
+      streak: 0,
+      safeSubjects: stats.safeSubjects,
+      criticalSubjects: stats.criticalSubjects,
+      overallPercentage: stats.overallPercentage,
+      present: stats.totalPresent,
+      missed: stats.totalAbsent,
+      total: stats.totalClasses
+    }));
   };
 
   const handleCellClick = (dayIdx, timeSlot) => {
