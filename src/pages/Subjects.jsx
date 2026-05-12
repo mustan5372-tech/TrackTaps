@@ -78,20 +78,48 @@ function Subjects() {
     <div className="subjects-view">
       <header className="view-header">
         <h2>My Subjects</h2>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button id="ai-import-trigger" className="action-btn present" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', padding: '10px 16px' }}>
-            <span>✨</span> AI Import
-          </button>
-          <button 
-            onClick={() => {
-              setEditingIdx(null);
-              setFormData({ name: '', criteria: 75 });
-              setShowModal(true);
-            }}
-            className="primary-btn"
-          >
-            + Add Subject
-          </button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button 
+              onClick={() => window.location.href = '/pod'}
+              className="action-btn" 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                fontSize: '13px', 
+                padding: '10px 16px',
+                background: 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)',
+                border: 'none',
+                color: '#f8fafc',
+                borderRadius: '10px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(139, 92, 246, 0.2)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.4)'}
+              onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.2)'}
+            >
+              <span>📥</span> Import from Pod.ai
+            </button>
+            <button id="ai-import-trigger" className="action-btn present" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', padding: '10px 16px' }}>
+              <span>✨</span> AI Import
+            </button>
+            <button 
+              onClick={() => {
+                setEditingIdx(null);
+                setFormData({ name: '', criteria: 75 });
+                setShowModal(true);
+              }}
+              className="primary-btn"
+            >
+              + Add Subject
+            </button>
+          </div>
+          <span style={{ color: '#64748b', fontSize: '11px', fontWeight: '500' }}>
+            Import real attendance directly from Pod.ai
+          </span>
         </div>
       </header>
       <div id="subjects-grid" className="subjects-grid">

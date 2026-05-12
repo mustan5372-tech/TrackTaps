@@ -453,11 +453,40 @@ export default function Pod() {
           maxWidth: '1200px',
           margin: '0 auto'
         }}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 4px 0', background: 'linear-gradient(135deg, #a78bfa 0%, #c084fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Pod Dashboard
-            </h1>
-            <p style={{ color: '#94a3b8', margin: 0, fontSize: '13px' }}>Welcome back, {displayName}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                color: '#94a3b8',
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                e.currentTarget.style.color = '#f8fafc';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                e.currentTarget.style.color = '#94a3b8';
+              }}
+              title="Back to TrackTaps"
+            >
+              🏠
+            </button>
+            <div>
+              <h1 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 4px 0', background: 'linear-gradient(135deg, #a78bfa 0%, #c084fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                Pod Dashboard
+              </h1>
+              <p style={{ color: '#94a3b8', margin: 0, fontSize: '13px' }}>Welcome back, {displayName}</p>
+            </div>
           </div>
           
           <div style={{ display: 'flex', gap: '12px' }}>
