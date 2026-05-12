@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     };
 
-    const apiUrl = 'https://api.pod.ai/v4/api/classrooms/student-classrooms/index-list/?class_group_type=1&subdomain=medicaps';
+    const apiUrl = 'https://api.pod.ai/v4/api/classrooms/index-list/?class_group_type=1';
     console.log('[TrackTaps Pod] Fetching classrooms from:', apiUrl);
 
     const classroomsRes = await fetch(apiUrl, {
@@ -64,7 +64,9 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to parse Pod.ai response' });
     }
 
-    const classrooms = (data.results || []).map(c => ({
+    // Handle both { results: [] } and direct [] response
+    const results = Array.isArray(data) ? data : (data.results || []);
+    const classrooms = results.map(c => ({
       token: c.token,
       title: c.title || c.name || 'Untitled',
       creatorDetails: c.creator_details ? { name: c.creator_details.name } : undefined
