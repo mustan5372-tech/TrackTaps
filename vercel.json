@@ -1,7 +1,6 @@
 {
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "startCommand": "node server.mjs",
   "framework": "vite",
   "env": {
     "NODE_ENV": "production"
