@@ -180,7 +180,6 @@ function Home() {
         ].map((stat, i) => (
           <motion.div 
             key={i}
-            variants={fadeInUp}
             whileHover="hover"
             variants={{
               ...fadeInUp,

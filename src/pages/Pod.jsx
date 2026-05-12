@@ -610,5 +610,3 @@ export default function Pod() {
     </div>
   );
 }
-  );
-}
