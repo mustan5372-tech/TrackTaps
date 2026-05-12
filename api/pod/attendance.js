@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     };
 
-    const apiUrl = `https://api.pod.ai/v4/api/classrooms/classroom/${classroom}/student-stats/`;
+    const apiUrl = `https://api.pod.ai/v4/api/classrooms/classroom/${classroom}/student-stats/?subdomain=medicaps`;
     console.log('[Pod Attendance] Calling Pod.ai API:', apiUrl);
     const statsRes = await fetch(
       apiUrl,
