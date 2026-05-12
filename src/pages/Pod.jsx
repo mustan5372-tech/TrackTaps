@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useAppStore from '../store/appStore';
 
 const Eye = ({ size = 24 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -38,6 +39,7 @@ export default function Pod() {
   const [attendanceLoading, setAttendanceLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('Attendance');
   const [searchQuery, setSearchQuery] = useState('');
+  const { syncPodaiSubjects, setPodaiSyncStatus, fullSync } = useAppStore();
 
   // Check if already logged in
   useEffect(() => {
@@ -127,6 +129,18 @@ export default function Pod() {
       
       console.log('[Pod] Final attendance results:', attendanceResults);
       setAttendanceData(attendanceResults);
+      
+      // Prepare data for store sync
+      const subjectsToSync = classroomsList.map(classroom => ({
+        token: classroom.token,
+        title: classroom.title,
+        ...attendanceResults[classroom.token]
+      }));
+      
+      console.log('[Pod] Syncing subjects to store:', subjectsToSync);
+      syncPodaiSubjects(subjectsToSync);
+      fullSync();
+      setPodaiSyncStatus({ connected: true, lastSync: new Date().toISOString() });
     } catch (err) {
       console.error('Error in fetchAttendance:', err);
       setError(err.message);

@@ -14,12 +14,17 @@ export default async function handler(req, res) {
     const headers = {
       'Authorization': authHeader,
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
       'X-College-Id': 'kiNdHC',
-      'Origin': 'https://pod.ai',
-      'Referer': 'https://pod.ai/',
+      'Origin': 'https://medicaps.pod.ai',
+      'Referer': 'https://medicaps.pod.ai/',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     };
 
-    const classroomsRes = await fetch('https://api.pod.ai/v4/api/classrooms/index-list/?class_group_type=1', {
+    const apiUrl = 'https://api.pod.ai/v4/api/classrooms/index-list/?class_group_type=1';
+    console.log('[TrackTaps Pod] Fetching classrooms from:', apiUrl);
+
+    const classroomsRes = await fetch(apiUrl, {
       headers
     });
 

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import AttendanceEngine from '../services/attendanceEngine';
+import PodAiService from '../services/podaiService';
 
 /**
  * Centralized App Store using Zustand
@@ -272,7 +273,6 @@ const useAppStore = create(
         
         syncPodaiSubjects: async (podaiSubjects) => {
           const { subjects } = get();
-          const PodAiService = require('../services/podaiService').default;
           
           const merged = PodAiService.mergeSubjects(subjects, podaiSubjects);
           set({ subjects: merged });
