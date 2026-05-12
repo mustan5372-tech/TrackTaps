@@ -431,7 +431,7 @@ export default function Pod() {
           maxWidth: '1200px',
           margin: '20px auto 0'
         }}>
-          {['Attendance', 'Activities', 'Syllabus'].map((tab) => (
+          {['Attendance'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -441,7 +441,7 @@ export default function Pod() {
                 color: activeTab === tab ? '#a78bfa' : '#64748b',
                 padding: '12px 0',
                 fontSize: '15px',
-                fontWeight: activeTab === tab ? '700' : '500',
+                fontWeight: '700',
                 cursor: 'pointer',
                 borderBottom: activeTab === tab ? '3px solid #a78bfa' : '3px solid transparent',
                 transition: 'all 0.3s ease'
@@ -587,22 +587,6 @@ export default function Pod() {
                   })}
                 </div>
               )}
-            </div>
-          )}
-
-          {activeTab === 'Activities' && (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
-              <div style={{ fontSize: '40px', marginBottom: '16px' }}>📋</div>
-              <h3 style={{ color: '#f8fafc' }}>Activities Feature</h3>
-              <p>Work in progress. This will show your assignments and tests from Pod.ai.</p>
-            </div>
-          )}
-
-          {activeTab === 'Syllabus' && (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
-              <div style={{ fontSize: '40px', marginBottom: '16px' }}>📖</div>
-              <h3 style={{ color: '#f8fafc' }}>Syllabus Explorer</h3>
-              <p>Coming soon. Track your course progress directly from Pod.ai syllabus.</p>
             </div>
           )}
         </div>
