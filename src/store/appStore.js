@@ -297,7 +297,8 @@ const useAppStore = create(
             stats[subject.id] = AttendanceEngine.calculateSubjectStats(
               subject.name,
               calendarEvents,
-              attendanceData
+              attendanceData,
+              subjects
             );
           });
           

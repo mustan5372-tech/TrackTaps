@@ -24,10 +24,12 @@ class PodAiService {
           ...merged[existingIdx],
           podaiToken: podSub.token,
           podaiSynced: true,
-          // Update attendance data if available
-          present: podSub.attended !== undefined ? podSub.attended : merged[existingIdx].present,
-          total: podSub.total !== undefined ? podSub.total : merged[existingIdx].total,
-          attendance: podSub.averagePercent !== undefined ? podSub.averagePercent : merged[existingIdx].attendance
+          // Store Pod.ai values as initial baseline for continuation
+          initialPresent: podSub.attended !== undefined ? podSub.attended : (merged[existingIdx].initialPresent || 0),
+          initialTotal: podSub.total !== undefined ? podSub.total : (merged[existingIdx].initialTotal || 0),
+          initialMissed: podSub.missed !== undefined ? podSub.missed : (merged[existingIdx].initialMissed || 0),
+          // Store last sync percentage
+          podaiPercentage: podSub.avgAttendance !== undefined ? podSub.avgAttendance : merged[existingIdx].podaiPercentage
         };
       } else {
         // Add new subject
@@ -36,9 +38,10 @@ class PodAiService {
           name: podSub.title,
           podaiToken: podSub.token,
           podaiSynced: true,
-          present: podSub.attended || 0,
-          total: podSub.total || 0,
-          attendance: podSub.averagePercent || 0,
+          initialPresent: podSub.attended || 0,
+          initialTotal: podSub.total || 0,
+          initialMissed: podSub.missed || 0,
+          podaiPercentage: podSub.avgAttendance || 0,
           criteria: 75,
           color: this.getRandomColor(),
           createdAt: new Date().toISOString()

@@ -39,6 +39,8 @@ export default function Pod() {
   const [attendanceLoading, setAttendanceLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('Attendance');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncSuccess, setSyncSuccess] = useState(false);
   const { syncPodaiSubjects, setPodaiSyncStatus, fullSync } = useAppStore();
 
   // Check if already logged in
@@ -94,7 +96,6 @@ export default function Pod() {
       console.log('[Pod] Starting attendance fetch for', classroomsList.length, 'classrooms');
       const attendanceResults = {};
       
-      // Fetch attendance for each classroom individually
       for (const classroom of classroomsList) {
         try {
           console.log('[Pod] Fetching attendance for classroom:', classroom.token);
@@ -130,22 +131,41 @@ export default function Pod() {
       console.log('[Pod] Final attendance results:', attendanceResults);
       setAttendanceData(attendanceResults);
       
-      // Prepare data for store sync
-      const subjectsToSync = classroomsList.map(classroom => ({
-        token: classroom.token,
-        title: classroom.title,
-        ...attendanceResults[classroom.token]
-      }));
-      
-      console.log('[Pod] Syncing subjects to store:', subjectsToSync);
-      syncPodaiSubjects(subjectsToSync);
-      fullSync();
-      setPodaiSyncStatus({ connected: true, lastSync: new Date().toISOString() });
+      // Note: Auto-sync removed as per request for manual sync button
     } catch (err) {
       console.error('Error in fetchAttendance:', err);
       setError(err.message);
     } finally {
       setAttendanceLoading(false);
+    }
+  };
+
+  const handleManualSync = async () => {
+    if (classrooms.length === 0 || Object.keys(attendanceData).length === 0) {
+      setError('No data available to sync. Please wait for attendance to load.');
+      return;
+    }
+
+    setIsSyncing(true);
+    try {
+      const subjectsToSync = classrooms.map(classroom => ({
+        token: classroom.token,
+        title: classroom.title,
+        ...attendanceData[classroom.token]
+      }));
+      
+      console.log('[Pod] Manually syncing subjects to store:', subjectsToSync);
+      await syncPodaiSubjects(subjectsToSync);
+      fullSync();
+      setPodaiSyncStatus({ connected: true, lastSync: new Date().toISOString() });
+      
+      setSyncSuccess(true);
+      setTimeout(() => setSyncSuccess(false), 3000);
+    } catch (err) {
+      console.error('[Pod] Sync failed:', err);
+      setError('Sync failed: ' + err.message);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -328,185 +348,267 @@ export default function Pod() {
   }
 
   return (
-    <div style={{ background: '#0f172a', minHeight: '100vh', color: '#f8fafc', padding: '20px' }}>
-      {/* Header */}
+    <div style={{ 
+      background: '#0f172a', 
+      height: '100vh', 
+      color: '#f8fafc', 
+      display: 'flex', 
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
+      {/* Fixed Header */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '32px',
-        maxWidth: '1200px',
-        margin: '0 auto 32px'
+        padding: '20px',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+        background: '#0f172a',
+        zIndex: 10
       }}>
-        <div>
-          <h1 style={{ fontSize: '28px', fontWeight: '700', margin: '0 0 8px 0' }}>Pod Dashboard</h1>
-          <p style={{ color: '#94a3b8', margin: 0 }}>Welcome, {displayName}</p>
-        </div>
-        <button
-          onClick={handleLogout}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#ef4444',
-            padding: '10px 16px',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: '500',
-            fontSize: '14px'
-          }}
-        >
-          <LogOut size={18} />
-          Logout
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div style={{
-        display: 'flex',
-        gap: '24px',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-        marginBottom: '24px',
-        maxWidth: '1200px',
-        margin: '0 auto 24px'
-      }}>
-        {['Attendance', 'Activities', 'Syllabus'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: activeTab === tab ? '#a78bfa' : '#64748b',
-              padding: '12px 0',
-              fontSize: '16px',
-              fontWeight: activeTab === tab ? '600' : '400',
-              cursor: 'pointer',
-              borderBottom: activeTab === tab ? '2px solid #a78bfa' : 'none',
-              marginBottom: '-1px'
-            }}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {activeTab === 'Attendance' && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
           <div>
-            {error && (
-              <div style={{
+            <h1 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 4px 0', background: 'linear-gradient(135deg, #a78bfa 0%, #c084fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Pod Dashboard
+            </h1>
+            <p style={{ color: '#94a3b8', margin: 0, fontSize: '13px' }}>Welcome back, {displayName}</p>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={handleManualSync}
+              disabled={isSyncing || attendanceLoading}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)',
+                border: 'none',
+                color: '#f8fafc',
+                padding: '10px 20px',
+                borderRadius: '12px',
+                cursor: (isSyncing || attendanceLoading) ? 'not-allowed' : 'pointer',
+                fontWeight: '700',
+                fontSize: '14px',
+                boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
+                transition: 'all 0.3s ease',
+                opacity: (isSyncing || attendanceLoading) ? 0.7 : 1
+              }}
+            >
+              {isSyncing ? 'Syncing...' : 'Sync to TrackTaps'}
+              {!isSyncing && <span>🔄</span>}
+            </button>
+
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
                 background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: '8px',
-                padding: '12px',
-                marginBottom: '20px',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
                 color: '#ef4444',
-                fontSize: '13px'
-              }}>
-                Error: {error}
-              </div>
-            )}
-            {attendanceLoading ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
-                Loading attendance data...
-              </div>
-            ) : classrooms.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
-                No classrooms found
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-                {classrooms.map((classroom) => {
-                  const att = attendanceData[classroom.token] || {};
-                  const percentage = att.total > 0 ? Math.round((att.attended / att.total) * 100) : 0;
-                  
-                  return (
-                    <div
-                      key={classroom.token}
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
-                        border: '1px solid rgba(139, 92, 246, 0.2)',
-                        borderRadius: '12px',
-                        padding: '20px'
-                      }}
-                    >
-                      <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
-                        {classroom.title}
-                      </h3>
-                      {classroom.creatorDetails?.name && (
-                        <p style={{ color: '#94a3b8', fontSize: '13px', margin: '0 0 16px 0' }}>
-                          {classroom.creatorDetails.name}
-                        </p>
-                      )}
-                      
-                      {att.total === undefined ? (
-                        <p style={{ color: '#94a3b8', fontSize: '13px' }}>Loading...</p>
-                      ) : (
-                        <>
-                          <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: '12px',
-                            marginBottom: '16px'
-                          }}>
-                            <div>
-                              <p style={{ color: '#94a3b8', fontSize: '12px', margin: '0 0 4px 0' }}>Attendance</p>
-                              <p style={{
-                                fontSize: '24px',
-                                fontWeight: '700',
-                                margin: 0,
-                                color: getAttendanceColor(percentage)
-                              }}>
-                                {percentage}%
-                              </p>
-                            </div>
-                            <div>
-                              <p style={{ color: '#94a3b8', fontSize: '12px', margin: '0 0 4px 0' }}>Classes</p>
-                              <p style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
-                                {att.attended}/{att.total}
-                              </p>
-                            </div>
-                          </div>
+                padding: '10px 16px',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '14px'
+              }}
+            >
+              <LogOut size={18} />
+              Logout
+            </button>
+          </div>
+        </div>
 
-                          <div style={{
-                            height: '4px',
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            borderRadius: '2px',
-                            overflow: 'hidden'
+        {/* Tabs Bar */}
+        <div style={{
+          display: 'flex',
+          gap: '32px',
+          maxWidth: '1200px',
+          margin: '20px auto 0'
+        }}>
+          {['Attendance', 'Activities', 'Syllabus'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: activeTab === tab ? '#a78bfa' : '#64748b',
+                padding: '12px 0',
+                fontSize: '15px',
+                fontWeight: activeTab === tab ? '700' : '500',
+                cursor: 'pointer',
+                borderBottom: activeTab === tab ? '3px solid #a78bfa' : '3px solid transparent',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Scrollable Content Area */}
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto', 
+        padding: '24px 20px',
+        WebkitOverflowScrolling: 'touch'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          {syncSuccess && (
+            <div style={{
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              borderRadius: '12px',
+              padding: '16px',
+              marginBottom: '24px',
+              color: '#10b981',
+              fontWeight: '600',
+              textAlign: 'center',
+              animation: 'fadeIn 0.3s ease'
+            }}>
+              ✨ Subjects synced successfully! Attendance imported from Pod.ai
+            </div>
+          )}
+
+          {activeTab === 'Attendance' && (
+            <div>
+              {error && (
+                <div style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  marginBottom: '24px',
+                  color: '#ef4444',
+                  fontSize: '14px'
+                }}>
+                  Error: {error}
+                </div>
+              )}
+              
+              {attendanceLoading ? (
+                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                  <div className="spinner" style={{ marginBottom: '16px' }}>⌛</div>
+                  Fetching real attendance data from Pod.ai...
+                </div>
+              ) : classrooms.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                  No classrooms found for your account.
+                </div>
+              ) : (
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+                  gap: '20px' 
+                }}>
+                  {classrooms.map((classroom) => {
+                    const att = attendanceData[classroom.token] || {};
+                    const percentage = att.total > 0 ? Math.round((att.attended / att.total) * 100) : 0;
+                    
+                    return (
+                      <div
+                        key={classroom.token}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          border: '1px solid rgba(255, 255, 255, 0.05)',
+                          borderRadius: '20px',
+                          padding: '24px',
+                          transition: 'all 0.3s ease',
+                          cursor: 'default'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                          <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: '#f8fafc', flex: 1 }}>
+                            {classroom.title}
+                          </h3>
+                          <span style={{ 
+                            fontSize: '12px', 
+                            fontWeight: '800', 
+                            color: getAttendanceColor(percentage),
+                            background: `${getAttendanceColor(percentage)}20`,
+                            padding: '4px 10px',
+                            borderRadius: '100px'
                           }}>
+                            {percentage}%
+                          </span>
+                        </div>
+
+                        {classroom.creatorDetails?.name && (
+                          <p style={{ color: '#64748b', fontSize: '13px', margin: '0 0 20px 0', fontWeight: '500' }}>
+                            👨‍🏫 {classroom.creatorDetails.name}
+                          </p>
+                        )}
+                        
+                        {att.total === undefined ? (
+                          <div style={{ color: '#64748b', fontSize: '13px' }}>Syncing data...</div>
+                        ) : (
+                          <>
                             <div style={{
-                              height: '100%',
-                              width: `${Math.min(percentage, 100)}%`,
-                              background: getAttendanceColor(percentage),
-                              transition: 'width 0.3s'
-                            }} />
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 1fr',
+                              gap: '16px',
+                              marginBottom: '20px'
+                            }}>
+                              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                <p style={{ color: '#64748b', fontSize: '11px', margin: '0 0 4px 0', fontWeight: '700', textTransform: 'uppercase' }}>Attended</p>
+                                <p style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: '#f8fafc' }}>{att.attended}</p>
+                              </div>
+                              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                <p style={{ color: '#64748b', fontSize: '11px', margin: '0 0 4px 0', fontWeight: '700', textTransform: 'uppercase' }}>Total</p>
+                                <p style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: '#f8fafc' }}>{att.total}</p>
+                              </div>
+                            </div>
 
-        {activeTab === 'Activities' && (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
-            Activities feature coming soon...
-          </div>
-        )}
+                            <div style={{
+                              height: '6px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              borderRadius: '10px',
+                              overflow: 'hidden'
+                            }}>
+                              <div style={{
+                                height: '100%',
+                                width: `${Math.min(percentage, 100)}%`,
+                                background: `linear-gradient(90deg, ${getAttendanceColor(percentage)} 0%, #f8fafc 200%)`,
+                                transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)',
+                                boxShadow: `0 0 10px ${getAttendanceColor(percentage)}`
+                              }} />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
-        {activeTab === 'Syllabus' && (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
-            Syllabus feature coming soon...
-          </div>
-        )}
+          {activeTab === 'Activities' && (
+            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+              <div style={{ fontSize: '40px', marginBottom: '16px' }}>📋</div>
+              <h3 style={{ color: '#f8fafc' }}>Activities Feature</h3>
+              <p>Work in progress. This will show your assignments and tests from Pod.ai.</p>
+            </div>
+          )}
+
+          {activeTab === 'Syllabus' && (
+            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+              <div style={{ fontSize: '40px', marginBottom: '16px' }}>📖</div>
+              <h3 style={{ color: '#f8fafc' }}>Syllabus Explorer</h3>
+              <p>Coming soon. Track your course progress directly from Pod.ai syllabus.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
+  );
+}
   );
 }

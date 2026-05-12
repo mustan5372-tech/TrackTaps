@@ -124,34 +124,41 @@ class AttendanceEngine {
   /**
    * Calculate attendance statistics for a subject
    */
-  static calculateSubjectStats(subjectName, calendarEvents, attendanceData) {
+  static calculateSubjectStats(subjectName, calendarEvents, attendanceData, subjects = []) {
     const subjectEvents = calendarEvents.filter(e => e.subjectName === subjectName);
+    const subject = subjects.find(s => s.name === subjectName);
 
-    let present = 0;
-    let absent = 0;
+    // Baseline from Pod.ai or other imports
+    let present = subject?.initialPresent || 0;
+    let total = subject?.initialTotal || 0;
+    
+    let tracktapsPresent = 0;
+    let tracktapsAbsent = 0;
     let off = 0;
     let unmarked = 0;
 
     subjectEvents.forEach(event => {
       const state = this.getAttendanceState(event.id, attendanceData);
-      if (state === 'present') present++;
-      else if (state === 'absent') absent++;
+      if (state === 'present') tracktapsPresent++;
+      else if (state === 'absent') tracktapsAbsent++;
       else if (state === 'off') off++;
       else unmarked++;
     });
 
-    const total = present + absent; // Off days don't count
+    present += tracktapsPresent;
+    total += (tracktapsPresent + tracktapsAbsent);
+
     const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
 
     return {
       subjectName,
       present,
-      absent,
+      absent: total - present,
       off,
       unmarked,
       total,
       percentage,
-      status: percentage >= 75 ? 'safe' : percentage >= 65 ? 'warning' : 'critical'
+      status: percentage >= (subject?.criteria || 75) ? 'safe' : percentage >= 65 ? 'warning' : 'critical'
     };
   }
 
@@ -168,7 +175,7 @@ class AttendanceEngine {
     let criticalSubjects = 0;
 
     const subjectStats = subjects.map(subject => {
-      const stats = this.calculateSubjectStats(subject.name, calendarEvents, attendanceData);
+      const stats = this.calculateSubjectStats(subject.name, calendarEvents, attendanceData, subjects);
 
       totalPresent += stats.present;
       totalAbsent += stats.absent;
