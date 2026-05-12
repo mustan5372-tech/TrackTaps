@@ -75,10 +75,10 @@ function ContactUs() {
     setError('');
 
     try {
-      // Try sending via API first
+      // Direct API Submission (No mailto fallback as requested)
       const apiUrl = '/api/contact';
       
-      console.log('📤 Attempting to send contact form via API...');
+      console.log('📤 Sending secure feedback directly from website...');
       
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -96,41 +96,22 @@ function ContactUs() {
 
       if (response.ok && data.success) {
         setSubmitted(true);
-        showToastMessage('✅ Your message has been sent successfully!', 'success');
+        showToastMessage('✅ Your message has been sent directly to the team!', 'success');
         resetForm();
       } else {
-        // If API fails (e.g. missing RESEND_API_KEY), fallback to mailto
-        console.warn('⚠️ API submission failed or not configured. Falling back to mailto...');
-        handleMailtoFallback();
+        // Handle specific server-side configuration issues
+        if (data.message && data.message.includes('not configured')) {
+          throw new Error('Email service is currently being configured. Please check back in a few minutes.');
+        }
+        throw new Error(data.message || 'Failed to send message via website. Please try again later.');
       }
 
     } catch (err) {
-      console.error('❌ API Error:', err);
-      // Fallback for network errors or missing local route
-      handleMailtoFallback();
+      console.error('❌ Submission Error:', err);
+      showToastMessage(err.message || 'Server error. Please try again later.', 'error');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleMailtoFallback = () => {
-    const subject = encodeURIComponent(`[${formData.category.toUpperCase()}] ${formData.subject}`);
-    const body = encodeURIComponent(
-      `Name: ${formData.name}\n` +
-      `Email: ${formData.email}\n` +
-      `Category: ${formData.category}\n\n` +
-      `Message:\n${formData.message}`
-    );
-    
-    const mailtoUrl = `mailto:tracktaps@gmail.com?subject=${subject}&body=${body}`;
-    
-    // Open user's email client
-    window.location.href = mailtoUrl;
-    
-    setSubmitted(true);
-    showToastMessage('✉️ Opening your email app to send the message...', 'success');
-    
-    resetForm();
   };
 
   const resetForm = () => {
