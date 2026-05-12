@@ -96,13 +96,15 @@ body.no-glass * {
 }
 
 
-/* Layout Container */
+/* Layout Container - FIXED ARCHITECTURE */
 .app-container {
     display: flex;
     height: 100vh;
     width: 100%;
     background: var(--bg-deep);
     overflow: hidden;
+    position: relative;
+    z-index: 1;
 }
 
 .loading-spinner {
@@ -120,7 +122,7 @@ body.no-glass * {
     to { transform: rotate(360deg); }
 }
 
-/* Sidebar Styling */
+/* Sidebar Styling - FIXED POSITIONING */
 .sidebar {
     width: 260px;
     background: rgba(7, 11, 26, 0.4);
@@ -130,8 +132,10 @@ body.no-glass * {
     flex-direction: column;
     flex-shrink: 0;
     position: relative;
-    z-index: 2000; /* Safe elevation above main content */
-    pointer-events: auto;
+    z-index: 100;
+    pointer-events: auto !important;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Branding */
@@ -238,12 +242,13 @@ body.no-glass * {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    flex: 1; /* Occupy remaining space */
-    width: auto; /* Don't force 100% which might overlap sidebar */
+    width: auto;
     overflow-y: auto;
     overflow-x: hidden;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 1;
 }
 
 .main-content {
@@ -269,6 +274,21 @@ body.no-glass * {
     gap: 24px;
 }
 
+/* Mobile: Hero stacks vertically */
+@media (max-width: 1024px) {
+    .dashboard-hero {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-hero {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
 .hero-welcome {
     background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(30, 41, 59, 0.5) 100%);
     border: 1px solid var(--glass-border);
@@ -279,6 +299,18 @@ body.no-glass * {
     justify-content: center;
     position: relative;
     overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .hero-welcome {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-welcome {
+        padding: 16px;
+    }
 }
 
 .hero-welcome::before {
@@ -301,11 +333,35 @@ body.no-glass * {
     z-index: 1;
 }
 
+@media (max-width: 768px) {
+    .hero-welcome h2 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-welcome h2 {
+        font-size: 20px;
+    }
+}
+
 .hero-welcome p {
     color: var(--text-muted);
     font-size: 16px;
     position: relative;
     z-index: 1;
+}
+
+@media (max-width: 768px) {
+    .hero-welcome p {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-welcome p {
+        font-size: 12px;
+    }
 }
 
 .hero-overall-stats {
@@ -322,6 +378,18 @@ body.no-glass * {
     box-shadow: var(--shadow-premium);
 }
 
+@media (max-width: 768px) {
+    .hero-overall-stats {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-overall-stats {
+        padding: 16px;
+    }
+}
+
 .overall-percentage {
     font-size: 48px;
     font-weight: 800;
@@ -333,6 +401,18 @@ body.no-glass * {
     margin-bottom: 4px;
 }
 
+@media (max-width: 768px) {
+    .overall-percentage {
+        font-size: 36px;
+    }
+}
+
+@media (max-width: 480px) {
+    .overall-percentage {
+        font-size: 28px;
+    }
+}
+
 .overall-label {
     color: var(--text-dim);
     text-transform: uppercase;
@@ -341,11 +421,38 @@ body.no-glass * {
     font-weight: 600;
 }
 
+@media (max-width: 480px) {
+    .overall-label {
+        font-size: 10px;
+    }
+}
+
 /* Dashboard Grid */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
 }
 
 .dashboard-card {
@@ -441,12 +548,45 @@ body.no-glass * {
     gap: 16px;
 }
 
+@media (max-width: 1024px) {
+    .quick-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .quick-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .quick-stats-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
 .stat-pill {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: var(--radius-md);
     padding: 16px;
     text-align: center;
+}
+
+@media (max-width: 768px) {
+    .stat-pill {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-pill {
+        padding: 10px;
+    }
 }
 
 .stat-pill-value {
@@ -456,11 +596,29 @@ body.no-glass * {
     margin-bottom: 2px;
 }
 
+@media (max-width: 768px) {
+    .stat-pill-value {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-pill-value {
+        font-size: 18px;
+    }
+}
+
 .stat-pill-label {
     font-size: 11px;
     color: var(--text-dim);
     text-transform: uppercase;
     font-weight: 500;
+}
+
+@media (max-width: 480px) {
+    .stat-pill-label {
+        font-size: 10px;
+    }
 }
 
 /* Today's Schedule Card */
@@ -1038,8 +1196,22 @@ body.no-glass * {
 /* Subjects Grid */
 .subjects-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .subjects-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .subjects-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
 }
 
 .subject-card {
@@ -1319,8 +1491,9 @@ body.no-glass * {
         -webkit-backdrop-filter: blur(24px);
         border-radius: 20px;
         border: 1px solid rgba(139, 92, 246, 0.2);
-        z-index: 1000;
+        z-index: 20000; /* Absolute top priority for navigation */
         box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+        pointer-events: auto !important;
     }
 
     .app-title {
@@ -1772,10 +1945,11 @@ body.no-glass * {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
-    z-index: 1000;
+    z-index: 20000; /* Absolute top priority */
     justify-content: space-around;
     align-items: center;
     padding: 0 10px;
+    pointer-events: auto !important;
 }
 
 .mobile-nav-btn {
@@ -2797,7 +2971,7 @@ body.no-glass * {
 
 /* Ensure modals always win z-index */
 .modal.active {
-    z-index: 6000;
+    z-index: 10000;
 }
 
 .modal.active ~ #ai-assistant-wrapper {
@@ -2834,19 +3008,23 @@ body.no-glass * {
 #ai-assistant-wrapper {
     position: fixed;
     inset: 0;
-    pointer-events: none; /* Allow clicks to pass through to sidebar/page */
+    pointer-events: none !important;
     z-index: 1500;
 }
 
+#ai-fab, #ai-chat-window, .cursor-aura {
+    pointer-events: auto !important;
+}
+
 .cursor-aura {
+    pointer-events: none !important; /* CRITICAL: Aura must NEVER intercept clicks */
     position: fixed;
     width: 400px;
     height: 400px;
     background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    pointer-events: none; /* Never block clicks */
-    z-index: 9999;
+    z-index: 1; /* Move behind all interactive UI */
     mix-blend-mode: screen;
     transition: opacity 0.3s ease;
 }
@@ -3648,3 +3826,112 @@ body.theme-holographic::before {
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
+
+/* --- Native & PWA Enhancements --- */
+
+:root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+body.native-app {
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body.native-app .mobile-header {
+    padding-top: calc(16px + var(--safe-top));
+}
+
+body.native-app .mobile-nav {
+    padding-bottom: calc(12px + var(--safe-bottom));
+    height: calc(70px + var(--safe-bottom));
+}
+
+/* Modal Overlay Base */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(2, 6, 23, 0.85);
+    display: none; /* Default to hidden to prevent blocking clicks on load */
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: opacity 0.3s ease;
+    z-index: 25000; /* System modals are above nav but hidden by default */
+}
+
+/* Offline & Update Animations */
+@keyframes pulse-slow {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+
+.offline-animation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Force Update Modal Specifics */
+#update-modal .modal-content {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(139, 92, 246, 0.1);
+}
+
+/* Mobile Nav Adjustments for Standalone */
+@media (display-mode: standalone) {
+    .mobile-nav {
+        padding-bottom: var(--safe-bottom);
+    }
+}
+
+/* Fix for iOS momentum scrolling */
+.content-wrapper {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent text selection on buttons for native feel */
+button, .nav-btn, .mobile-nav-btn {
+    user-select: none;
+}
+
+/* Settings Checkbox Styling */
+input[type="checkbox"] {
+    appearance: none;
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+}
+
+input[type="checkbox"]:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+}
+
+/* Update Status Text Animation */
+#update-status-text {
+    transition: all 0.3s ease;
+}
+

@@ -1,6 +1,7 @@
 // TrackTaps - Logic with Subject-Wise Attendance Management
 document.addEventListener('DOMContentLoaded', () => {
     console.log('TrackTaps initialized 🚀');
+    initAppEnvironment();
 
     // --- State Management ---
     let currentDate = new Date();
@@ -28,6 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
         gridStartHour: 8,
         gridEndHour: 18
     };
+
+    // --- App Environment & Versioning ---
+    const APP_VERSION = "1.0.0";
+    const IS_NATIVE = window.hasOwnProperty('Capacitor');
+    const PLATFORM = IS_NATIVE ? Capacitor.getPlatform() : 'web';
 
     // --- Elements ---
     const navButtons = document.querySelectorAll('.nav-btn');
@@ -104,6 +110,82 @@ document.addEventListener('DOMContentLoaded', () => {
         @keyframes toast-out { from { bottom: 100px; opacity: 1; } to { bottom: 120px; opacity: 0; } }
     `;
     document.head.appendChild(style);
+
+    // --- App Update System ---
+    const checkAppUpdate = async (manual = false) => {
+        try {
+            if (manual) showToast("Checking for updates...");
+            
+            const response = await fetch('version.json?t=' + Date.now());
+            const data = await response.json();
+            
+            const updateStatusText = document.getElementById('update-status-text');
+            const currentVerDisplay = document.getElementById('app-current-version');
+            if (currentVerDisplay) currentVerDisplay.textContent = APP_VERSION;
+
+            if (data.version !== APP_VERSION) {
+                // Show update modal
+                const updateModal = document.getElementById('update-modal');
+                const changelogEl = document.getElementById('update-changelog');
+                if (changelogEl) changelogEl.innerHTML = `<p>${data.changelog || 'Performance improvements and bug fixes.'}</p>`;
+                
+                if (updateModal) updateModal.style.display = 'flex';
+                if (updateStatusText) {
+                    updateStatusText.textContent = "New version available!";
+                    updateStatusText.style.color = "#f59e0b";
+                }
+            } else {
+                if (manual) showToast("You are on the latest version!");
+                if (updateStatusText) {
+                    updateStatusText.textContent = "Your app is up to date.";
+                    updateStatusText.style.color = "#64748b";
+                }
+            }
+        } catch (error) {
+            console.error("Update check failed", error);
+            if (manual) showToast("Update check failed. Try again later.");
+        }
+    };
+
+    const initAppEnvironment = () => {
+        if (IS_NATIVE) {
+            document.body.classList.add('native-app');
+            const appSettingsCard = document.getElementById('app-settings-card');
+            if (appSettingsCard) appSettingsCard.style.display = 'block';
+            
+            // Capacitor specific initialization
+            if (window.StatusBar) {
+                StatusBar.setBackgroundColor({ color: '#020617' });
+                StatusBar.setStyle({ style: 'DARK' });
+            }
+        }
+        
+        // Connectivity monitoring
+        window.addEventListener('online', () => {
+            const offlineOverlay = document.getElementById('offline-overlay');
+            if (offlineOverlay) offlineOverlay.style.display = 'none';
+            showToast("Back online!");
+        });
+
+        window.addEventListener('offline', () => {
+            const offlineOverlay = document.getElementById('offline-overlay');
+            if (offlineOverlay) offlineOverlay.style.display = 'flex';
+        });
+
+        // Initial update check
+        setTimeout(() => checkAppUpdate(false), 2000);
+    };
+
+    // Update button listener
+    const checkUpdateBtn = document.getElementById('check-update-btn');
+    if (checkUpdateBtn) checkUpdateBtn.addEventListener('click', () => checkAppUpdate(true));
+    
+    const modalUpdateBtn = document.getElementById('modal-update-btn');
+    if (modalUpdateBtn) {
+        modalUpdateBtn.addEventListener('click', () => {
+            window.location.href = "https://www.tracktaps.online/download";
+        });
+    }
 
     // --- AI Prediction Engine ---
     const getSafeMisses = (attended, total, criteria) => {
@@ -428,18 +510,31 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHomeDashboard();
     };
 
-    const switchView = (targetViewId, updateUrl = true) => {
-        const routeMap = {
-            'home-view': '/',
-            'calendar-view': '/calendar',
-            'timetable-view': '/timetable',
-            'subjects-view': '/subjects',
-            'history-view': '/history',
-            'insights-view': '/insights',
-            'about-view': '/about',
-            'settings-view': '/settings'
-        };
+    // ROUTING SYSTEM - CLEAN IMPLEMENTATION
+    const routeMap = {
+        '/': 'home-view',
+        '/calendar': 'calendar-view',
+        '/timetable': 'timetable-view',
+        '/subjects': 'subjects-view',
+        '/history': 'history-view',
+        '/insights': 'insights-view',
+        '/about': 'about-view',
+        '/settings': 'settings-view'
+    };
 
+    const viewToRoute = {
+        'home-view': '/',
+        'calendar-view': '/calendar',
+        'timetable-view': '/timetable',
+        'subjects-view': '/subjects',
+        'history-view': '/history',
+        'insights-view': '/insights',
+        'about-view': '/about',
+        'settings-view': '/settings'
+    };
+
+    const switchView = (targetViewId, updateUrl = true) => {
+        // Show/hide views
         views.forEach(view => {
             view.classList.remove('active');
             if (view.id === targetViewId) {
@@ -457,7 +552,9 @@ document.addEventListener('DOMContentLoaded', () => {
         navButtons.forEach(btn => {
             const viewName = btn.innerText.toLowerCase().trim();
             btn.classList.remove('active');
-            if (routeMap[targetViewId].substring(1) === viewName || (targetViewId === 'home-view' && viewName === 'home')) {
+            const route = viewToRoute[targetViewId];
+            const routeName = route === '/' ? 'home' : route.substring(1);
+            if (routeName === viewName) {
                 btn.classList.add('active');
             }
         });
@@ -470,18 +567,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Update URL
         if (updateUrl) {
-            const url = routeMap[targetViewId] || '/';
+            const url = viewToRoute[targetViewId] || '/';
             window.history.pushState({ viewId: targetViewId }, '', url);
         }
 
+        // Render view content
         if (targetViewId === 'home-view') renderHomeDashboard();
         if (targetViewId === 'subjects-view') renderSubjects();
         if (targetViewId === 'timetable-view') renderTimetable();
         if (targetViewId === 'insights-view') renderInsights();
         if (targetViewId === 'history-view') renderHistory();
 
-        // Smart Chatbot Visibility & Behavior
+        // Smart Chatbot Visibility
         const chatbotWrapper = document.getElementById('ai-assistant-wrapper');
         const chatWindow = document.getElementById('ai-chat-window');
         if (chatbotWrapper) {
@@ -497,23 +596,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Make switchView global for onclick attributes
     window.switchView = switchView;
 
+    // Handle direct URL navigation
     const handleRouting = () => {
         const path = window.location.pathname;
-        const pathToView = {
-            '/': 'home-view',
-            '/calendar': 'calendar-view',
-            '/timetable': 'timetable-view',
-            '/subjects': 'subjects-view',
-            '/history': 'history-view',
-            '/insights': 'insights-view',
-            '/about': 'about-view',
-            '/settings': 'settings-view'
-        };
-
-        const viewId = pathToView[path] || 'home-view';
+        const viewId = routeMap[path] || 'home-view';
         switchView(viewId, false);
     };
 
+    // Handle browser back/forward
     window.addEventListener('popstate', (event) => {
         if (event.state && event.state.viewId) {
             switchView(event.state.viewId, false);

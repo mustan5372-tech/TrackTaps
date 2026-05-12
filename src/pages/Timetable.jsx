@@ -1,61 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import AttendanceEngine from '../services/attendanceEngine';
+import useAppStore from '../store/appStore';
 
 function Timetable() {
-  const [subjects, setSubjects] = useState([]);
-  const [timetableData, setTimetableData] = useState({});
   const [selectedCell, setSelectedCell] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Get data from Zustand store
+  const {
+    subjects,
+    timetable,
+    addTimetableEntry,
+    removeTimetableEntry,
+    syncTimetableToCalendar
+  } = useAppStore();
 
   const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
   const timeSlots = Array.from({ length: 10 }, (_, i) => {
     const hour = 8 + i;
     return `${hour.toString().padStart(2, '0')}:00`;
   });
-
-  // Load subjects from localStorage
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('tracktaps_subjects') || '[]');
-    setSubjects(saved);
-  }, []);
-
-  // Load timetable from localStorage
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('tracktaps_timetable_grid') || '{}');
-    setTimetableData(saved);
-  }, []);
-
-  // Save timetable to localStorage
-  const saveTimetable = (newData) => {
-    setTimetableData(newData);
-    localStorage.setItem('tracktaps_timetable_grid', JSON.stringify(newData));
-    
-    // Auto-sync to calendar
-    syncToCalendar(newData);
-  };
-
-  // Sync timetable to calendar
-  const syncToCalendar = (timetable) => {
-    const subjects = JSON.parse(localStorage.getItem('tracktaps_subjects') || '[]');
-    const calendarEvents = AttendanceEngine.generateCalendarEventsFromTimetable(timetable, subjects);
-    localStorage.setItem('tracktaps_calendar_events', JSON.stringify(calendarEvents));
-    
-    // Update dashboard stats
-    const attendanceData = JSON.parse(localStorage.getItem('tracktaps_attendance_data') || '{}');
-    const stats = AttendanceEngine.calculateOverallStats(subjects, calendarEvents, attendanceData);
-    localStorage.setItem('attendanceStats', JSON.stringify({
-      totalSubjects: subjects.length,
-      streak: 0,
-      safeSubjects: stats.safeSubjects,
-      criticalSubjects: stats.criticalSubjects,
-      overallPercentage: stats.overallPercentage,
-      present: stats.totalPresent,
-      missed: stats.totalAbsent,
-      total: stats.totalClasses
-    }));
-  };
 
   const handleCellClick = (dayIdx, timeSlot) => {
     setSelectedCell({ dayIdx, timeSlot });
@@ -66,36 +31,31 @@ function Timetable() {
     if (!selectedCell) return;
 
     const cellKey = `${selectedCell.dayIdx}-${selectedCell.timeSlot}`;
-    const newData = { ...timetableData };
     
-    if (newData[cellKey]?.name === subject.name) {
+    if (timetable[cellKey]?.name === subject.name) {
       // Remove if same subject clicked
-      delete newData[cellKey];
+      removeTimetableEntry(selectedCell.dayIdx, selectedCell.timeSlot);
     } else {
       // Add/update subject
-      newData[cellKey] = {
+      addTimetableEntry(selectedCell.dayIdx, selectedCell.timeSlot, {
         name: subject.name,
         color: subject.color || '#8b5cf6',
         criteria: subject.criteria
-      };
+      });
     }
 
-    saveTimetable(newData);
     setShowModal(false);
     setSelectedCell(null);
     setSearchQuery('');
   };
 
   const handleRemoveSubject = (dayIdx, timeSlot) => {
-    const cellKey = `${dayIdx}-${timeSlot}`;
-    const newData = { ...timetableData };
-    delete newData[cellKey];
-    saveTimetable(newData);
+    removeTimetableEntry(dayIdx, timeSlot);
   };
 
   const getCellContent = (dayIdx, timeSlot) => {
     const cellKey = `${dayIdx}-${timeSlot}`;
-    return timetableData[cellKey];
+    return timetable[cellKey];
   };
 
   const filteredSubjects = subjects.filter(s =>

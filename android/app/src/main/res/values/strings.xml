@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TrackTaps</string>
+    <string name="title_activity_main">TrackTaps</string>
+    <string name="package_name">com.tracktaps.app</string>
+    <string name="custom_url_scheme">com.tracktaps.app</string>
+</resources>

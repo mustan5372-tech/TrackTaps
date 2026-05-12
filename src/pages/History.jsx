@@ -1,25 +1,128 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import useAppStore from '../store/appStore';
 
 function History() {
-  const [history, setHistory] = useState([]);
+  // Get history from Zustand store
+  const { history } = useAppStore();
 
-  useEffect(() => {
-    const savedHistory = JSON.parse(localStorage.getItem('attendanceHistory') || '[]');
-    setHistory(savedHistory);
-  }, []);
+  const getActionIcon = (type) => {
+    const icons = {
+      'subject_added': '📚',
+      'subject_updated': '✏️',
+      'subject_deleted': '🗑️',
+      'timetable_updated': '🕒',
+      'attendance_marked': '✓',
+      'attendance_bulk_marked': '✓✓',
+      'attendance_cleared': '✗',
+      'podai_synced': '🔗',
+      'ai_import': '🤖'
+    };
+    return icons[type] || '📝';
+  };
+
+  const getActionColor = (type) => {
+    if (type.includes('added') || type.includes('marked')) return '#10b981';
+    if (type.includes('deleted') || type.includes('cleared')) return '#ef4444';
+    if (type.includes('updated')) return '#f59e0b';
+    if (type.includes('synced') || type.includes('import')) return '#a78bfa';
+    return '#94a3b8';
+  };
+
+  const formatTime = (isoString) => {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
 
   return (
-    <div className="history-view">
-      <header className="view-header">
-        <h2>Attendance History</h2>
+    <div className="history-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: '800', color: '#f8fafc' }}>Attendance History</h2>
+        <span style={{ fontSize: '12px', color: '#94a3b8' }}>{history.length} entries</span>
       </header>
+
       <div id="history-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {history.length === 0 ? (
-          <p style={{ color: '#94a3b8', textAlign: 'center', padding: '32px' }}>No attendance history yet</p>
+          <div style={{
+            textAlign: 'center',
+            padding: '48px 32px',
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%)',
+            border: '1px solid rgba(139, 92, 246, 0.15)',
+            borderRadius: '16px',
+            color: '#94a3b8'
+          }}>
+            <p style={{ fontSize: '16px', marginBottom: '8px' }}>No history yet</p>
+            <p style={{ fontSize: '13px' }}>Your actions will appear here</p>
+          </div>
         ) : (
-          history.map((entry, idx) => (
-            <div key={idx} className="history-entry">
-              <p>{entry.date}: {entry.subject} - {entry.status}</p>
+          history.map((entry) => (
+            <div
+              key={entry.id}
+              style={{
+                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
+                border: '1px solid rgba(139, 92, 246, 0.2)',
+                borderRadius: '12px',
+                padding: '16px',
+                display: 'flex',
+                gap: '16px',
+                alignItems: 'flex-start'
+              }}
+            >
+              <div style={{
+                fontSize: '24px',
+                minWidth: '40px',
+                textAlign: 'center'
+              }}>
+                {getActionIcon(entry.type)}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  color: '#f8fafc',
+                  fontWeight: '600',
+                  marginBottom: '4px'
+                }}>
+                  {entry.description}
+                </div>
+                {entry.subject && (
+                  <div style={{
+                    fontSize: '12px',
+                    color: '#a78bfa',
+                    marginBottom: '4px'
+                  }}>
+                    Subject: {entry.subject}
+                  </div>
+                )}
+                <div style={{
+                  fontSize: '11px',
+                  color: '#64748b'
+                }}>
+                  {formatDate(entry.timestamp)} at {formatTime(entry.timestamp)}
+                </div>
+              </div>
+              <div style={{
+                background: getActionColor(entry.type),
+                color: '#f8fafc',
+                padding: '4px 12px',
+                borderRadius: '6px',
+                fontSize: '10px',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                whiteSpace: 'nowrap'
+              }}>
+                {entry.type.replace(/_/g, ' ')}
+              </div>
             </div>
           ))
         )}

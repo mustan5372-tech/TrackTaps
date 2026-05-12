@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import PodAiService from '../services/podaiService';
 import useAppStore from '../store/appStore';
+import ContactUs from '../components/ContactUs';
 
 function Home() {
   const {
@@ -349,6 +349,9 @@ function Home() {
           <div className="ai-promo-icon" style={{ fontSize: '64px', opacity: 0.8, filter: 'drop-shadow(0 0 20px rgba(139, 92, 246, 0.4))' }}>🤖</div>
         </div>
       </section>
+
+      {/* Contact Us Section */}
+      <ContactUs />
     </div>
   );
 }

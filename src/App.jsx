@@ -9,6 +9,7 @@ import Insights from './pages/Insights';
 import History from './pages/History';
 import About from './pages/About';
 import Settings from './pages/Settings';
+import Pod from './pages/Pod';
 
 function App() {
   useEffect(() => {
@@ -19,18 +20,17 @@ function App() {
 
   return (
     <BrowserRouter>
-      <AppShell>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/timetable" element={<Timetable />} />
-          <Route path="/subjects" element={<Subjects />} />
-          <Route path="/insights" element={<Insights />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </AppShell>
+      <Routes>
+        <Route path="/pod" element={<Pod />} />
+        <Route path="/" element={<AppShell><Home /></AppShell>} />
+        <Route path="/calendar" element={<AppShell><Calendar /></AppShell>} />
+        <Route path="/timetable" element={<AppShell><Timetable /></AppShell>} />
+        <Route path="/subjects" element={<AppShell><Subjects /></AppShell>} />
+        <Route path="/insights" element={<AppShell><Insights /></AppShell>} />
+        <Route path="/history" element={<AppShell><History /></AppShell>} />
+        <Route path="/about" element={<AppShell><About /></AppShell>} />
+        <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
+      </Routes>
     </BrowserRouter>
   );
 }

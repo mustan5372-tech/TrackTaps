@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import AttendanceEngine from '../services/attendanceEngine';
 
 /**
  * Centralized App Store using Zustand
@@ -120,7 +121,6 @@ const useAppStore = create(
         
         syncTimetableToCalendar: () => {
           const { timetable, subjects } = get();
-          const AttendanceEngine = require('../services/attendanceEngine').default;
           
           const events = AttendanceEngine.generateCalendarEventsFromTimetable(timetable, subjects);
           set({ calendarEvents: events });
@@ -132,7 +132,6 @@ const useAppStore = create(
         setAttendanceData: (data) => set({ attendanceData: data }),
         
         markAttendance: (eventId, state) => {
-          const AttendanceEngine = require('../services/attendanceEngine').default;
           const newData = AttendanceEngine.markAttendance(eventId, state, get().attendanceData);
           
           set({ attendanceData: newData });
@@ -156,7 +155,6 @@ const useAppStore = create(
         },
         
         markAllForDate: (dateStr, state) => {
-          const AttendanceEngine = require('../services/attendanceEngine').default;
           const newData = AttendanceEngine.markAllForDate(dateStr, state, get().calendarEvents, get().attendanceData);
           
           set({ attendanceData: newData });
@@ -206,7 +204,6 @@ const useAppStore = create(
         
         updateDashboardStats: () => {
           const { subjects, calendarEvents, attendanceData } = get();
-          const AttendanceEngine = require('../services/attendanceEngine').default;
           
           const stats = AttendanceEngine.calculateOverallStats(subjects, calendarEvents, attendanceData);
           
@@ -239,7 +236,6 @@ const useAppStore = create(
         
         generateInsights: () => {
           const { subjects, calendarEvents, attendanceData } = get();
-          const AttendanceEngine = require('../services/attendanceEngine').default;
           
           const insights = AttendanceEngine.generateInsights(subjects, calendarEvents, attendanceData);
           set({ insights });
@@ -295,7 +291,6 @@ const useAppStore = create(
         
         updateSubjectStats: () => {
           const { subjects, calendarEvents, attendanceData } = get();
-          const AttendanceEngine = require('../services/attendanceEngine').default;
           
           const stats = {};
           subjects.forEach(subject => {

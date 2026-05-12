@@ -1,51 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AttendanceEngine from '../services/attendanceEngine';
+import useAppStore from '../store/appStore';
 
 function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 1)); // May 2026
-  const [calendarEvents, setCalendarEvents] = useState([]);
-  const [attendanceData, setAttendanceData] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [subjects, setSubjects] = useState([]);
-  const [timetableData, setTimetableData] = useState({});
 
-  // Load data on mount
+  // Get data from Zustand store
+  const {
+    calendarEvents,
+    attendanceData,
+    subjects,
+    markAttendance,
+    markAllForDate,
+    clearAttendance,
+    updateDashboardStats,
+    updateSubjectStats,
+    generateInsights
+  } = useAppStore();
+
+  // Sync on mount
   useEffect(() => {
-    const savedSubjects = JSON.parse(localStorage.getItem('tracktaps_subjects') || '[]');
-    const savedTimetable = JSON.parse(localStorage.getItem('tracktaps_timetable_grid') || '{}');
-    const savedAttendance = JSON.parse(localStorage.getItem('tracktaps_attendance_data') || '{}');
-
-    setSubjects(savedSubjects);
-    setTimetableData(savedTimetable);
-    setAttendanceData(savedAttendance);
-
-    // Generate calendar events from timetable
-    const events = AttendanceEngine.generateCalendarEventsFromTimetable(savedTimetable, savedSubjects);
-    setCalendarEvents(events);
-  }, []);
-
-  // Save attendance data whenever it changes
-  useEffect(() => {
-    localStorage.setItem('tracktaps_attendance_data', JSON.stringify(attendanceData));
     updateDashboardStats();
-  }, [attendanceData]);
-
-  // Update dashboard stats
-  const updateDashboardStats = () => {
-    const stats = AttendanceEngine.calculateOverallStats(subjects, calendarEvents, attendanceData);
-    localStorage.setItem('attendanceStats', JSON.stringify({
-      totalSubjects: subjects.length,
-      streak: 0,
-      safeSubjects: stats.safeSubjects,
-      criticalSubjects: stats.criticalSubjects,
-      overallPercentage: stats.overallPercentage,
-      present: stats.totalPresent,
-      missed: stats.totalAbsent,
-      total: stats.totalClasses
-    }));
-  };
+    updateSubjectStats();
+    generateInsights();
+  }, [updateDashboardStats, updateSubjectStats, generateInsights]);
 
   const getDaysInMonth = (date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -72,23 +53,19 @@ function Calendar() {
   };
 
   const handleMarkAttendance = (eventId, state) => {
-    const newData = AttendanceEngine.markAttendance(eventId, state, attendanceData);
-    setAttendanceData(newData);
+    markAttendance(eventId, state);
   };
 
   const handleMarkAllForDate = (state) => {
-    const newData = AttendanceEngine.markAllForDate(selectedDate, state, calendarEvents, attendanceData);
-    setAttendanceData(newData);
+    markAllForDate(selectedDate, state);
   };
 
   const handleClearAttendance = (eventId) => {
-    const newData = AttendanceEngine.clearAttendance(eventId, attendanceData);
-    setAttendanceData(newData);
+    clearAttendance(eventId);
   };
 
   const handleClearAllForDate = () => {
-    const newData = AttendanceEngine.markAllForDate(selectedDate, null, calendarEvents, attendanceData);
-    setAttendanceData(newData);
+    markAllForDate(selectedDate, null);
   };
 
   const getEventsForDate = (day) => {

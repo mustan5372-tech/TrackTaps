@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import logo from '../../icon.png';
 
 function Sidebar() {
   const location = useLocation();
@@ -20,7 +21,7 @@ function Sidebar() {
       <div className="sidebar-branding">
         <Link to="/" className="logo-link">
           <img 
-            src="/assets/logo.png" 
+            src={logo} 
             alt="TrackTaps Logo" 
             className="sidebar-logo"
             style={{

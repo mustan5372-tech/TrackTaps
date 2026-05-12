@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import PodAiService from '../services/podaiService';
+import useAppStore from '../store/appStore';
 
 function Subjects() {
-  const [subjects, setSubjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingIdx, setEditingIdx] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     criteria: 75
   });
-  const [podaiConnected, setPodaiConnected] = useState(false);
-  const [podaiSyncing, setPodaiSyncing] = useState(false);
+
+  // Get data from Zustand store
+  const {
+    subjects,
+    addSubject,
+    updateSubject,
+    deleteSubject
+  } = useAppStore();
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('tracktaps_subjects') || '[]');
-    setSubjects(saved);
-    
-    // Check Pod.ai connection status
-    const connected = PodAiService.isConnected();
-    setPodaiConnected(connected);
+    // Initialize component
   }, []);
 
   const handleSaveSubject = () => {
@@ -27,30 +27,33 @@ function Subjects() {
       return;
     }
 
-    const newSubjects = [...subjects];
     if (editingIdx !== null) {
-      newSubjects[editingIdx] = { ...formData };
+      // Find the subject ID from the subjects array
+      const subjectId = subjects[editingIdx]?.id;
+      if (subjectId) {
+        updateSubject(subjectId, formData);
+      }
     } else {
-      newSubjects.push({ 
-        ...formData, 
-        attendance: 0, 
-        present: 0, 
-        total: 0,
-        color: formData.color || '#8b5cf6'
+      addSubject({
+        name: formData.name,
+        criteria: formData.criteria,
+        color: formData.color || '#8b5cf6',
+        attendance: 0,
+        present: 0,
+        total: 0
       });
     }
 
-    setSubjects(newSubjects);
-    localStorage.setItem('tracktaps_subjects', JSON.stringify(newSubjects));
     setShowModal(false);
     setFormData({ name: '', criteria: 75, color: '#8b5cf6' });
     setEditingIdx(null);
   };
 
   const handleDeleteSubject = (idx) => {
-    const newSubjects = subjects.filter((_, i) => i !== idx);
-    setSubjects(newSubjects);
-    localStorage.setItem('tracktaps_subjects', JSON.stringify(newSubjects));
+    const subjectId = subjects[idx]?.id;
+    if (subjectId) {
+      deleteSubject(subjectId);
+    }
     setShowModal(false);
   };
 
@@ -71,37 +74,11 @@ function Subjects() {
     return '#ef4444';
   };
 
-  const handlePodaiSync = async () => {
-    setPodaiSyncing(true);
-    const result = await PodAiService.syncSubjects();
-    
-    if (result.success) {
-      // Reload subjects from localStorage
-      const updated = JSON.parse(localStorage.getItem('tracktaps_subjects') || '[]');
-      setSubjects(updated);
-      alert(`✅ ${result.message}`);
-    } else {
-      alert(`❌ Sync failed: ${result.message}`);
-    }
-    
-    setPodaiSyncing(false);
-  };
-
   return (
     <div className="subjects-view">
       <header className="view-header">
         <h2>My Subjects</h2>
         <div style={{ display: 'flex', gap: '12px' }}>
-          {podaiConnected && (
-            <button 
-              onClick={handlePodaiSync}
-              disabled={podaiSyncing}
-              className="action-btn present" 
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', padding: '10px 16px', opacity: podaiSyncing ? 0.6 : 1, cursor: podaiSyncing ? 'not-allowed' : 'pointer' }}
-            >
-              <span>{podaiSyncing ? '🔄' : '🔗'}</span> {podaiSyncing ? 'Syncing...' : 'Sync Pod.ai'}
-            </button>
-          )}
           <button id="ai-import-trigger" className="action-btn present" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', padding: '10px 16px' }}>
             <span>✨</span> AI Import
           </button>
