@@ -75,10 +75,10 @@ function ContactUs() {
     setError('');
 
     try {
-      // Send to backend API
-      const apiUrl = import.meta.env.VITE_API_URL || '/api/contact';
+      // Try sending via API first
+      const apiUrl = '/api/contact';
       
-      console.log('📤 Sending contact form to:', apiUrl);
+      console.log('📤 Attempting to send contact form via API...');
       
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -91,54 +91,59 @@ function ContactUs() {
         })
       });
 
-      console.log('📨 API Response status:', response.status);
-
       const data = await response.json();
-      console.log('📨 API Response data:', data);
+      console.log('📨 API Response:', data);
 
-      // Handle network errors
-      if (!response.ok) {
-        // Check if it's a validation error
-        if (response.status === 400) {
-          throw new Error(data.message || 'Please check your form fields');
-        }
-        
-        // Check if it's a server error
-        if (response.status === 500) {
-          console.error('❌ Server error:', data);
-          throw new Error(data.message || 'Email service temporarily unavailable. Please try again later.');
-        }
-        
-        throw new Error(data.message || `Server error: ${response.status}`);
-      }
-
-      // Success
-      if (data.success) {
+      if (response.ok && data.success) {
         setSubmitted(true);
         showToastMessage('✅ Your message has been sent successfully!', 'success');
-        
-        // Reset form after 2 seconds
-        setTimeout(() => {
-          setFormData({
-            name: '',
-            email: '',
-            subject: '',
-            category: 'support',
-            message: ''
-          });
-          setSubmitted(false);
-        }, 2000);
+        resetForm();
       } else {
-        throw new Error(data.message || 'Failed to send message');
+        // If API fails (e.g. missing RESEND_API_KEY), fallback to mailto
+        console.warn('⚠️ API submission failed or not configured. Falling back to mailto...');
+        handleMailtoFallback();
       }
 
     } catch (err) {
-      console.error('❌ Contact form error:', err);
-      const errorMessage = err.message || 'Failed to send message. Please try again later.';
-      showToastMessage(errorMessage, 'error');
+      console.error('❌ API Error:', err);
+      // Fallback for network errors or missing local route
+      handleMailtoFallback();
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleMailtoFallback = () => {
+    const subject = encodeURIComponent(`[${formData.category.toUpperCase()}] ${formData.subject}`);
+    const body = encodeURIComponent(
+      `Name: ${formData.name}\n` +
+      `Email: ${formData.email}\n` +
+      `Category: ${formData.category}\n\n` +
+      `Message:\n${formData.message}`
+    );
+    
+    const mailtoUrl = `mailto:tracktaps@gmail.com?subject=${subject}&body=${body}`;
+    
+    // Open user's email client
+    window.location.href = mailtoUrl;
+    
+    setSubmitted(true);
+    showToastMessage('✉️ Opening your email app to send the message...', 'success');
+    
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setTimeout(() => {
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        category: 'support',
+        message: ''
+      });
+      setSubmitted(false);
+    }, 3000);
   };
 
   return (

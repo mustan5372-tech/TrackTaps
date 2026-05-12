@@ -16,11 +16,13 @@ app.use(express.json());
 import loginHandler from './api/pod/login.js';
 import classroomsHandler from './api/pod/classrooms.js';
 import attendanceHandler from './api/pod/attendance.js';
+import contactHandler from './api/contact.js';
 
 // API Routes
 app.post('/api/pod/login', (req, res) => loginHandler(req, res));
 app.get('/api/pod/classrooms', (req, res) => classroomsHandler(req, res));
 app.get('/api/pod/attendance', (req, res) => attendanceHandler(req, res));
+app.post('/api/contact', (req, res) => contactHandler(req, res));
 
 // Serve static files from dist (built Vite app)
 const distPath = join(__dirname, 'dist');
