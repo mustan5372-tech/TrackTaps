@@ -24,6 +24,83 @@ const LogOut = ({ size = 24 }) => (
   </svg>
 );
 
+const SkeletonCard = () => (
+  <div style={{
+    background: 'rgba(255, 255, 255, 0.02)',
+    border: '1px solid rgba(255, 255, 255, 0.05)',
+    borderRadius: '20px',
+    padding: '24px',
+    height: '220px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+    position: 'relative',
+    overflow: 'hidden'
+  }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ height: '24px', width: '60%', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} className="skeleton-shimmer" />
+      <div style={{ height: '20px', width: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }} className="skeleton-shimmer" />
+    </div>
+    <div style={{ height: '16px', width: '40%', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }} className="skeleton-shimmer" />
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: 'auto' }}>
+      <div style={{ height: '50px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }} className="skeleton-shimmer" />
+      <div style={{ height: '50px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }} className="skeleton-shimmer" />
+    </div>
+    <div style={{ height: '6px', width: '100%', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }} className="skeleton-shimmer" />
+  </div>
+);
+
+const LoadingStatus = () => {
+  const [msgIdx, setMsgIdx] = useState(0);
+  const messages = [
+    "Connecting to Pod.ai servers...",
+    "Fetching your attendance records...",
+    "Syncing classroom data...",
+    "Preparing your dashboard...",
+    "Loading academic insights...",
+    "Almost there..."
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMsgIdx((prev) => (prev + 1) % messages.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ 
+      textAlign: 'center', 
+      padding: '80px 20px', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center',
+      gap: '24px'
+    }}>
+      <div style={{
+        width: '60px',
+        height: '60px',
+        borderRadius: '50%',
+        border: '3px solid rgba(139, 92, 246, 0.1)',
+        borderTopColor: '#8b5cf6',
+        animation: 'spin 1s linear infinite'
+      }} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <p style={{ 
+          fontSize: '18px', 
+          fontWeight: '600', 
+          color: '#f8fafc',
+          margin: 0,
+          animation: 'pulse 2s infinite'
+        }}>
+          {messages[msgIdx]}
+        </p>
+        <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>This usually takes a few seconds</p>
+      </div>
+    </div>
+  );
+};
+
 export default function Pod() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
@@ -57,6 +134,7 @@ export default function Pod() {
   }, []);
 
   const fetchClassrooms = async (token) => {
+    setError('');
     setClassroomsLoading(true);
     try {
       console.log('[Pod] Fetching classrooms with token:', token);
@@ -64,27 +142,24 @@ export default function Pod() {
         headers: { 'Authorization': `Token ${token}` }
       });
       const data = await res.json();
-      console.log('[Pod] Classrooms response:', { status: res.status, data });
       
       if (!res.ok) {
         if (res.status === 401) {
           handleLogout();
           return;
         }
-        throw new Error(data.error || 'Failed to fetch classrooms');
+        throw new Error(data.error || 'Pod.ai servers are busy. Please try again.');
       }
       
       const classroomsList = data.classrooms || [];
-      console.log('[Pod] Setting classrooms:', classroomsList);
       setClassrooms(classroomsList);
       
       if (classroomsList.length > 0) {
-        console.log('[Pod] Fetching attendance for', classroomsList.length, 'classrooms');
         fetchAttendance(token, classroomsList);
       }
     } catch (err) {
       console.error('[Pod] Error fetching classrooms:', err);
-      setError(err.message);
+      setError(err.message || 'Unable to connect to Pod.ai. Please check your internet.');
     } finally {
       setClassroomsLoading(false);
     }
@@ -93,12 +168,10 @@ export default function Pod() {
   const fetchAttendance = async (token, classroomsList) => {
     setAttendanceLoading(true);
     try {
-      console.log('[Pod] Starting attendance fetch for', classroomsList.length, 'classrooms');
       const attendanceResults = {};
       
       for (const classroom of classroomsList) {
         try {
-          console.log('[Pod] Fetching attendance for classroom:', classroom.token);
           const res = await fetch(`/api/pod/attendance?classroom=${classroom.token}`, {
             headers: {
               'Authorization': `Token ${token}`,
@@ -107,10 +180,8 @@ export default function Pod() {
           });
           
           const data = await res.json();
-          console.log('[Pod] Attendance response for', classroom.token, ':', { status: res.status, data });
           
           if (!res.ok) {
-            console.error(`Failed to fetch attendance for ${classroom.token}:`, data);
             attendanceResults[classroom.token] = { total: 0, attended: 0, avgAttendance: 0, missed: 0 };
             continue;
           }
@@ -121,22 +192,23 @@ export default function Pod() {
             avgAttendance: data.averagePercent || 0,
             missed: data.missed || 0
           };
-          console.log('[Pod] Stored attendance for', classroom.token, ':', attendanceResults[classroom.token]);
         } catch (err) {
-          console.error(`Error fetching attendance for ${classroom.token}:`, err);
           attendanceResults[classroom.token] = { total: 0, attended: 0, avgAttendance: 0, missed: 0 };
         }
       }
       
-      console.log('[Pod] Final attendance results:', attendanceResults);
       setAttendanceData(attendanceResults);
-      
-      // Note: Auto-sync removed as per request for manual sync button
     } catch (err) {
-      console.error('Error in fetchAttendance:', err);
-      setError(err.message);
+      setError('Attendance fetch partially failed. Some subjects might show 0%.');
     } finally {
       setAttendanceLoading(false);
+    }
+  };
+
+  const handleRetry = () => {
+    const token = localStorage.getItem('pod_auth_token');
+    if (token) {
+      fetchClassrooms(token);
     }
   };
 
@@ -154,7 +226,6 @@ export default function Pod() {
         ...attendanceData[classroom.token]
       }));
       
-      console.log('[Pod] Manually syncing subjects to store:', subjectsToSync);
       await syncPodaiSubjects(subjectsToSync);
       fullSync();
       setPodaiSyncStatus({ connected: true, lastSync: new Date().toISOString() });
@@ -162,7 +233,6 @@ export default function Pod() {
       setSyncSuccess(true);
       setTimeout(() => setSyncSuccess(false), 3000);
     } catch (err) {
-      console.error('[Pod] Sync failed:', err);
       setError('Sync failed: ' + err.message);
     } finally {
       setIsSyncing(false);
@@ -180,7 +250,7 @@ export default function Pod() {
         body: JSON.stringify({ username, password })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
+      if (!res.ok) throw new Error(data.error || 'Invalid credentials or server busy.');
       
       localStorage.setItem('pod_auth_token', data.auth_token);
       localStorage.setItem('pod_username', username);
@@ -194,7 +264,7 @@ export default function Pod() {
       setActiveTab('Attendance');
       fetchClassrooms(data.auth_token);
     } catch (err) {
-      setError(err.message || 'Failed to login');
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -347,6 +417,8 @@ export default function Pod() {
     );
   }
 
+  const isActuallyLoading = classroomsLoading || (classrooms.length > 0 && attendanceLoading && Object.keys(attendanceData).length === 0);
+
   return (
     <div style={{ 
       background: '#0f172a', 
@@ -356,6 +428,17 @@ export default function Pod() {
       flexDirection: 'column',
       overflow: 'hidden'
     }}>
+      <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        .skeleton-shimmer {
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%);
+          background-size: 200% 100%;
+          animation: shimmer 2s infinite linear;
+        }
+      `}</style>
+
       {/* Fixed Header */}
       <div style={{
         padding: '20px',
@@ -380,7 +463,7 @@ export default function Pod() {
           <div style={{ display: 'flex', gap: '12px' }}>
             <button
               onClick={handleManualSync}
-              disabled={isSyncing || attendanceLoading}
+              disabled={isSyncing || attendanceLoading || isActuallyLoading}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -390,12 +473,12 @@ export default function Pod() {
                 color: '#f8fafc',
                 padding: '10px 20px',
                 borderRadius: '12px',
-                cursor: (isSyncing || attendanceLoading) ? 'not-allowed' : 'pointer',
+                cursor: (isSyncing || attendanceLoading || isActuallyLoading) ? 'not-allowed' : 'pointer',
                 fontWeight: '700',
                 fontSize: '14px',
                 boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
                 transition: 'all 0.3s ease',
-                opacity: (isSyncing || attendanceLoading) ? 0.7 : 1
+                opacity: (isSyncing || attendanceLoading || isActuallyLoading) ? 0.7 : 1
               }}
             >
               {isSyncing ? 'Syncing...' : 'Sync to TrackTaps'}
@@ -484,23 +567,51 @@ export default function Pod() {
                   background: 'rgba(239, 68, 68, 0.1)',
                   border: '1px solid rgba(239, 68, 68, 0.3)',
                   borderRadius: '12px',
-                  padding: '16px',
+                  padding: '20px',
                   marginBottom: '24px',
                   color: '#ef4444',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '12px'
                 }}>
-                  Error: {error}
+                  <p style={{ margin: 0, fontWeight: '600' }}>⚠️ {error}</p>
+                  <button 
+                    onClick={handleRetry}
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.2)',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      color: '#ef4444',
+                      padding: '6px 16px',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      fontWeight: '700'
+                    }}
+                  >
+                    Retry Connection
+                  </button>
                 </div>
               )}
               
-              {attendanceLoading ? (
-                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
-                  <div className="spinner" style={{ marginBottom: '16px' }}>⌛</div>
-                  Fetching real attendance data from Pod.ai...
-                </div>
-              ) : classrooms.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
-                  No classrooms found for your account.
+              {isActuallyLoading ? (
+                <>
+                  <LoadingStatus />
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+                    gap: '20px',
+                    opacity: 0.5
+                  }}>
+                    {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}
+                  </div>
+                </>
+              ) : classrooms.length === 0 && !error ? (
+                <div style={{ textAlign: 'center', padding: '80px 20px', color: '#94a3b8' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>🍃</div>
+                  <h3 style={{ color: '#f8fafc', margin: '0 0 8px 0' }}>No classrooms found</h3>
+                  <p style={{ margin: 0 }}>We couldn't find any active classrooms in your Pod.ai account.</p>
                 </div>
               ) : (
                 <div style={{ 
@@ -547,7 +658,10 @@ export default function Pod() {
                         )}
                         
                         {att.total === undefined ? (
-                          <div style={{ color: '#64748b', fontSize: '13px' }}>Syncing data...</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ height: '14px', width: '40%', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} className="skeleton-shimmer" />
+                            <div style={{ height: '40px', width: '100%', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }} className="skeleton-shimmer" />
+                          </div>
                         ) : (
                           <>
                             <div style={{
