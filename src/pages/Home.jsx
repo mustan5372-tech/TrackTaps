@@ -55,6 +55,102 @@ function Home() {
       className="home-view" 
       style={{ display: 'flex', flexDirection: 'column', gap: '32px', position: 'relative' }}
     >
+      <style>{`
+        @media (max-width: 768px) {
+          .home-view {
+            padding: 4px 12px 100px 12px !important;
+            gap: 20px !important;
+            overflow-x: hidden !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          .dashboard-hero {
+            flex-direction: column !important;
+            padding: 32px 20px !important;
+            gap: 28px !important;
+            text-align: center !important;
+            align-items: center !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            margin-top: 8px !important;
+          }
+          .hero-welcome {
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+          }
+          #hero-greeting {
+            font-size: 26px !important;
+            margin-bottom: 8px !important;
+            width: 100% !important;
+            display: block !important;
+            line-height: 1.2 !important;
+            white-space: normal !important;
+          }
+          #hero-subtitle {
+            font-size: 14px !important;
+            max-width: 280px !important;
+            margin: 0 auto 12px !important;
+            line-height: 1.5 !important;
+          }
+          #hero-date {
+            font-size: 12px !important;
+          }
+          .hero-overall-stats {
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 24px 16px !important;
+            box-sizing: border-box !important;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(168, 85, 247, 0.08) 100%) !important;
+          }
+          #hero-overall-perc {
+            font-size: 48px !important;
+          }
+          .quick-stats-row {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 12px !important;
+          }
+          .stat-pill {
+            padding: 20px 12px !important;
+          }
+          .stat-pill-value {
+            font-size: 24px !important;
+          }
+          .prediction-widgets-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+          .dashboard-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          .dashboard-card {
+            padding: 24px 20px !important;
+          }
+          .attendance-overview-content {
+            flex-direction: column !important;
+            gap: 20px !important;
+            text-align: center !important;
+          }
+          .shortcut-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 12px !important;
+          }
+          .ai-import-promo .dashboard-card {
+            flex-direction: column !important;
+            padding: 32px 20px !important;
+            text-align: center !important;
+            gap: 24px !important;
+          }
+          .ai-promo-icon {
+            font-size: 64px !important;
+            order: -1 !important;
+            margin-bottom: 0 !important;
+          }
+        }
+      `}</style>
+
       {/* Premium Background Effects */}
       <div className="home-bg-effects" style={{ position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none', overflow: 'hidden' }}>
         <motion.div 
