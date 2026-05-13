@@ -55,7 +55,7 @@ const useAppStore = create(
             if (user) {
               const isAdmin = user.email === 'mustan5372@gmail.com' || user.email === 'tracktaps@gmail.com';
               
-              // Check if user is banned (from Firestore data)
+              // Check if user is banned or should be auto-upgraded (Admin/Owner)
               syncService.fetchFromCloud(user.uid).then(cloudData => {
                 if (cloudData && cloudData.banned) {
                   alert("🚫 Your account has been suspended by an administrator.");
@@ -63,10 +63,25 @@ const useAppStore = create(
                   return;
                 }
 
+                // Owner/Admin gets auto-premium
+                const isOwner = user.email === 'mustan5372@gmail.com' || user.email === 'tracktaps@gmail.com';
+                
+                const cloudSub = cloudData?.subscription || { plan: 'free', status: 'inactive' };
+                const currentSub = get().subscription;
+
+                // Sync subscription if cloud is active or if user is owner
+                const updatedSub = isOwner ? {
+                  plan: 'plus',
+                  planType: 'lifetime',
+                  status: 'active',
+                  expiryDate: '2099-12-31'
+                } : (cloudSub.status === 'active' ? cloudSub : currentSub);
+
                 set({ 
                   user, 
                   isAuthLoading: false,
-                  role: isAdmin ? 'ADMIN_OWNER' : (cloudData?.subscription?.status === 'active' ? 'PREMIUM' : 'USER')
+                  role: isOwner ? 'ADMIN_OWNER' : (updatedSub.status === 'active' ? 'PREMIUM' : 'USER'),
+                  subscription: updatedSub
                 });
                 
                 // Auto-sync profile to cloud to ensure Admin Panel has real names
