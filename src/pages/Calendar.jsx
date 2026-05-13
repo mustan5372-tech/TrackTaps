@@ -86,8 +86,11 @@ function Calendar() {
   const daysInMonth = getDaysInMonth(currentDate);
   const firstDay = getFirstDayOfMonth(currentDate);
   const days = [];
+  
+  // Adjust offset for Monday-start calendar (0=Mon, 6=Sun)
+  const offset = (firstDay + 6) % 7;
 
-  for (let i = 0; i < firstDay; i++) {
+  for (let i = 0; i < offset; i++) {
     days.push(null);
   }
   for (let i = 1; i <= daysInMonth; i++) {
