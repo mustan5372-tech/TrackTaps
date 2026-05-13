@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '../../icon.png';
+import useAppStore from '../store/appStore';
 
 function Sidebar() {
   const location = useLocation();
+  const { role } = useAppStore();
 
   const navItems = [
     { label: 'Home', path: '/' },
@@ -15,6 +17,10 @@ function Sidebar() {
     { label: 'About', path: '/about' },
     { label: 'Settings', path: '/settings' },
   ];
+
+  if (role === 'ADMIN_OWNER') {
+    navItems.push({ label: 'Admin Panel', path: '/admin' });
+  }
 
   return (
     <aside className="sidebar">

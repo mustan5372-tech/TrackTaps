@@ -16,7 +16,7 @@ const useAppStore = create(
       (set, get) => ({
         // ─── AUTHENTICATION ──────────────────────────────────────────────────
         user: null,
-        isAuthLoading: true,
+        role: 'USER', // 'USER', 'PREMIUM', 'ADMIN_OWNER'
         subscription: {
           plan: 'free', // 'free' or 'plus'
           status: 'inactive',
@@ -52,13 +52,21 @@ const useAppStore = create(
         initAuth: () => {
           authService.init();
           const unsubscribe = authService.onAuthChange((user) => {
-            set({ user, isAuthLoading: false });
             if (user) {
+              const isAdmin = user.email === 'mustan5372@gmail.com';
+              set({ 
+                user, 
+                isAuthLoading: false,
+                role: isAdmin ? 'ADMIN_OWNER' : (get().subscription?.status === 'active' ? 'PREMIUM' : 'USER')
+              });
+              
               // Only pull automatically if local state is empty to avoid overwriting new data
               const { subjects } = get();
               if (subjects.length === 0) {
                 get().pullFromCloud(false);
               }
+            } else {
+              set({ user: null, isAuthLoading: false, role: 'USER' });
             }
           });
           return unsubscribe;
@@ -596,6 +604,7 @@ const useAppStore = create(
           history: state.history,
           podaiSyncStatus: state.podaiSyncStatus,
           user: state.user,
+          role: state.role,
           lastCloudSync: state.lastCloudSync,
           subscription: state.subscription
         })

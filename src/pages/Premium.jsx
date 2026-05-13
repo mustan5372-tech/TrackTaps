@@ -232,7 +232,7 @@ function Premium() {
 
               <button
                 onClick={() => handleUpgrade(plan)}
-                disabled={loading || subscription.planType === plan.id}
+                disabled={loading || (subscription && subscription.planType === plan.id)}
                 style={{
                   width: '100%',
                   padding: '14px',
@@ -246,7 +246,7 @@ function Premium() {
                   transition: 'all 0.2s'
                 }}
               >
-                {subscription.planType === plan.id ? 'Current Plan' : loading && selectedPlan === plan.id ? 'Processing...' : `Get ${plan.name}`}
+                {(subscription && subscription.planType === plan.id) ? 'Current Plan' : loading && selectedPlan === plan.id ? 'Processing...' : `Get ${plan.name}`}
               </button>
             </motion.div>
           ))}

@@ -11,6 +11,7 @@ import About from './pages/About';
 import Settings from './pages/Settings';
 import Pod from './pages/Pod';
 import Premium from './pages/Premium';
+import Admin from './pages/Admin';
 import useAppStore from './store/appStore';
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
         <Route path="/about" element={<AppShell><About /></AppShell>} />
         <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
         <Route path="/premium" element={<AppShell><Premium /></AppShell>} />
+        <Route path="/admin" element={<AppShell><Admin /></AppShell>} />
       </Routes>
     </BrowserRouter>
   );
