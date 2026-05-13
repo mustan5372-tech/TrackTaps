@@ -132,7 +132,7 @@
 
     .content-wrapper {
         margin-left: 0;
-        padding-bottom: 64px;
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
     }
 
     .mobile-header {
@@ -141,10 +141,12 @@
 
     .mobile-nav {
         display: flex;
+        padding-bottom: env(safe-area-inset-bottom);
+        height: calc(72px + env(safe-area-inset-bottom));
     }
 
     .main-content {
-        padding: 16px;
+        padding: 16px 16px calc(24px + env(safe-area-inset-bottom)) 16px;
     }
 }
 

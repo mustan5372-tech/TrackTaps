@@ -10,12 +10,18 @@ import History from './pages/History';
 import About from './pages/About';
 import Settings from './pages/Settings';
 import Pod from './pages/Pod';
+import useAppStore from './store/appStore';
 
 function App() {
   useEffect(() => {
     // Initialize theme and other global settings
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.body.className = `${savedTheme}-mode`;
+
+    // Initialize Auth
+    const { initAuth } = useAppStore.getState();
+    const unsubscribe = initAuth();
+    return () => unsubscribe();
   }, []);
 
   return (

@@ -437,6 +437,34 @@ export default function Pod() {
           background-size: 200% 100%;
           animation: shimmer 2s infinite linear;
         }
+        @media (max-width: 768px) {
+          .pod-header-content {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 16px !important;
+          }
+          .pod-header-left {
+            width: 100% !important;
+          }
+          .pod-header-right {
+            width: 100% !important;
+            justify-content: space-between !important;
+          }
+          .pod-header-right button {
+            flex: 1 !important;
+            padding: 10px 12px !important;
+            font-size: 13px !important;
+          }
+          .pod-tabs {
+            margin: 12px auto 0 !important;
+            gap: 20px !important;
+            overflow-x: auto !important;
+            padding-bottom: 4px !important;
+          }
+          .pod-view-content {
+            padding: 16px 12px 100px 12px !important;
+          }
+        }
       `}</style>
 
       {/* Fixed Header */}
@@ -446,14 +474,17 @@ export default function Pod() {
         background: '#0f172a',
         zIndex: 10
       }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          maxWidth: '1200px',
-          margin: '0 auto'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div 
+          className="pod-header-content"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            maxWidth: '1200px',
+            margin: '0 auto'
+          }}
+        >
+          <div className="pod-header-left" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <button
               onClick={() => navigate('/')}
               style={{
@@ -489,7 +520,7 @@ export default function Pod() {
             </div>
           </div>
           
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div className="pod-header-right" style={{ display: 'flex', gap: '12px' }}>
             <button
               onClick={handleManualSync}
               disabled={isSyncing || attendanceLoading || isActuallyLoading}
@@ -537,12 +568,15 @@ export default function Pod() {
         </div>
 
         {/* Tabs Bar */}
-        <div style={{
-          display: 'flex',
-          gap: '32px',
-          maxWidth: '1200px',
-          margin: '20px auto 0'
-        }}>
+        <div 
+          className="pod-tabs"
+          style={{
+            display: 'flex',
+            gap: '32px',
+            maxWidth: '1200px',
+            margin: '20px auto 0'
+          }}
+        >
           {['Attendance'].map((tab) => (
             <button
               key={tab}
@@ -566,12 +600,15 @@ export default function Pod() {
       </div>
 
       {/* Scrollable Content Area */}
-      <div style={{ 
-        flex: 1, 
-        overflowY: 'auto', 
-        padding: '24px 20px',
-        WebkitOverflowScrolling: 'touch'
-      }}>
+      <div 
+        className="pod-view-content"
+        style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          padding: '24px 20px',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           {syncSuccess && (
             <div style={{

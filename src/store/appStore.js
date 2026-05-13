@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import AttendanceEngine from '../services/attendanceEngine';
 import PodAiService from '../services/podaiService';
+import authService from '../services/authService';
+import syncService from '../services/syncService';
 
 /**
  * Centralized App Store using Zustand
@@ -12,6 +14,112 @@ const useAppStore = create(
   devtools(
     persist(
       (set, get) => ({
+        // ─── AUTHENTICATION ──────────────────────────────────────────────────
+        user: null,
+        isAuthLoading: true,
+
+        setUser: (user) => set({ user, isAuthLoading: false }),
+
+        login: async () => {
+          try {
+            const user = await authService.loginWithGoogle();
+            set({ user });
+            // Initial sync after login
+            await get().pullFromCloud();
+            return user;
+          } catch (error) {
+            console.error("Login failed:", error);
+            throw error;
+          }
+        },
+
+        logout: async () => {
+          try {
+            await authService.logout();
+            set({ user: null });
+          } catch (error) {
+            console.error("Logout failed:", error);
+            throw error;
+          }
+        },
+
+        initAuth: () => {
+          authService.init();
+          const unsubscribe = authService.onAuthChange((user) => {
+            set({ user, isAuthLoading: false });
+            if (user) {
+              // Only pull automatically if local state is empty to avoid overwriting new data
+              const { subjects } = get();
+              if (subjects.length === 0) {
+                get().pullFromCloud(false);
+              }
+            }
+          });
+          return unsubscribe;
+        },
+
+        // ─── CLOUD SYNC ─────────────────────────────────────────────────────
+        isSyncing: false,
+        lastCloudSync: null,
+
+        pushToCloud: async () => {
+          const { user, subjects, timetable, calendarEvents, attendanceData, history, isSyncing } = get();
+          if (!user || isSyncing) return; // Don't trigger if already syncing or no user
+
+          set({ isSyncing: true });
+          try {
+            const dataToSync = {
+              subjects,
+              timetable,
+              calendarEvents,
+              attendanceData,
+              history
+            };
+            await syncService.saveToCloud(user.uid, dataToSync);
+            set({ lastCloudSync: new Date().toISOString(), isSyncing: false });
+          } catch (error) {
+            console.error("Auto-push to cloud failed:", error);
+            set({ isSyncing: false });
+          }
+        },
+
+        pullFromCloud: async (manual = false) => {
+          const { user } = get();
+          if (!user) return;
+
+          set({ isSyncing: true });
+          try {
+            console.log('Fetching from cloud for user:', user.uid);
+            const cloudData = await syncService.fetchFromCloud(user.uid);
+            console.log('Cloud data received:', cloudData);
+
+            if (cloudData && (cloudData.subjects || cloudData.timetable)) {
+              set({
+                subjects: cloudData.subjects || [],
+                timetable: cloudData.timetable || {},
+                calendarEvents: cloudData.calendarEvents || [],
+                attendanceData: cloudData.attendanceData || {},
+                history: cloudData.history || [],
+                lastCloudSync: cloudData.lastSynced || new Date().toISOString(),
+                isSyncing: false
+              });
+              
+              get().fullSync();
+              if (manual) alert('✅ Data Restored Successfully!');
+              return true;
+            } else {
+              set({ isSyncing: false });
+              if (manual) alert('ℹ️ No cloud backup found for this account.');
+              return false;
+            }
+          } catch (error) {
+            console.error("Pull from cloud failed:", error);
+            set({ isSyncing: false });
+            if (manual) alert('❌ Restore Failed: ' + error.message);
+            return false;
+          }
+        },
+
         // ─── SUBJECTS ───────────────────────────────────────────────────────
         subjects: [],
         
@@ -39,6 +147,9 @@ const useAppStore = create(
             subject: subject.name,
             description: `Added subject: ${subject.name}`
           });
+          
+          // Auto-sync
+          get().pushToCloud();
           
           return newSubject;
         },
@@ -72,6 +183,9 @@ const useAppStore = create(
               subject: subject.name,
               description: `Deleted subject: ${subject.name}`
             });
+            
+            // Auto-sync
+            get().pushToCloud();
           }
         },
 
@@ -95,8 +209,9 @@ const useAppStore = create(
             description: `Added ${subject.name} to timetable`
           });
           
-          // Trigger calendar sync
+          // Trigger calendar sync and auto-sync
           get().syncTimetableToCalendar();
+          get().pushToCloud();
         },
         
         removeTimetableEntry: (dayIdx, timeSlot) => {
@@ -113,6 +228,7 @@ const useAppStore = create(
           });
           
           get().syncTimetableToCalendar();
+          get().pushToCloud();
         },
 
         // ─── CALENDAR EVENTS ────────────────────────────────────────────────
@@ -153,6 +269,9 @@ const useAppStore = create(
               description: `Marked ${event.subjectName} as ${stateLabel}`
             });
           }
+          
+          // Auto-sync
+          get().pushToCloud();
         },
         
         markAllForDate: (dateStr, state) => {
@@ -168,6 +287,9 @@ const useAppStore = create(
             type: 'attendance_bulk_marked',
             description: `Marked all classes on ${dateStr} as ${stateLabel}`
           });
+          
+          // Auto-sync
+          get().pushToCloud();
         },
         
         clearAttendance: (eventId) => {
@@ -419,6 +541,19 @@ const useAppStore = create(
               error: null
             }
           });
+        },
+
+        clearAppData: () => {
+          set({
+            subjects: [],
+            timetable: {},
+            calendarEvents: [],
+            attendanceData: {},
+            history: [],
+            subjectStats: {},
+            insights: []
+          });
+          get().fullSync();
         }
       }),
       {
@@ -431,7 +566,9 @@ const useAppStore = create(
           calendarEvents: state.calendarEvents,
           attendanceData: state.attendanceData,
           history: state.history,
-          podaiSyncStatus: state.podaiSyncStatus
+          podaiSyncStatus: state.podaiSyncStatus,
+          user: state.user,
+          lastCloudSync: state.lastCloudSync
         })
       }
     )

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useAppStore from '../store/appStore';
 
 function Settings() {
   const [settings, setSettings] = useState({
@@ -24,6 +25,25 @@ function Settings() {
   const [podaiMessage, setPodaiMessage] = useState('');
   const [podaiSyncing, setPodaiSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState('');
+  const [showExportToast, setShowExportToast] = useState(false);
+
+  const {
+    subjects,
+    timetable,
+    calendarEvents,
+    attendanceData,
+    history,
+    podaiSyncStatus,
+    user,
+    isAuthLoading,
+    isSyncing,
+    lastCloudSync,
+    login,
+    logout,
+    pushToCloud,
+    pullFromCloud,
+    clearAppData
+  } = useAppStore();
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('tracktaps_settings') || '{}');
@@ -46,20 +66,35 @@ function Settings() {
   };
 
   const handleExportData = () => {
-    const data = {
-      subjects: JSON.parse(localStorage.getItem('tracktaps_subjects') || '[]'),
-      attendance: JSON.parse(localStorage.getItem('tracktaps_attendance') || '{}'),
-      timetable: JSON.parse(localStorage.getItem('tracktaps_timetable') || '[]'),
-      settings: settings
-    };
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `tracktaps-backup-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const data = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        subjects: subjects,
+        timetable: timetable,
+        attendance: attendanceData,
+        calendar: calendarEvents,
+        history: history,
+        podSync: podaiSyncStatus,
+        settings: settings
+      };
+      
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tracktaps-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      setShowExportToast(true);
+      setTimeout(() => setShowExportToast(false), 3000);
+    } catch (err) {
+      alert('Export failed: ' + err.message);
+    }
   };
 
   const handleImportData = (e) => {
@@ -104,7 +139,139 @@ function Settings() {
         <h2>Settings</h2>
       </header>
 
+      {showExportToast && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          background: '#10b981',
+          color: 'white',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          zIndex: 10000,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+          animation: 'slideIn 0.3s ease-out'
+        }}>
+          ✨ Data exported successfully!
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @media (max-width: 768px) {
+          .settings-view {
+            padding-bottom: 100px !important;
+          }
+          .settings-grid {
+            grid-template-columns: 1fr !important;
+            padding: 0 4px !important;
+          }
+          .dashboard-card div[style*="gridTemplateColumns"] {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
+
       <div className="settings-grid" style={{ display: 'grid', gap: '24px', maxWidth: '800px' }}>
+        {/* Account & Sync */}
+        <div className="dashboard-card">
+          <div className="card-header">
+            <span className="card-title">☁️ Account & Cloud Sync</span>
+          </div>
+          <div style={{ padding: '20px' }}>
+            {!user ? (
+              <div style={{ textAlign: 'center', padding: '10px' }}>
+                <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '20px' }}>
+                  Sign in with Google to enable cross-device sync and cloud backups.
+                </p>
+                <button
+                  onClick={login}
+                  disabled={isAuthLoading}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    width: '100%',
+                    background: 'white',
+                    color: '#1e293b',
+                    border: 'none',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'white'}
+                >
+                  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/hf/google.svg" alt="Google" style={{ width: '18px' }} />
+                  {isAuthLoading ? 'Connecting...' : 'Sign in with Google'}
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '12px' }}>
+                  <img src={user.photoURL} alt={user.displayName} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '2px solid #8b5cf6' }} />
+                  <div style={{ flex: 1 }}>
+                    <p style={{ color: '#f8fafc', fontWeight: '700', margin: 0 }}>{user.displayName}</p>
+                    <p style={{ color: '#94a3b8', fontSize: '12px', margin: 0 }}>{user.email}</p>
+                  </div>
+                  <button
+                    onClick={logout}
+                    style={{ background: 'transparent', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}
+                  >
+                    Logout
+                  </button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <button
+                    onClick={pushToCloud}
+                    disabled={isSyncing}
+                    style={{
+                      background: 'rgba(139, 92, 246, 0.1)',
+                      border: '1px solid rgba(139, 92, 246, 0.3)',
+                      color: '#a78bfa',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      opacity: isSyncing ? 0.7 : 1
+                    }}
+                  >
+                    📤 {isSyncing ? 'Syncing...' : 'Backup to Cloud'}
+                  </button>
+                  <button
+                    onClick={() => pullFromCloud(true)}
+                    disabled={isSyncing}
+                    style={{
+                      background: 'rgba(139, 92, 246, 0.1)',
+                      border: '1px solid rgba(139, 92, 246, 0.3)',
+                      color: '#a78bfa',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      opacity: isSyncing ? 0.7 : 1
+                    }}
+                  >
+                    📥 {isSyncing ? 'Syncing...' : 'Restore from Cloud'}
+                  </button>
+                </div>
+                {lastCloudSync && (
+                  <p style={{ color: '#64748b', fontSize: '11px', textAlign: 'center', margin: 0 }}>
+                    Last Cloud Sync: {new Date(lastCloudSync).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Profile Settings */}
         <div className="dashboard-card">
           <div className="card-header">
@@ -431,9 +598,9 @@ function Settings() {
             </label>
             <button
               onClick={() => {
-                if (window.confirm('Are you sure you want to clear all data? This cannot be undone.')) {
-                  localStorage.clear();
-                  window.location.reload();
+                if (window.confirm('Are you sure you want to clear all local data? This will NOT delete your Cloud Backup or log you out.')) {
+                  clearAppData();
+                  alert('Local data cleared! You can restore it from the cloud if you have a backup.');
                 }
               }}
               style={{
