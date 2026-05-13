@@ -25,7 +25,15 @@ try {
 } catch (error) {
   console.error("Firebase initialization failed:", error);
   // Fallback to avoid crashing the whole app
-  auth = { onAuthStateChanged: (cb) => { cb(null); return () => {}; } };
+  const disabledFn = () => {
+    alert("🔐 Google Login is currently unavailable on this environment. Please check if Firebase API keys are configured in Vercel.");
+    return Promise.reject("Firebase not initialized");
+  };
+  auth = { 
+    onAuthStateChanged: (cb) => { cb(null); return () => {}; },
+    signInWithPopup: disabledFn,
+    signOut: disabledFn
+  };
   db = {};
   googleProvider = {};
 }

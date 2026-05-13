@@ -19,6 +19,10 @@ const authService = {
 
   loginWithGoogle: async () => {
     try {
+      if (!auth.app) {
+        alert("🔐 Google Login is currently unavailable. Please ensure Firebase keys are added to Vercel environment variables.");
+        return null;
+      }
       const result = await signInWithPopup(auth, googleProvider);
       return result.user;
     } catch (error) {
