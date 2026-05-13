@@ -39,12 +39,23 @@ function Admin() {
         const data = doc.data();
         const sub = data.subscription || { plan: 'free', status: 'inactive' };
         
+        // Map internal plan IDs to attractive names
+        const planMap = {
+          'monthly': 'Starter',
+          'half_yearly': 'Super Saver',
+          'yearly': 'Mega Saver',
+          'lifetime': 'Lifetime (Owner)',
+          'plus': 'Plus'
+        };
+
+        const planName = planMap[sub.planType] || planMap[sub.plan] || sub.planType || sub.plan || 'Free';
+
         userList.push({
           uid: doc.id,
           name: data.displayName || 'Anonymous',
           email: data.email || 'No email',
           role: data.role || (sub.status === 'active' ? 'PREMIUM' : 'USER'),
-          plan: sub.planType || sub.plan || 'Free',
+          plan: planName,
           status: data.banned ? 'Banned' : (sub.status === 'active' ? 'Active' : 'Inactive'),
           expiry: sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString() : '-',
           amountPaid: sub.amountPaid || 0,
