@@ -41,7 +41,7 @@ function Premium() {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
-  const handleUpgrade = (plan) => {
+  const handleUpgrade = async (plan) => {
     if (!user) {
       alert('Please sign in with Google first to upgrade to Plus.');
       navigate('/settings');
@@ -51,46 +51,93 @@ function Premium() {
     setLoading(true);
     setSelectedPlan(plan.id);
 
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      amount: plan.priceInPaise,
-      currency: "INR",
-      name: "TrackTaps Plus",
-      description: `${plan.name} Subscription`,
-      image: "/assets/logo.png",
-      handler: function (response) {
-        const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + plan.durationDays);
+    try {
+      // 1. Create order on server
+      const orderResponse = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          amount: plan.price,
+          planId: plan.id 
+        })
+      });
 
-        setSubscription({
-          plan: 'plus',
-          planType: plan.id,
-          status: 'active',
-          expiryDate: expiryDate.toISOString(),
-          paymentId: response.razorpay_payment_id,
-          amountPaid: plan.price
-        });
+      if (!orderResponse.ok) throw new Error('Failed to create order');
+      const orderData = await orderResponse.json();
 
-        alert(`✨ Welcome to TrackTaps Plus! Your ${plan.name} plan is now active.`);
-        navigate('/');
-      },
-      prefill: {
-        name: user.displayName,
-        email: user.email,
-      },
-      theme: {
-        color: plan.color,
-      },
-      modal: {
-        ondismiss: function() {
-          setLoading(false);
-          setSelectedPlan(null);
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "TrackTaps Plus",
+        description: `${plan.name} Subscription`,
+        image: "/assets/logo.png",
+        order_id: orderData.id,
+        handler: async function (response) {
+          try {
+            // 3. Verify payment on server
+            const verifyResponse = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            const verifyData = await verifyResponse.json();
+
+            if (verifyData.success) {
+              const expiryDate = new Date();
+              expiryDate.setDate(expiryDate.getDate() + plan.durationDays);
+
+              setSubscription({
+                plan: 'plus',
+                planType: plan.id,
+                status: 'active',
+                expiryDate: expiryDate.toISOString(),
+                paymentId: response.razorpay_payment_id,
+                amountPaid: plan.price
+              });
+
+              alert(`✨ Welcome to TrackTaps Plus! Your ${plan.name} plan is now active.`);
+              navigate('/');
+            } else {
+              alert('❌ Payment verification failed. Please contact support.');
+            }
+          } catch (err) {
+            console.error('Verification error:', err);
+            alert('❌ An error occurred during verification.');
+          } finally {
+            setLoading(false);
+            setSelectedPlan(null);
+          }
+        },
+        prefill: {
+          name: user.displayName,
+          email: user.email,
+        },
+        theme: {
+          color: plan.color,
+        },
+        modal: {
+          ondismiss: function() {
+            setLoading(false);
+            setSelectedPlan(null);
+          }
         }
-      }
-    };
+      };
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error('Payment initialization error:', error);
+      alert('❌ Failed to initialize payment. Please try again.');
+      setLoading(false);
+      setSelectedPlan(null);
+    }
   };
 
   const features = [
