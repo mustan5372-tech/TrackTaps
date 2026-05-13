@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import useAppStore from '../store/appStore';
 import { useNavigate } from 'react-router-dom';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 function Admin() {
   const navigate = useNavigate();
@@ -28,25 +30,46 @@ function Admin() {
   const fetchAdminData = async () => {
     setLoading(true);
     try {
-      // In a real app, this would fetch from /api/admin/users
-      // Since we are using Firestore directly in some parts, we'd ideally have an admin API
-      // For now, let's simulate with some mock data for the UI
-      setTimeout(() => {
-        setUsers([
-          { uid: '1', name: 'Mustan', email: 'mustan5372@gmail.com', role: 'ADMIN_OWNER', plan: 'Yearly', status: 'Active', expiry: '2027-05-13' },
-          { uid: '2', name: 'John Doe', email: 'john@example.com', role: 'PREMIUM', plan: 'Monthly', status: 'Active', expiry: '2026-06-13' },
-          { uid: '3', name: 'Jane Smith', email: 'jane@example.com', role: 'USER', plan: 'Free', status: 'Inactive', expiry: '-' },
-        ]);
-        setStats({
-          totalUsers: 154,
-          premiumUsers: 42,
-          totalRevenue: 842,
-          activeSubscriptions: 38
+      const querySnapshot = await getDocs(collection(db, "users"));
+      const userList = [];
+      let premiumCount = 0;
+      let revenue = 0;
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const sub = data.subscription || { plan: 'free', status: 'inactive' };
+        
+        userList.push({
+          uid: doc.id,
+          name: data.displayName || 'Anonymous',
+          email: data.email || 'No email',
+          role: data.role || (sub.status === 'active' ? 'PREMIUM' : 'USER'),
+          plan: sub.planType || sub.plan || 'Free',
+          status: sub.status === 'active' ? 'Active' : 'Inactive',
+          expiry: sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString() : '-',
+          amountPaid: sub.amountPaid || 0
         });
-        setLoading(false);
-      }, 800);
+
+        if (sub.status === 'active') {
+          premiumCount++;
+          revenue += (sub.amountPaid || 0);
+        }
+      });
+
+      setUsers(userList);
+      setStats({
+        totalUsers: userList.length,
+        premiumUsers: premiumCount,
+        totalRevenue: revenue,
+        activeSubscriptions: premiumCount
+      });
+      setLoading(false);
     } catch (error) {
-      console.error("Failed to fetch admin data:", error);
+      console.error("Failed to fetch real admin data:", error);
+      // Fallback message if Firestore rules block the listing
+      if (error.code === 'permission-denied') {
+        alert("🚨 Permission Denied: Please update your Firestore Security Rules to allow 'list' access for Admin accounts.");
+      }
       setLoading(false);
     }
   };

@@ -53,7 +53,7 @@ const useAppStore = create(
           authService.init();
           const unsubscribe = authService.onAuthChange((user) => {
             if (user) {
-              const isAdmin = user.email === 'mustan5372@gmail.com';
+              const isAdmin = user.email === 'mustan5372@gmail.com' || user.email === 'tracktaps@gmail.com';
               set({ 
                 user, 
                 isAuthLoading: false,
