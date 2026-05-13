@@ -197,19 +197,29 @@ function Settings() {
                     justifyContent: 'center',
                     gap: '12px',
                     width: '100%',
-                    background: 'white',
-                    color: '#1e293b',
-                    border: 'none',
-                    padding: '12px',
-                    borderRadius: '8px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: '#f8fafc',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    padding: '14px',
+                    borderRadius: '12px',
                     fontWeight: '600',
                     cursor: 'pointer',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)'
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.background = '#f8fafc'}
-                  onMouseOut={(e) => e.currentTarget.style.background = 'white'}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(139, 92, 246, 0.2)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                  }}
                 >
-                  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/hf/google.svg" alt="Google" style={{ width: '18px' }} />
+                  <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" style={{ width: '20px', height: '20px' }} />
                   {isAuthLoading ? 'Connecting...' : 'Sign in with Google'}
                 </button>
               </div>
