@@ -42,6 +42,7 @@ function Settings() {
     logout,
     pushToCloud,
     pullFromCloud,
+    subscription,
     clearAppData
   } = useAppStore();
 
