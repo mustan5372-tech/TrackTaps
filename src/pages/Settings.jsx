@@ -494,6 +494,59 @@ function Settings() {
           </div>
         </div>
 
+        {/* Subscription & Billing */}
+        <div className="dashboard-card" style={{ marginTop: '24px' }}>
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="card-title">💳 Subscription & Billing</span>
+            {subscription?.plan === 'plus' && (
+              <span style={{ 
+                background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
+                color: 'white', 
+                fontSize: '10px', 
+                fontWeight: '800', 
+                padding: '2px 8px', 
+                borderRadius: '4px' 
+              }}>PLUS</span>
+            )}
+          </div>
+          <div style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <p style={{ margin: 0, fontSize: '14px', fontWeight: '600' }}>
+                  Current Plan: <span style={{ color: subscription?.plan === 'plus' ? '#a78bfa' : '#94a3b8' }}>
+                    {subscription?.plan === 'plus' ? `${subscription.planType?.toUpperCase() || 'PLUS'}` : 'Free'}
+                  </span>
+                </p>
+                {subscription?.expiryDate && (
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                    Expires on: {new Date(subscription.expiryDate).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => navigate('/premium')}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  background: subscription?.plan === 'plus' ? 'rgba(255,255,255,0.05)' : 'rgba(139, 92, 246, 0.1)',
+                  color: subscription?.plan === 'plus' ? '#f8fafc' : '#a78bfa',
+                  border: '1px solid rgba(139, 92, 246, 0.3)',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                {subscription?.plan === 'plus' ? 'Manage' : 'Upgrade'}
+              </button>
+            </div>
+            <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>
+              {subscription?.plan === 'plus' 
+                ? 'Your premium features are active across all devices.' 
+                : 'Unlock Cloud Sync, AI Insights, and more with Plus.'}
+            </p>
+          </div>
+        </div>
+
         {/* Timetable Settings */}
         <div className="dashboard-card">
           <div className="card-header">

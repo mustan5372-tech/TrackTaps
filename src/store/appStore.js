@@ -17,6 +17,12 @@ const useAppStore = create(
         // ─── AUTHENTICATION ──────────────────────────────────────────────────
         user: null,
         isAuthLoading: true,
+        subscription: {
+          plan: 'free', // 'free' or 'plus'
+          status: 'inactive',
+          expiryDate: null,
+          paymentId: null
+        },
 
         setUser: (user) => set({ user, isAuthLoading: false }),
 
@@ -63,8 +69,16 @@ const useAppStore = create(
         lastCloudSync: null,
 
         pushToCloud: async () => {
-          const { user, subjects, timetable, calendarEvents, attendanceData, history, isSyncing } = get();
+          const { user, subjects, timetable, calendarEvents, attendanceData, history, subscription, isSyncing } = get();
           if (!user || isSyncing) return; // Don't trigger if already syncing or no user
+
+          // Only allow cloud sync for premium users (except for the initial push during upgrade)
+          if (subscription.plan !== 'plus' && subscription.status !== 'active') {
+            // Check if we are pushing during an upgrade (handy for initial sync)
+            // For now, we follow the rule: FREE users = Local Storage Only
+            console.log('Skipping cloud sync: Free users use local storage only.');
+            return;
+          }
 
           set({ isSyncing: true });
           try {
@@ -73,7 +87,8 @@ const useAppStore = create(
               timetable,
               calendarEvents,
               attendanceData,
-              history
+              history,
+              subscription
             };
             await syncService.saveToCloud(user.uid, dataToSync);
             set({ lastCloudSync: new Date().toISOString(), isSyncing: false });
@@ -93,13 +108,14 @@ const useAppStore = create(
             const cloudData = await syncService.fetchFromCloud(user.uid);
             console.log('Cloud data received:', cloudData);
 
-            if (cloudData && (cloudData.subjects || cloudData.timetable)) {
+            if (cloudData && (cloudData.subjects || cloudData.timetable || cloudData.subscription)) {
               set({
                 subjects: cloudData.subjects || [],
                 timetable: cloudData.timetable || {},
                 calendarEvents: cloudData.calendarEvents || [],
                 attendanceData: cloudData.attendanceData || {},
                 history: cloudData.history || [],
+                subscription: cloudData.subscription || { plan: 'free', status: 'inactive' },
                 lastCloudSync: cloudData.lastSynced || new Date().toISOString(),
                 isSyncing: false
               });
@@ -118,6 +134,18 @@ const useAppStore = create(
             if (manual) alert('❌ Restore Failed: ' + error.message);
             return false;
           }
+        },
+
+        // ─── SUBSCRIPTION ACTIONS ───────────────────────────────────────────
+        setSubscription: (subData) => {
+          set({ subscription: subData });
+          // Auto-sync after subscription update
+          get().pushToCloud();
+        },
+
+        isPremium: () => {
+          const { subscription } = get();
+          return subscription.plan === 'plus' && subscription.status === 'active';
         },
 
         // ─── SUBJECTS ───────────────────────────────────────────────────────
@@ -568,7 +596,8 @@ const useAppStore = create(
           history: state.history,
           podaiSyncStatus: state.podaiSyncStatus,
           user: state.user,
-          lastCloudSync: state.lastCloudSync
+          lastCloudSync: state.lastCloudSync,
+          subscription: state.subscription
         })
       }
     )
