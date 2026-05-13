@@ -22,7 +22,11 @@ function App() {
     // Initialize Auth
     const { initAuth } = useAppStore.getState();
     const unsubscribe = initAuth();
-    return () => unsubscribe();
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
   }, []);
 
   return (
