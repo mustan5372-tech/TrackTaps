@@ -30,6 +30,8 @@ const cardHover = {
 function Home() {
   const navigate = useNavigate();
   const {
+    user,
+    isAuthLoading,
     dashboardStats,
     insights,
     getSafeSubjects,
@@ -40,8 +42,119 @@ function Home() {
     semesterStats
   } = useAppStore();
 
+  // Non-logged-in landing page (no Google login - auth handled elsewhere)
+  if (!user && !isAuthLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        textAlign: 'center',
+        padding: 'clamp(40px, 8vh, 80px) 20px',
+        width: '100%',
+        maxWidth: '100vw',
+        overflow: 'hidden',
+        boxSizing: 'border-box'
+      }}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          style={{ width: '100%', maxWidth: '600px' }}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(139, 92, 246, 0.12)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              color: '#a78bfa',
+              padding: '8px 18px',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              marginBottom: '24px'
+            }}
+          >
+            <motion.span
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              style={{
+                width: '7px',
+                height: '7px',
+                background: '#a78bfa',
+                borderRadius: '50%',
+                display: 'inline-block'
+              }}
+            />
+            Smart Attendance Platform
+          </motion.div>
+
+          <h1 style={{ 
+            fontSize: 'clamp(28px, 7vw, 56px)', 
+            fontWeight: '900', 
+            marginBottom: '16px', 
+            letterSpacing: '-0.02em', 
+            lineHeight: '1.15',
+            background: 'linear-gradient(135deg, #f8fafc 0%, #a78bfa 100%)', 
+            WebkitBackgroundClip: 'text', 
+            WebkitTextFillColor: 'transparent',
+            wordBreak: 'break-word'
+          }}>
+            The Ultimate <br/> Semester Planner
+          </h1>
+          <p style={{ 
+            fontSize: 'clamp(14px, 3.5vw, 18px)', 
+            color: '#94a3b8', 
+            maxWidth: '500px', 
+            margin: '0 auto 32px', 
+            lineHeight: '1.7',
+            padding: '0 8px'
+          }}>
+            Sync Pod.ai attendance, automate your timetable, and plan your semester with high-fidelity intelligence.
+          </p>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <Link
+              to="/about"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '14px 28px',
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
+                border: 'none',
+                borderRadius: '14px',
+                color: '#f8fafc',
+                fontSize: 'clamp(14px, 3.5vw, 16px)',
+                fontWeight: '700',
+                textDecoration: 'none',
+                boxShadow: '0 10px 30px rgba(139, 92, 246, 0.3)',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <span>Explore TrackTaps</span>
+              <span>→</span>
+            </Link>
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
+
   const getTotalBunkable = () => {
-    return Object.values(semesterStats).reduce((acc, stat) => acc + (stat.bunkableNow || 0), 0);
+    return Object.values(semesterStats || {}).reduce((acc, stat) => acc + (stat.bunkableNow || 0), 0);
   };
 
   useEffect(() => {
