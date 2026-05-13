@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 
 function Settings() {
+  const navigate = useNavigate();
   const [settings, setSettings] = useState({
     userName: '',
     collegeName: '',
