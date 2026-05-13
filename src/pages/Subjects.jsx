@@ -12,14 +12,30 @@ function Subjects() {
   // Get data from Zustand store
   const {
     subjects,
+    subjectStats,
     addSubject,
     updateSubject,
-    deleteSubject
+    deleteSubject,
+    subscription,
+    incrementAiUsage,
+    semesterStats,
+    fullSync
   } = useAppStore();
 
+  const handleAiImport = () => {
+    const canUseAi = incrementAiUsage();
+    if (!canUseAi) {
+      alert("💎 Daily Limit Reached: Free users get 5 AI requests per day. Upgrade to Plus for unlimited AI features!");
+      window.location.href = '/premium';
+      return;
+    }
+    // Existing logic would be here
+  };
+
   useEffect(() => {
-    // Initialize component
-  }, []);
+    // Ensure stats are calculated when Subjects page loads
+    fullSync();
+  }, [fullSync]);
 
   const handleSaveSubject = () => {
     if (!formData.name.trim()) {
@@ -37,7 +53,7 @@ function Subjects() {
       addSubject({
         name: formData.name,
         criteria: formData.criteria,
-        color: formData.color || '#8b5cf6',
+        color: formData.color || 'var(--primary)',
         attendance: 0,
         present: 0,
         total: 0
@@ -45,7 +61,7 @@ function Subjects() {
     }
 
     setShowModal(false);
-    setFormData({ name: '', criteria: 75, color: '#8b5cf6' });
+    setFormData({ name: '', criteria: 75, color: 'var(--primary)' });
     setEditingIdx(null);
   };
 
@@ -59,13 +75,29 @@ function Subjects() {
 
   const handleEditSubject = (idx) => {
     setEditingIdx(idx);
-    setFormData({ ...subjects[idx], color: subjects[idx].color || '#8b5cf6' });
+    setFormData({ ...subjects[idx], color: subjects[idx].color || 'var(--primary)' });
     setShowModal(true);
   };
 
   const getAttendancePercentage = (subject) => {
-    if (subject.total === 0) return 0;
-    return Math.round((subject.present / subject.total) * 100);
+    // First try computed stats from attendance engine
+    const stats = subjectStats?.[subject.id];
+    if (stats && stats.total && stats.total > 0) {
+      const val = Math.round((stats.present / stats.total) * 100);
+      return isNaN(val) ? 0 : val;
+    }
+    // Fallback to Pod.ai baseline data
+    if (subject.podaiPercentage && !isNaN(subject.podaiPercentage)) {
+      return Math.round(Number(subject.podaiPercentage));
+    }
+    // Fallback to initialPresent/initialTotal from Pod.ai import
+    const present = Number(subject.initialPresent || subject.present || 0);
+    const total = Number(subject.initialTotal || subject.total || 0);
+    if (total > 0) {
+      const val = Math.round((present / total) * 100);
+      return isNaN(val) ? 0 : val;
+    }
+    return 0;
   };
 
   const getAttendanceColor = (percentage) => {
@@ -89,22 +121,38 @@ function Subjects() {
                 gap: '8px', 
                 fontSize: '13px', 
                 padding: '10px 16px',
-                background: 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)',
+                background: 'linear-gradient(135deg, #a855f7 0%, var(--primary) 100%)',
                 border: 'none',
-                color: '#f8fafc',
+                color: 'var(--text-main)',
                 borderRadius: '10px',
                 fontWeight: '700',
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(139, 92, 246, 0.2)',
+                boxShadow: '0 4px 12px var(--primary-glow)',
                 transition: 'all 0.3s ease'
               }}
-              onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.4)'}
-              onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.2)'}
+              onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 0 20px var(--primary-glow)'}
+              onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 4px 12px var(--primary-glow)'}
             >
               <span>📥</span> Import from Pod.ai
             </button>
-            <button id="ai-import-trigger" className="action-btn present" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', padding: '10px 16px' }}>
-              <span>✨</span> AI Import
+            <button 
+              onClick={handleAiImport}
+              className="action-btn present" 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                fontSize: '13px', 
+                padding: '10px 16px',
+                background: 'var(--primary-glow)',
+                border: '1px solid var(--primary-glow)',
+                borderRadius: '10px',
+                color: 'var(--primary-light)',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+            >
+              <span>✨</span> AI Import {subscription?.status !== 'active' && <span style={{ fontSize: '10px', opacity: 0.7 }}>(5/day)</span>}
             </button>
             <button 
               onClick={() => {
@@ -117,14 +165,14 @@ function Subjects() {
               + Add Subject
             </button>
           </div>
-          <span style={{ color: '#64748b', fontSize: '11px', fontWeight: '500' }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '500' }}>
             Import real attendance directly from Pod.ai
           </span>
         </div>
       </header>
       <div id="subjects-grid" className="subjects-grid">
         {subjects.length === 0 ? (
-          <p style={{ color: '#94a3b8', gridColumn: '1 / -1', textAlign: 'center', padding: '32px' }}>No subjects added yet. Click "Add Subject" to get started!</p>
+          <p style={{ color: 'var(--text-dim)', gridColumn: '1 / -1', textAlign: 'center', padding: '32px' }}>No subjects added yet. Click "Add Subject" to get started!</p>
         ) : (
           subjects.map((subject, idx) => (
             <div 
@@ -132,8 +180,8 @@ function Subjects() {
               className="subject-card"
               onClick={() => handleEditSubject(idx)}
               style={{
-                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
-                border: '1px solid rgba(139, 92, 246, 0.2)',
+                background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.05) 100%)',
+                border: '1px solid var(--primary-glow)',
                 borderRadius: '16px',
                 padding: '20px',
                 cursor: 'pointer',
@@ -144,29 +192,73 @@ function Subjects() {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                <h3 style={{ color: '#f8fafc', fontSize: '16px', fontWeight: '600' }}>{subject.name}</h3>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>Click to edit</span>
+                <h3 style={{ color: 'var(--text-main)', fontSize: '16px', fontWeight: '600' }}>{subject.name}</h3>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Click to edit</span>
               </div>
               
               <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Attendance</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '4px' }}>Attendance</div>
                   <div style={{ fontSize: '24px', fontWeight: '700', color: getAttendanceColor(getAttendancePercentage(subject)) }}>
                     {getAttendancePercentage(subject)}%
                   </div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Classes</div>
-                  <div style={{ fontSize: '18px', fontWeight: '600', color: '#f8fafc' }}>
-                    {subject.present}/{subject.total}
+                  <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '4px' }}>Classes</div>
+                  <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-main)' }}>
+                    {(() => {
+                      const stats = subjectStats?.[subject.id];
+                      const present = stats?.present ?? Number(subject.initialPresent || subject.present || 0);
+                      const total = stats?.total ?? Number(subject.initialTotal || subject.total || 0);
+                      return `${isNaN(present) ? 0 : present}/${isNaN(total) ? 0 : total}`;
+                    })()}
                   </div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Target</div>
-                  <div style={{ fontSize: '18px', fontWeight: '600', color: '#a78bfa' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '4px' }}>Target</div>
+                  <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--primary-light)' }}>
                     {subject.criteria}%
                   </div>
                 </div>
+              </div>
+
+              {/* Bunk & Prediction Engine (Premium Feature) */}
+              <div style={{ 
+                marginTop: '12px', 
+                padding: '12px', 
+                background: 'rgba(15, 23, 42, 0.4)', 
+                borderRadius: '12px',
+                border: '1px solid var(--primary-glow)'
+              }}>
+                {subscription?.status === 'active' ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bunkable Now</div>
+                      <div style={{ fontSize: '16px', fontWeight: '800', color: semesterStats[subject.id]?.bunkableNow > 0 ? '#10b981' : '#ef4444' }}>
+                        {semesterStats[subject.id]?.bunkableNow || 0} Classes
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Semester Total</div>
+                      <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-main)' }}>
+                        {semesterStats[subject.id]?.totalPlanned || 0} Planned
+                      </div>
+                    </div>
+                    <div style={{ gridColumn: '1 / -1', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>TRAJECTORY</div>
+                      <div style={{ display: 'flex', gap: '8px', fontSize: '11px' }}>
+                        <span style={{ color: '#ef4444' }}>Miss 1: {semesterStats[subject.id]?.prediction?.ifMissNext1 ?? 0}%</span>
+                        <span style={{ color: 'var(--text-muted)' }}>|</span>
+                        <span style={{ color: '#10b981' }}>Attend 1: {semesterStats[subject.id]?.prediction?.ifAttendNext1 ?? 0}%</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', py: '4px' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--primary-light)', fontWeight: '700' }}>✨ UNLOCK BUNK PREDICTIONS</div>
+                    <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Get TrackTaps Plus to plan your semester bunking.</div>
+                  </div>
+                )}
               </div>
 
               <div style={{
@@ -199,29 +291,29 @@ function Subjects() {
           backdropFilter: 'blur(4px)'
         }}>
           <div style={{
-            background: '#0f172a',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
+            background: 'var(--surface)',
+            border: '1px solid var(--primary-glow)',
             borderRadius: '16px',
             padding: '32px',
             maxWidth: '400px',
             width: '90%'
           }}>
-            <h3 style={{ color: '#f8fafc', marginBottom: '24px' }}>
+            <h3 style={{ color: 'var(--text-main)', marginBottom: '24px' }}>
               {editingIdx !== null ? 'Edit Subject' : 'Add Subject'}
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Subject Name</label>
+                <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Subject Name</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   style={{
                     width: '100%',
-                    background: '#1e293b',
+                    background: 'var(--surface)',
                     border: '1px solid rgba(255,255,255,0.1)',
-                    color: '#f8fafc',
+                    color: 'var(--text-main)',
                     padding: '10px 12px',
                     borderRadius: '8px',
                     fontFamily: 'inherit'
@@ -231,9 +323,9 @@ function Subjects() {
               </div>
 
               <div>
-                <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Color</label>
+                <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Color</label>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  {['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444'].map(color => (
+                  {['var(--primary)', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444'].map(color => (
                     <button
                       key={color}
                       onClick={() => setFormData({ ...formData, color })}
@@ -241,7 +333,7 @@ function Subjects() {
                         width: '40px',
                         height: '40px',
                         background: color,
-                        border: formData.color === color ? '3px solid #f8fafc' : '1px solid rgba(255,255,255,0.2)',
+                        border: formData.color === color ? '3px solid var(--text-main)' : '1px solid rgba(255,255,255,0.2)',
                         borderRadius: '8px',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
@@ -252,7 +344,7 @@ function Subjects() {
               </div>
 
               <div>
-                <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
+                <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
                   Attendance Criteria: {formData.criteria}%
                 </label>
                 <input
@@ -263,7 +355,7 @@ function Subjects() {
                   onChange={(e) => setFormData({ ...formData, criteria: parseInt(e.target.value) })}
                   style={{
                     width: '100%',
-                    accentColor: '#8b5cf6',
+                    accentColor: 'var(--primary)',
                     cursor: 'pointer'
                   }}
                 />
@@ -274,8 +366,8 @@ function Subjects() {
                   onClick={handleSaveSubject}
                   style={{
                     flex: 1,
-                    background: '#8b5cf6',
-                    color: '#f8fafc',
+                    background: 'var(--primary)',
+                    color: 'var(--text-main)',
                     border: 'none',
                     padding: '12px',
                     borderRadius: '8px',
@@ -290,7 +382,7 @@ function Subjects() {
                     onClick={() => handleDeleteSubject(editingIdx)}
                     style={{
                       background: '#ef4444',
-                      color: '#f8fafc',
+                      color: 'var(--text-main)',
                       border: 'none',
                       padding: '12px 24px',
                       borderRadius: '8px',
@@ -309,7 +401,7 @@ function Subjects() {
                   style={{
                     flex: 1,
                     background: 'transparent',
-                    color: '#94a3b8',
+                    color: 'var(--text-dim)',
                     border: '1px solid rgba(255,255,255,0.1)',
                     padding: '12px',
                     borderRadius: '8px',

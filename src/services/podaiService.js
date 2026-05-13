@@ -10,26 +10,36 @@ class PodAiService {
    */
   static mergeSubjects(existingSubjects, podaiSubjects) {
     const merged = [...existingSubjects];
-    
+
     podaiSubjects.forEach(podSub => {
+      // Sanitize all numeric values upfront
+      const attended = Number(podSub.attended) || 0;
+      const total = Number(podSub.total) || 0;
+      const missed = Number(podSub.missed) || 0;
+      const avgAtt = Number(podSub.avgAttendance) || (total > 0 ? Math.round((attended / total) * 100) : 0);
+
       // Find if this subject already exists (by name or podaiToken)
-      const existingIdx = merged.findIndex(s => 
-        s.podaiToken === podSub.token || 
+      const existingIdx = merged.findIndex(s =>
+        s.podaiToken === podSub.token ||
         s.name.toLowerCase() === podSub.title.toLowerCase()
       );
-      
+
       if (existingIdx >= 0) {
         // Update existing subject
         merged[existingIdx] = {
           ...merged[existingIdx],
           podaiToken: podSub.token,
           podaiSynced: true,
-          // Store Pod.ai values as initial baseline for continuation
-          initialPresent: podSub.attended !== undefined ? podSub.attended : (merged[existingIdx].initialPresent || 0),
-          initialTotal: podSub.total !== undefined ? podSub.total : (merged[existingIdx].initialTotal || 0),
-          initialMissed: podSub.missed !== undefined ? podSub.missed : (merged[existingIdx].initialMissed || 0),
+          // Standard fields for the rest of the app
+          present: attended,
+          total: total,
+          attendance: avgAtt,
+          // Store Pod.ai values as baseline for continuation
+          initialPresent: attended,
+          initialTotal: total,
+          initialMissed: missed,
           // Store last sync percentage
-          podaiPercentage: podSub.avgAttendance !== undefined ? podSub.avgAttendance : merged[existingIdx].podaiPercentage
+          podaiPercentage: avgAtt
         };
       } else {
         // Add new subject
@@ -38,17 +48,22 @@ class PodAiService {
           name: podSub.title,
           podaiToken: podSub.token,
           podaiSynced: true,
-          initialPresent: podSub.attended || 0,
-          initialTotal: podSub.total || 0,
-          initialMissed: podSub.missed || 0,
-          podaiPercentage: podSub.avgAttendance || 0,
+          // Standard fields
+          present: attended,
+          total: total,
+          attendance: avgAtt,
+          // Baseline fields for continuation tracking
+          initialPresent: attended,
+          initialTotal: total,
+          initialMissed: missed,
+          podaiPercentage: avgAtt,
           criteria: 75,
           color: this.getRandomColor(),
           createdAt: new Date().toISOString()
         });
       }
     });
-    
+
     return merged;
   }
 

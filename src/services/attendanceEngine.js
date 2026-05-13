@@ -9,9 +9,15 @@ class AttendanceEngine {
    * Generate calendar events from timetable
    * Creates recurring weekly events for each timetable entry
    */
-  static generateCalendarEventsFromTimetable(timetableData, subjects) {
+  static generateCalendarEventsFromTimetable(timetableData, subjects, semesterSettings = {}) {
     const events = [];
     const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+
+    const startDate = semesterSettings.startDate ? this.parseDate(semesterSettings.startDate) : new Date();
+    const endDate = semesterSettings.endDate ? this.parseDate(semesterSettings.endDate) : new Date(startDate.getFullYear(), startDate.getMonth() + 4, startDate.getDate());
+    const holidays = semesterSettings.holidays || [];
+    const examPeriods = semesterSettings.examPeriods || [];
+    const workingSaturdays = semesterSettings.workingSaturdays || [];
 
     Object.entries(timetableData).forEach(([cellKey, subjectData]) => {
       const [dayIdx, timeSlot] = cellKey.split('-');
@@ -21,11 +27,7 @@ class AttendanceEngine {
       // Find subject details
       const subject = subjects.find(s => s.name === subjectData.name);
 
-      // Generate events for next 12 months
-      const today = new Date();
-      const endDate = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
-
-      let currentDate = new Date(today);
+      let currentDate = new Date(startDate);
       // Find first occurrence of this day
       while (currentDate.getDay() !== (dayNum + 1) % 7) {
         currentDate.setDate(currentDate.getDate() + 1);
@@ -33,28 +35,121 @@ class AttendanceEngine {
 
       while (currentDate <= endDate) {
         const dateStr = this.formatDate(currentDate);
-        const eventId = `${dateStr}-${dayNum}-${timeSlot}`;
-
-        events.push({
-          id: eventId,
-          date: dateStr,
-          dayOfWeek: dayNum,
-          dayName: dayName,
-          timeSlot: timeSlot,
-          subjectName: subjectData.name,
-          subjectCode: subject?.subjectCode || '',
-          color: subjectData.color || '#8b5cf6',
-          criteria: subjectData.criteria || 75,
-          attendance: null, // Will be set when marked
-          isRecurring: true
+        
+        // 1. Skip Holidays
+        const isHoliday = holidays.some(h => h.date === dateStr);
+        
+        // 2. Skip Exam Periods
+        const isExamPeriod = examPeriods.some(p => {
+          const pStart = this.parseDate(p.startDate);
+          const pEnd = this.parseDate(p.endDate);
+          return currentDate >= pStart && currentDate <= pEnd;
         });
+
+        if (!isHoliday && !isExamPeriod) {
+          const eventId = `${dateStr}-${dayNum}-${timeSlot}`;
+          events.push({
+            id: eventId,
+            date: dateStr,
+            dayOfWeek: dayNum,
+            dayName: dayName,
+            timeSlot: timeSlot,
+            subjectName: subjectData.name,
+            subjectCode: subject?.subjectCode || '',
+            color: subjectData.color || '#8b5cf6',
+            criteria: subjectData.criteria || 75,
+            attendance: null,
+            isRecurring: true
+          });
+        }
 
         // Move to next week
         currentDate.setDate(currentDate.getDate() + 7);
       }
+
+      // 3. Handle Working Saturdays (if the day index corresponds to Saturday)
+      // Actually, if it's a working Saturday, we usually follow a specific day's timetable (e.g., "Monday Timetable on Saturday")
+      // But for simplicity, we'll assume classes on Saturdays are added explicitly to the timetable if they are regular
+      // If they are one-offs, we check workingSaturdays.
+      workingSaturdays.forEach(ws => {
+        const wsDate = this.parseDate(ws.date);
+        // If this ws follows this day's schedule
+        if (ws.followsDay === dayNum) {
+          const dateStr = ws.date;
+          const eventId = `${dateStr}-${dayNum}-${timeSlot}-ws`;
+          events.push({
+            id: eventId,
+            date: dateStr,
+            dayOfWeek: 5, // Saturday is 5 in 0-6 Mon-Sun
+            dayName: 'SAT',
+            timeSlot: timeSlot,
+            subjectName: subjectData.name,
+            subjectCode: subject?.subjectCode || '',
+            color: subjectData.color || '#8b5cf6',
+            criteria: subjectData.criteria || 75,
+            attendance: null,
+            isRecurring: false,
+            isWorkingSaturday: true
+          });
+        }
+      });
     });
 
     return events;
+  }
+
+  /**
+   * Calculate semester-wide metrics for a subject
+   */
+  static calculateSemesterSubjectMetrics(subjectName, semesterSettings, timetableData, calendarEvents, attendanceData, subjects = []) {
+    const subject = subjects.find(s => s.name === subjectName);
+    const stats = this.calculateSubjectStats(subjectName, calendarEvents, attendanceData, subjects);
+    
+    // Total planned classes in the entire semester for this subject
+    const subjectEvents = calendarEvents.filter(e => e.subjectName === subjectName);
+    const totalPlanned = subjectEvents.length;
+    
+    // Classes remaining in the future
+    const today = this.formatDate(new Date());
+    const remainingClasses = subjectEvents.filter(e => e.date >= today && !this.getAttendanceState(e.id, attendanceData)).length;
+    
+    const target = subject?.criteria || 75;
+    
+    // Bunk Calculation: How many future classes can be missed while staying above target?
+    // Formula: (Present) / (Conducted + Remaining - Missable) >= Target%
+    // Let M be missable classes: M <= Conducted + Remaining - (Present / Target)
+    
+    const conducted = stats.total;
+    const present = stats.present;
+    
+    // Max missable classes total in semester to stay at target
+    // target = present / (totalPlanned - missable)
+    // missable = totalPlanned - (present / (target/100))
+    const maxMissableTotal = Math.floor(totalPlanned - (present / (target / 100)));
+    
+    // Bunkable now = maxMissableTotal - (conducted - present)
+    const bunkableNow = Math.max(0, maxMissableTotal - stats.absent);
+    
+    // Must attend: If bunkable is 0, how many more must be attended to reach target?
+    let mustAttend = 0;
+    if (stats.percentage < target) {
+      mustAttend = Math.ceil((target * conducted - 100 * present) / (100 - target));
+    }
+
+    return {
+      ...stats,
+      totalPlanned,
+      remainingClasses,
+      bunkableNow,
+      mustAttend,
+      target,
+      prediction: {
+        ifMissNext1: conducted > 0 ? Math.round((present / (conducted + 1)) * 100) : 0,
+        ifMissNext2: conducted > 0 ? Math.round((present / (conducted + 2)) * 100) : 0,
+        ifAttendNext1: Math.round(((present + 1) / (conducted + 1)) * 100),
+        ifAttendNext2: Math.round(((present + 2) / (conducted + 2)) * 100)
+      }
+    };
   }
 
   /**
@@ -128,9 +223,9 @@ class AttendanceEngine {
     const subjectEvents = calendarEvents.filter(e => e.subjectName === subjectName);
     const subject = subjects.find(s => s.name === subjectName);
 
-    // Baseline from Pod.ai or other imports
-    let present = subject?.initialPresent || 0;
-    let total = subject?.initialTotal || 0;
+    // Baseline from Pod.ai or other imports - ensure numeric
+    let present = Number(subject?.initialPresent) || 0;
+    let total = Number(subject?.initialTotal) || 0;
     
     let tracktapsPresent = 0;
     let tracktapsAbsent = 0;
@@ -365,11 +460,13 @@ class AttendanceEngine {
     // Critical subjects
     stats.subjectStats.forEach(stat => {
       if (stat.status === 'critical') {
-        const needed = Math.ceil((75 * stat.total - 75 * stat.present) / (100 - 75));
+        const target = 75;
+        const needed = Math.ceil((target * stat.total - 100 * stat.present) / (100 - target));
+        const finalNeeded = Math.max(0, stat.total === 0 ? 1 : needed);
         insights.push({
           type: 'critical',
           subject: stat.subjectName,
-          message: `${stat.subjectName} is at ${stat.percentage}%. Need ${needed} more classes to reach 75%.`,
+          message: `${stat.subjectName} is at ${stat.percentage}%. Need ${finalNeeded} more classes to reach 75%.`,
           priority: 'high'
         });
       }
