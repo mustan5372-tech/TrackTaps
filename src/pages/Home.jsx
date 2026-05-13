@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useAppStore from '../store/appStore';
 import ContactUs from '../components/ContactUs';
@@ -28,14 +28,21 @@ const cardHover = {
 };
 
 function Home() {
+  const navigate = useNavigate();
   const {
     dashboardStats,
     insights,
     getSafeSubjects,
     getCriticalSubjects,
     getTodaySchedule,
-    fullSync
+    fullSync,
+    subscription,
+    semesterStats
   } = useAppStore();
+
+  const getTotalBunkable = () => {
+    return Object.values(semesterStats).reduce((acc, stat) => acc + (stat.bunkableNow || 0), 0);
+  };
 
   useEffect(() => {
     fullSync();
@@ -206,7 +213,7 @@ function Home() {
             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1, delay: 0.2 }}
             id="hero-greeting" 
-            style={{ fontSize: '36px', fontWeight: '800', color: '#f8fafc', marginBottom: '8px', letterSpacing: '-0.02em' }}
+            style={{ fontSize: '36px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px', letterSpacing: '-0.02em' }}
           >
             Good Afternoon,
           </motion.h2>
@@ -215,7 +222,7 @@ function Home() {
             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1, delay: 0.4 }}
             id="hero-subtitle" 
-            style={{ fontSize: '18px', color: '#94a3b8', marginBottom: '16px' }}
+            style={{ fontSize: '18px', color: 'var(--text-dim)', marginBottom: '16px' }}
           >
             Ready to crush your goals today?
           </motion.p>
@@ -224,7 +231,7 @@ function Home() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
             id="hero-date" 
-            style={{ fontSize: '14px', color: '#a78bfa', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+            style={{ fontSize: '14px', color: 'var(--primary-light)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}
           >
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
           </motion.div>
@@ -233,17 +240,17 @@ function Home() {
           whileHover={{ scale: 1.05, rotate: [0, 1, -1, 0] }}
           className="hero-overall-stats" 
           style={{
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%)',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
+            background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.1) 100%)',
+            border: '1px solid var(--primary-glow)',
             borderRadius: '20px',
             padding: '32px',
             textAlign: 'center',
             minWidth: '220px',
-            boxShadow: '0 0 30px rgba(139, 92, 246, 0.1)'
+            boxShadow: '0 0 30px var(--primary-glow)'
           }}
         >
-          <span className="overall-percentage" id="hero-overall-perc" style={{ fontSize: '56px', fontWeight: '800', color: '#a78bfa', display: 'block', lineHeight: 1 }}>{dashboardStats.overallPercentage}%</span>
-          <span className="overall-label" style={{ fontSize: '14px', color: '#94a3b8', display: 'block', marginTop: '12px', fontWeight: '600' }}>Attendance Score</span>
+          <span className="overall-percentage" id="hero-overall-perc" style={{ fontSize: '56px', fontWeight: '800', color: 'var(--primary-light)', display: 'block', lineHeight: 1 }}>{dashboardStats.overallPercentage}%</span>
+          <span className="overall-label" style={{ fontSize: '14px', color: 'var(--text-dim)', display: 'block', marginTop: '12px', fontWeight: '600' }}>Attendance Score</span>
           <motion.div 
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 2, repeat: Infinity }}
@@ -269,7 +276,7 @@ function Home() {
         }}
       >
         {[
-          { label: 'Total Subjects', value: dashboardStats.totalSubjects, color: '#a78bfa', icon: '📚' },
+          { label: 'Total Subjects', value: dashboardStats.totalSubjects, color: 'var(--primary-light)', icon: '📚' },
           { label: 'Day Streak', value: dashboardStats.streak, color: '#f59e0b', icon: '🔥' },
           { label: 'Safe', value: dashboardStats.safeSubjects, color: '#10b981', icon: '🛡️' },
           { label: 'Critical', value: dashboardStats.criticalSubjects, color: '#ef4444', icon: '🚨' }
@@ -283,8 +290,8 @@ function Home() {
             }}
             className="stat-pill" 
             style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
+              background: 'var(--surface-glass)',
+              border: '1px solid var(--border)',
               borderRadius: '20px',
               padding: '24px',
               textAlign: 'center',
@@ -292,7 +299,7 @@ function Home() {
             }}
           >
             <span className="stat-pill-value" style={{ fontSize: '32px', fontWeight: '800', color: stat.color, display: 'block' }}>{stat.value}</span>
-            <span className="stat-pill-label" style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px', display: 'block', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</span>
+            <span className="stat-pill-label" style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '8px', display: 'block', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</span>
           </motion.div>
         ))}
       </motion.div>
@@ -319,40 +326,75 @@ function Home() {
         }}>
           <div className="pred-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <span className="pred-icon" style={{ fontSize: '28px' }}>✅</span>
-            <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Safe to Skip</span>
+            <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Safe to Skip</span>
           </div>
-          <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: '#10b981', marginBottom: '8px' }}>{getSafeSubjects().length}</div>
-          <div className="pred-desc" style={{ fontSize: '13px', color: '#94a3b8' }}>Subjects you can safely skip while staying above 75%</div>
+          <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: 'var(--success)', marginBottom: '8px' }}>{getSafeSubjects().length}</div>
+          <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Subjects you can safely skip while staying above 75%</div>
         </motion.div>
         
-        <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="prediction-card" style={{
-          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)',
-          border: '1px solid rgba(239, 68, 68, 0.2)',
-          borderRadius: '24px',
-          padding: '28px',
-          backdropFilter: 'blur(10px)'
-        }}>
-          <div className="pred-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <span className="pred-icon" style={{ fontSize: '28px' }}>🚨</span>
-            <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Critical Risk</span>
-          </div>
-          <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: '#ef4444', marginBottom: '8px' }}>{getCriticalSubjects().length}</div>
-          <div className="pred-desc" style={{ fontSize: '13px', color: '#94a3b8' }}>Subjects at risk of falling below your target attendance</div>
-        </motion.div>
+        {subscription?.status === 'active' ? (
+          <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="prediction-card" style={{
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(15, 23, 42, 0.4) 100%)',
+            border: '1px solid var(--primary-glow)',
+            borderRadius: '24px',
+            padding: '28px',
+            backdropFilter: 'blur(10px)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#f59e0b', color: 'white', fontSize: '10px', fontWeight: '900', padding: '4px 12px', borderRadius: '100px', transform: 'rotate(5deg)' }}>PLUS AI</div>
+            <div className="pred-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <span className="pred-icon" style={{ fontSize: '28px' }}>🔮</span>
+              <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--primary-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Prediction</span>
+            </div>
+            <div className="pred-value" style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>
+              {dashboardStats.overallPercentage > 85 ? 'Excellent' : dashboardStats.overallPercentage > 75 ? 'Stable' : 'Risk'}
+            </div>
+            <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>AI expects your attendance to reach <span style={{ color: 'var(--success)', fontWeight: '700' }}>{(dashboardStats.overallPercentage + 2.5).toFixed(1)}%</span> by end of month.</div>
+          </motion.div>
+        ) : (
+          <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="prediction-card" style={{
+            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
+            borderRadius: '24px',
+            padding: '28px',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <div className="pred-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <span className="pred-icon" style={{ fontSize: '28px' }}>🚨</span>
+              <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--danger)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Critical Risk</span>
+            </div>
+            <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: 'var(--danger)', marginBottom: '8px' }}>{getCriticalSubjects().length}</div>
+            <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Subjects at risk of falling below your target attendance</div>
+          </motion.div>
+        )}
 
-        <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="prediction-card" style={{
-          background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)',
-          border: '1px solid rgba(245, 158, 11, 0.2)',
-          borderRadius: '24px',
-          padding: '28px',
-          backdropFilter: 'blur(10px)'
-        }}>
+        <motion.div 
+          onClick={() => subscription?.status !== 'active' && navigate('/premium')}
+          variants={fadeInUp} 
+          whileHover={cardHover.hover} 
+          className="prediction-card" 
+          style={{
+            background: subscription?.status === 'active' ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)' : 'rgba(255,255,255,0.02)',
+            border: subscription?.status === 'active' ? '1px solid rgba(245, 158, 11, 0.2)' : '1px dashed rgba(255,255,255,0.1)',
+            borderRadius: '24px',
+            padding: '28px',
+            backdropFilter: 'blur(10px)',
+            cursor: subscription?.status === 'active' ? 'default' : 'pointer'
+          }}
+        >
           <div className="pred-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <span className="pred-icon" style={{ fontSize: '28px' }}>🩹</span>
-            <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recovery Goal</span>
+            <span className="pred-icon" style={{ fontSize: '28px' }}>{subscription?.status === 'active' ? '🏖️' : '🔒'}</span>
+            <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: subscription?.status === 'active' ? 'var(--warning)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {subscription?.status === 'active' ? 'Bunk Planner' : 'Bunk Planner'}
+            </span>
           </div>
-          <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: '#f59e0b', marginBottom: '8px' }}>{getCriticalSubjects().length}</div>
-          <div className="pred-desc" style={{ fontSize: '13px', color: '#94a3b8' }}>Next milestone to reach overall safety threshold</div>
+          <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: subscription?.status === 'active' ? 'var(--warning)' : 'var(--text-muted)', marginBottom: '8px' }}>
+            {subscription?.status === 'active' ? getTotalBunkable() : 'PLUS'}
+          </div>
+          <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>
+            {subscription?.status === 'active' ? 'Total classes you can safely skip across all subjects this semester' : 'Plan your semester bunks with TrackTaps Plus'}
+          </div>
         </motion.div>
       </motion.div>
 
@@ -370,14 +412,14 @@ function Home() {
         }}
       >
         <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="dashboard-card" style={{
-          background: 'rgba(255, 255, 255, 0.02)',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
+          background: 'var(--surface-glass)',
+          border: '1px solid var(--border)',
           borderRadius: '24px',
           padding: '32px',
           backdropFilter: 'blur(10px)'
         }}>
           <div className="card-header" style={{ marginBottom: '24px' }}>
-            <span className="card-title" style={{ fontSize: '18px', fontWeight: '700', color: '#f8fafc' }}>Attendance Overview</span>
+            <span className="card-title" style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)' }}>Attendance Overview</span>
           </div>
           <div className="attendance-overview-content" style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
             <motion.div 
@@ -388,50 +430,50 @@ function Home() {
               style={{ position: 'relative', width: '120px', height: '120px' }}
             >
               <svg className="progress-ring-svg" width="120" height="120" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(139, 92, 246, 0.05)" strokeWidth="6"></circle>
+                <circle cx="60" cy="60" r="54" fill="none" stroke="var(--primary-glow)" strokeWidth="6"></circle>
                 <motion.circle 
                   initial={{ pathLength: 0 }}
                   whileInView={{ pathLength: dashboardStats.overallPercentage / 100 }}
                   transition={{ duration: 1.5, ease: "easeInOut" }}
-                  cx="60" cy="60" r="54" fill="none" stroke="#a78bfa" strokeWidth="6" strokeLinecap="round"
+                  cx="60" cy="60" r="54" fill="none" stroke="var(--primary-light)" strokeWidth="6" strokeLinecap="round"
                 />
               </svg>
-              <span className="progress-percentage-text" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '800', color: '#a78bfa' }}>{dashboardStats.overallPercentage}%</span>
+              <span className="progress-percentage-text" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '800', color: 'var(--primary-light)' }}>{dashboardStats.overallPercentage}%</span>
             </motion.div>
             <div className="mini-stats" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div className="mini-stat-item">
-                <span className="mini-stat-label" style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600' }}>PRESENT</span>
-                <span className="mini-stat-value" style={{ fontSize: '20px', fontWeight: '800', color: '#10b981' }}>{dashboardStats.present}</span>
+                <span className="mini-stat-label" style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600' }}>PRESENT</span>
+                <span className="mini-stat-value" style={{ fontSize: '20px', fontWeight: '800', color: 'var(--success)' }}>{dashboardStats.present}</span>
               </div>
               <div className="mini-stat-item">
-                <span className="mini-stat-label" style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600' }}>MISSED</span>
-                <span className="mini-stat-value" style={{ fontSize: '20px', fontWeight: '800', color: '#ef4444' }}>{dashboardStats.missed}</span>
+                <span className="mini-stat-label" style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600' }}>MISSED</span>
+                <span className="mini-stat-value" style={{ fontSize: '20px', fontWeight: '800', color: 'var(--danger)' }}>{dashboardStats.missed}</span>
               </div>
             </div>
           </div>
         </motion.div>
 
         <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="dashboard-card" style={{
-          background: 'rgba(255, 255, 255, 0.02)',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
+          background: 'var(--surface-glass)',
+          border: '1px solid var(--border)',
           borderRadius: '24px',
           padding: '32px',
           backdropFilter: 'blur(10px)'
         }}>
           <div className="card-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span className="card-title" style={{ fontSize: '18px', fontWeight: '700', color: '#f8fafc' }}>AI Insights</span>
+            <span className="card-title" style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)' }}>AI Insights</span>
             <motion.span 
               animate={{ opacity: [0.4, 1, 0.4] }}
               transition={{ duration: 2, repeat: Infinity }}
               className="ai-badge-small" 
-              style={{ fontSize: '10px', fontWeight: '800', color: '#a78bfa', background: 'rgba(139, 92, 246, 0.15)', padding: '4px 12px', borderRadius: '100px', border: '1px solid rgba(139, 92, 246, 0.3)' }}
+              style={{ fontSize: '10px', fontWeight: '800', color: 'var(--primary-light)', background: 'var(--primary-glow)', padding: '4px 12px', borderRadius: '100px', border: '1px solid var(--border)' }}
             >
               AI ACTIVE
             </motion.span>
           </div>
           <div className="ai-insights-list">
             {insights.length === 0 ? (
-              <p style={{ color: '#94a3b8', fontSize: '14px' }}>No insights yet. Add subjects to get started!</p>
+              <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>No insights yet. Add subjects to get started!</p>
             ) : (
               insights.slice(0, 3).map((insight, idx) => (
                 <motion.div 
@@ -441,15 +483,15 @@ function Home() {
                   transition={{ delay: idx * 0.1 }}
                   style={{
                     padding: '16px',
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    background: 'var(--surface-glass)',
+                    border: '1px solid var(--border)',
                     borderRadius: '12px',
                     marginBottom: '12px',
                     fontSize: '13px'
                   }}
                 >
-                  <div style={{ fontWeight: '700', marginBottom: '4px', color: insight.type === 'critical' ? '#ef4444' : '#a78bfa' }}>{insight.icon} {insight.title}</div>
-                  <div style={{ color: '#94a3b8', fontSize: '12px', lineHeight: 1.4 }}>{insight.message}</div>
+                  <div style={{ fontWeight: '700', marginBottom: '4px', color: insight.type === 'critical' ? 'var(--danger)' : 'var(--primary-light)' }}>{insight.icon} {insight.title}</div>
+                  <div style={{ color: 'var(--text-dim)', fontSize: '12px', lineHeight: 1.4 }}>{insight.message}</div>
                 </motion.div>
               ))
             )}
@@ -457,21 +499,21 @@ function Home() {
         </motion.div>
 
         <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="dashboard-card" style={{
-          background: 'rgba(255, 255, 255, 0.02)',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
+          background: 'var(--surface-glass)',
+          border: '1px solid var(--border)',
           borderRadius: '24px',
           padding: '32px',
           backdropFilter: 'blur(10px)'
         }}>
           <div className="card-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span className="card-title" style={{ fontSize: '18px', fontWeight: '700', color: '#f8fafc' }}>Today's Schedule</span>
-            <span style={{ fontSize: '12px', color: '#a78bfa', fontWeight: '700', letterSpacing: '0.05em' }}>
+            <span className="card-title" style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)' }}>Today's Schedule</span>
+            <span style={{ fontSize: '12px', color: 'var(--primary-light)', fontWeight: '700', letterSpacing: '0.05em' }}>
               {new Date().toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
             </span>
           </div>
           <div className="schedule-list">
             {getTodaySchedule().length === 0 ? (
-              <p style={{ color: '#94a3b8', fontSize: '14px' }}>No classes scheduled for today</p>
+              <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>No classes scheduled for today</p>
             ) : (
               getTodaySchedule().map((event, idx) => (
                 <motion.div 
@@ -481,8 +523,8 @@ function Home() {
                   transition={{ delay: idx * 0.1 }}
                   style={{
                     padding: '16px',
-                    background: 'rgba(139, 92, 246, 0.08)',
-                    border: '1px solid rgba(139, 92, 246, 0.15)',
+                    background: 'var(--primary-glow)',
+                    border: '1px solid var(--border)',
                     borderRadius: '12px',
                     marginBottom: '12px',
                     fontSize: '14px',
@@ -491,8 +533,8 @@ function Home() {
                     alignItems: 'center'
                   }}
                 >
-                  <div style={{ fontWeight: '700', color: '#f8fafc' }}>{event.subjectName}</div>
-                  <div style={{ fontSize: '12px', color: '#a78bfa', fontWeight: '600' }}>{event.timeSlot}</div>
+                  <div style={{ fontWeight: '700', color: 'var(--text-main)' }}>{event.subjectName}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--primary-light)', fontWeight: '600' }}>{event.timeSlot}</div>
                 </motion.div>
               ))
             )}
@@ -508,7 +550,7 @@ function Home() {
         viewport={{ once: true }}
         className="shortcut-section"
       >
-        <h3 style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '24px', fontWeight: '700' }}>Navigation Shortcuts</h3>
+       <h3 style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '24px', fontWeight: '700' }}>Navigation Shortcuts</h3>
         <div className="shortcut-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
@@ -521,15 +563,15 @@ function Home() {
               whileHover={{ 
                 y: -5, 
                 backgroundColor: 'rgba(139, 92, 246, 0.15)',
-                borderColor: 'rgba(139, 92, 246, 0.4)'
+                borderColor: 'var(--primary-glow)'
               }}
             >
               <Link
                 to={shortcut.path}
                 style={{
                   display: 'block',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  background: 'var(--surface-glass)',
+                  border: '1px solid var(--border)',
                   borderRadius: '20px',
                   padding: '24px',
                   textAlign: 'center',
@@ -538,7 +580,7 @@ function Home() {
                 }}
               >
                 <span style={{ fontSize: '36px', display: 'block', marginBottom: '12px' }}>{shortcut.icon}</span>
-                <span style={{ fontSize: '15px', fontWeight: '700', color: '#f8fafc' }}>{shortcut.title}</span>
+                <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)' }}>{shortcut.title}</span>
               </Link>
             </motion.div>
           ))}
@@ -559,7 +601,7 @@ function Home() {
           className="dashboard-card" 
           style={{
             background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(15, 23, 42, 0.6) 100%)',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
+            border: '1px solid var(--primary-glow)',
             borderRadius: '28px',
             padding: '40px',
             display: 'flex',
@@ -571,18 +613,18 @@ function Home() {
           }}
         >
           {/* Internal Glow for Promo */}
-          <div style={{ position: 'absolute', top: 0, right: 0, width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: 0, right: 0, width: '300px', height: '300px', background: 'radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)', pointerEvents: 'none' }} />
           
           <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
-            <h3 style={{ fontSize: '24px', color: '#f8fafc', marginBottom: '12px', fontWeight: '800', letterSpacing: '-0.01em' }}>Quick Setup with AI</h3>
-            <p style={{ color: '#94a3b8', fontSize: '16px', marginBottom: '24px', lineHeight: '1.6', maxWidth: '500px' }}>Upload a screenshot of your subjects or timetable. Our advanced AI will extract all data and set up your dashboard in seconds.</p>
+            <h3 style={{ fontSize: '24px', color: 'var(--text-main)', marginBottom: '12px', fontWeight: '800', letterSpacing: '-0.01em' }}>Quick Setup with AI</h3>
+            <p style={{ color: 'var(--text-dim)', fontSize: '16px', marginBottom: '24px', lineHeight: '1.6', maxWidth: '500px' }}>Upload a screenshot of your subjects or timetable. Our advanced AI will extract all data and set up your dashboard in seconds.</p>
             <motion.button 
-              whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(139, 92, 246, 0.4)' }}
+              whileHover={{ scale: 1.05, boxShadow: '0 0 20px var(--primary-glow)' }}
               whileTap={{ scale: 0.95 }}
               className="primary-btn" 
               style={{
-                background: 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)',
-                color: '#f8fafc',
+                background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%)',
+                color: 'var(--text-main)',
                 border: 'none',
                 padding: '14px 32px',
                 borderRadius: '12px',
