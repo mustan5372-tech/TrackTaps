@@ -54,14 +54,24 @@ const useAppStore = create(
           const unsubscribe = authService.onAuthChange((user) => {
             if (user) {
               const isAdmin = user.email === 'mustan5372@gmail.com' || user.email === 'tracktaps@gmail.com';
-              set({ 
-                user, 
-                isAuthLoading: false,
-                role: isAdmin ? 'ADMIN_OWNER' : (get().subscription?.status === 'active' ? 'PREMIUM' : 'USER')
-              });
               
-              // Auto-sync profile to cloud to ensure Admin Panel has real names
-              get().pushToCloud();
+              // Check if user is banned (from Firestore data)
+              syncService.fetchFromCloud(user.uid).then(cloudData => {
+                if (cloudData && cloudData.banned) {
+                  alert("🚫 Your account has been suspended by an administrator.");
+                  get().logout();
+                  return;
+                }
+
+                set({ 
+                  user, 
+                  isAuthLoading: false,
+                  role: isAdmin ? 'ADMIN_OWNER' : (cloudData?.subscription?.status === 'active' ? 'PREMIUM' : 'USER')
+                });
+                
+                // Auto-sync profile to cloud to ensure Admin Panel has real names
+                get().pushToCloud();
+              });
               
               // Only pull automatically if local state is empty to avoid overwriting new data
               const { subjects } = get();

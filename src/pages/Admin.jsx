@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import useAppStore from '../store/appStore';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
 function Admin() {
@@ -45,12 +45,13 @@ function Admin() {
           email: data.email || 'No email',
           role: data.role || (sub.status === 'active' ? 'PREMIUM' : 'USER'),
           plan: sub.planType || sub.plan || 'Free',
-          status: sub.status === 'active' ? 'Active' : 'Inactive',
+          status: data.banned ? 'Banned' : (sub.status === 'active' ? 'Active' : 'Inactive'),
           expiry: sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString() : '-',
-          amountPaid: sub.amountPaid || 0
+          amountPaid: sub.amountPaid || 0,
+          banned: data.banned || false
         });
 
-        if (sub.status === 'active') {
+        if (sub.status === 'active' && !data.banned) {
           premiumCount++;
           revenue += (sub.amountPaid || 0);
         }
@@ -66,7 +67,6 @@ function Admin() {
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch real admin data:", error);
-      // Fallback message if Firestore rules block the listing
       if (error.code === 'permission-denied') {
         alert("🚨 Permission Denied: Please update your Firestore Security Rules to allow 'list' access for Admin accounts.");
       }
@@ -74,9 +74,40 @@ function Admin() {
     }
   };
 
-  const handleAction = (action, user) => {
-    alert(`Admin Action: ${action} for ${user.name}`);
-    // Here you would call /api/admin/update-user
+  const handleAction = async (action, targetUser) => {
+    if (!window.confirm(`Are you sure you want to ${action} ${targetUser.name}?`)) return;
+
+    try {
+      const userRef = doc(db, "users", targetUser.uid);
+      
+      if (action === 'upgrade') {
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 30); // Default 30 days manual upgrade
+
+        await updateDoc(userRef, {
+          subscription: {
+            plan: 'plus',
+            planType: 'monthly',
+            status: 'active',
+            expiryDate: expiryDate.toISOString(),
+            paymentId: 'MANUAL_ADMIN_UPGRADE',
+            amountPaid: 0
+          }
+        });
+        alert(`✅ ${targetUser.name} upgraded to Premium!`);
+      } else if (action === 'ban') {
+        await updateDoc(userRef, { banned: true });
+        alert(`🚫 ${targetUser.name} has been banned.`);
+      } else if (action === 'unban') {
+        await updateDoc(userRef, { banned: false });
+        alert(`✅ ${targetUser.name} has been unbanned.`);
+      }
+
+      fetchAdminData(); // Refresh list
+    } catch (error) {
+      console.error("Admin action failed:", error);
+      alert(`❌ Failed to ${action} user: ` + error.message);
+    }
   };
 
   const filteredUsers = users.filter(u => 
@@ -201,12 +232,21 @@ function Admin() {
                       >
                         Upgrade
                       </button>
-                      <button 
-                        onClick={() => handleAction('ban', u)}
-                        style={{ background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#ef4444', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
-                      >
-                        Ban
-                      </button>
+                      {u.banned ? (
+                        <button 
+                          onClick={() => handleAction('unban', u)}
+                          style={{ background: 'rgba(16, 185, 129, 0.1)', border: 'none', color: '#10b981', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                        >
+                          Unban
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleAction('ban', u)}
+                          style={{ background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#ef4444', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                        >
+                          Ban
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
