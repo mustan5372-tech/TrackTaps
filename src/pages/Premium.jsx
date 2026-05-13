@@ -237,12 +237,12 @@ function Premium() {
                   width: '100%',
                   padding: '14px',
                   borderRadius: '10px',
-                  background: subscription.planType === plan.id ? 'rgba(255,255,255,0.05)' : plan.color,
+                  background: (subscription && subscription.planType === plan.id) ? 'rgba(255,255,255,0.05)' : plan.color,
                   color: 'white',
                   border: 'none',
                   fontWeight: '700',
-                  cursor: loading || subscription.planType === plan.id ? 'default' : 'pointer',
-                  boxShadow: subscription.planType === plan.id ? 'none' : `0 4px 12px ${plan.color}40`,
+                  cursor: loading || (subscription && subscription.planType === plan.id) ? 'default' : 'pointer',
+                  boxShadow: (subscription && subscription.planType === plan.id) ? 'none' : `0 4px 12px ${plan.color}40`,
                   transition: 'all 0.2s'
                 }}
               >
