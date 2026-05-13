@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import useAppStore from '../store/appStore';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
 function Admin() {
@@ -101,6 +101,10 @@ function Admin() {
       } else if (action === 'unban') {
         await updateDoc(userRef, { banned: false });
         alert(`✅ ${targetUser.name} has been unbanned.`);
+      } else if (action === 'delete') {
+        if (!window.confirm("⚠️ DANGER: This will permanently delete this user's data from the cloud. Continue?")) return;
+        await deleteDoc(userRef);
+        alert(`🗑️ ${targetUser.name} has been deleted.`);
       }
 
       fetchAdminData(); // Refresh list
@@ -247,6 +251,12 @@ function Admin() {
                           Ban
                         </button>
                       )}
+                      <button 
+                        onClick={() => handleAction('delete', u)}
+                        style={{ background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#ef4444', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>

@@ -243,7 +243,14 @@ function Settings() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <button
-                    onClick={pushToCloud}
+                    onClick={() => {
+                      if (subscription.status !== 'active') {
+                        alert("💎 Premium Required: Cloud Backup is a TrackTaps Plus feature. Please upgrade to sync your data.");
+                        navigate('/premium');
+                        return;
+                      }
+                      pushToCloud();
+                    }}
                     disabled={isSyncing}
                     style={{
                       background: 'rgba(139, 92, 246, 0.1)',
