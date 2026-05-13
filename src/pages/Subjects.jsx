@@ -234,22 +234,22 @@ function Subjects() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
                       <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bunkable Now</div>
-                      <div style={{ fontSize: '16px', fontWeight: '800', color: semesterStats[subject.id]?.bunkableNow > 0 ? '#10b981' : '#ef4444' }}>
-                        {semesterStats[subject.id]?.bunkableNow || 0} Classes
+                      <div style={{ fontSize: '16px', fontWeight: '800', color: semesterStats?.[subject.id]?.bunkableNow > 0 ? '#10b981' : '#ef4444' }}>
+                        {semesterStats?.[subject.id]?.bunkableNow || 0} Classes
                       </div>
                     </div>
                     <div>
                       <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Semester Total</div>
                       <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-main)' }}>
-                        {semesterStats[subject.id]?.totalPlanned || 0} Planned
+                        {semesterStats?.[subject.id]?.totalPlanned || 0} Planned
                       </div>
                     </div>
                     <div style={{ gridColumn: '1 / -1', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                       <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>TRAJECTORY</div>
                       <div style={{ display: 'flex', gap: '8px', fontSize: '11px' }}>
-                        <span style={{ color: '#ef4444' }}>Miss 1: {semesterStats[subject.id]?.prediction?.ifMissNext1 ?? 0}%</span>
+                        <span style={{ color: '#ef4444' }}>Miss 1: {semesterStats?.[subject.id]?.prediction?.ifMissNext1 ?? 0}%</span>
                         <span style={{ color: 'var(--text-muted)' }}>|</span>
-                        <span style={{ color: '#10b981' }}>Attend 1: {semesterStats[subject.id]?.prediction?.ifAttendNext1 ?? 0}%</span>
+                        <span style={{ color: '#10b981' }}>Attend 1: {semesterStats?.[subject.id]?.prediction?.ifAttendNext1 ?? 0}%</span>
                       </div>
                     </div>
                   </div>
