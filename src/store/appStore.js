@@ -60,6 +60,9 @@ const useAppStore = create(
                 role: isAdmin ? 'ADMIN_OWNER' : (get().subscription?.status === 'active' ? 'PREMIUM' : 'USER')
               });
               
+              // Auto-sync profile to cloud to ensure Admin Panel has real names
+              get().pushToCloud();
+              
               // Only pull automatically if local state is empty to avoid overwriting new data
               const { subjects } = get();
               if (subjects.length === 0) {
@@ -78,30 +81,36 @@ const useAppStore = create(
 
         pushToCloud: async () => {
           const { user, subjects, timetable, calendarEvents, attendanceData, history, subscription, isSyncing } = get();
-          if (!user || isSyncing) return; // Don't trigger if already syncing or no user
-
-          // Only allow cloud sync for premium users (except for the initial push during upgrade)
-          if (subscription.plan !== 'plus' && subscription.status !== 'active') {
-            // Check if we are pushing during an upgrade (handy for initial sync)
-            // For now, we follow the rule: FREE users = Local Storage Only
-            console.log('Skipping cloud sync: Free users use local storage only.');
-            return;
-          }
+          if (!user || isSyncing) return;
 
           set({ isSyncing: true });
           try {
-            const dataToSync = {
-              subjects,
-              timetable,
-              calendarEvents,
-              attendanceData,
-              history,
-              subscription
+            // Basic profile info is synced for all logged-in users
+            const profileInfo = {
+              displayName: user.displayName,
+              email: user.email,
+              lastSynced: new Date().toISOString()
             };
+
+            let dataToSync = { ...profileInfo };
+
+            // Full data sync is gated for premium users
+            if (subscription.plan === 'plus' || subscription.status === 'active') {
+              dataToSync = {
+                ...dataToSync,
+                subjects,
+                timetable,
+                calendarEvents,
+                attendanceData,
+                history,
+                subscription
+              };
+            }
+
             await syncService.saveToCloud(user.uid, dataToSync);
             set({ lastCloudSync: new Date().toISOString(), isSyncing: false });
           } catch (error) {
-            console.error("Auto-push to cloud failed:", error);
+            console.error("Cloud sync failed:", error);
             set({ isSyncing: false });
           }
         },
