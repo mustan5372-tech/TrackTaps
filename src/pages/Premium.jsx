@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const PLANS = [
   {
     id: 'monthly',
-    name: 'Monthly',
+    name: 'Starter',
     price: 2,
     priceInPaise: 200,
     durationDays: 30,
@@ -15,7 +15,7 @@ const PLANS = [
   },
   {
     id: 'half_yearly',
-    name: 'Half-Yearly',
+    name: 'Super Saver',
     price: 5,
     priceInPaise: 500,
     durationDays: 180,
@@ -25,7 +25,7 @@ const PLANS = [
   },
   {
     id: 'yearly',
-    name: 'Yearly',
+    name: 'Mega Saver',
     price: 9,
     priceInPaise: 900,
     durationDays: 365,
