@@ -1,147 +1,258 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
+import { motion } from 'framer-motion';
 
 function Insights() {
-  // Get data from Zustand store
+  const navigate = useNavigate();
   const {
     insights,
     subjects,
     dashboardStats,
     getSafeSubjects,
     getCriticalSubjects,
-    getWarningSubjects
+    getWarningSubjects,
+    subscription,
+    semesterStats,
+    semesterSettings
   } = useAppStore();
 
+  const [timeframe, setTimeframe] = useState('Semester');
+
+  const isPremium = subscription.status === 'active';
   const safeSubjects = getSafeSubjects();
   const criticalSubjects = getCriticalSubjects();
   const warningSubjects = getWarningSubjects();
 
+  const handleExport = () => {
+    if (!isPremium) {
+      alert("💎 Premium Required: PDF/JSON reports are a TrackTaps Plus feature.");
+      navigate('/premium');
+      return;
+    }
+    window.print(); // Simple PDF export via browser print
+  };
+
   return (
-    <div className="insights-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="insights-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '100px' }}>
       <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '800', color: '#f8fafc' }}>Attendance Insights</h2>
-        <span style={{ fontSize: '12px', color: '#94a3b8' }}>{insights.length} insights</span>
+        <div>
+          <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>Attendance Insights</h2>
+          <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>{isPremium ? '💎 Premium Plus Analytics Active' : 'Basic Analytics'}</p>
+        </div>
+        <button 
+          onClick={handleExport}
+          style={{
+            padding: '10px 20px',
+            background: isPremium ? 'var(--primary-glow)' : 'var(--primary-glow)',
+            border: `1px solid ${isPremium ? 'var(--primary-glow)' : 'var(--primary-glow)'}`,
+            borderRadius: '10px',
+            color: isPremium ? 'var(--success)' : 'var(--primary-light)',
+            fontSize: '13px',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          {isPremium ? '📊 Export Report' : '💎 Unlock Reports'}
+        </button>
       </header>
 
       {/* Overall Summary */}
-      <div style={{
-        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
-        borderRadius: '16px',
-        padding: '24px'
-      }}>
-        <h3 style={{ color: '#f8fafc', marginBottom: '16px', fontSize: '16px', fontWeight: '700' }}>📊 Overall Performance</h3>
+      <div className="dashboard-card" style={{ padding: '24px' }}>
+        <h3 style={{ color: 'var(--text-main)', marginBottom: '16px', fontSize: '16px', fontWeight: '700' }}>📊 Overall Performance</h3>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
           gap: '16px'
         }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#a78bfa', marginBottom: '4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary-light)', marginBottom: '4px' }}>
               {dashboardStats.overallPercentage}%
             </div>
-            <div style={{ fontSize: '12px', color: '#94a3b8' }}>Overall Attendance</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Overall</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#10b981', marginBottom: '4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--success)', marginBottom: '4px' }}>
               {safeSubjects.length}
             </div>
-            <div style={{ fontSize: '12px', color: '#94a3b8' }}>Safe Subjects</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Safe</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#f59e0b', marginBottom: '4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--warning)', marginBottom: '4px' }}>
               {warningSubjects.length}
             </div>
-            <div style={{ fontSize: '12px', color: '#94a3b8' }}>Warning</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Warning</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#ef4444', marginBottom: '4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--danger)', marginBottom: '4px' }}>
               {criticalSubjects.length}
             </div>
-            <div style={{ fontSize: '12px', color: '#94a3b8' }}>Critical</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Critical</div>
           </div>
         </div>
       </div>
 
-      {/* AI Insights */}
-      {insights.length > 0 ? (
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
-          borderRadius: '16px',
-          padding: '24px'
-        }}>
-          <h3 style={{ color: '#f8fafc', marginBottom: '16px', fontSize: '16px', fontWeight: '700' }}>🤖 AI Insights</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {insights.map((insight, idx) => (
-              <div
-                key={idx}
-                style={{
-                  padding: '12px',
-                  background: insight.type === 'critical' ? 'rgba(239, 68, 68, 0.1)' : insight.type === 'warning' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                  border: insight.type === 'critical' ? '1px solid rgba(239, 68, 68, 0.2)' : insight.type === 'warning' ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(16, 185, 129, 0.2)',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  color: insight.type === 'critical' ? '#fca5a5' : insight.type === 'warning' ? '#fcd34d' : '#86efac'
-                }}>
-                <div style={{ fontWeight: '600', marginBottom: '4px' }}>{insight.icon} {insight.title}</div>
-                <div style={{ fontSize: '12px', opacity: 0.8 }}>{insight.message}</div>
-              </div>
-            ))}
+      {/* Semester Countdown */}
+      <div className="dashboard-card" style={{ padding: '24px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h3 style={{ color: 'var(--text-main)', fontSize: '15px', fontWeight: '700', margin: 0 }}>📅 Semester Countdown</h3>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Based on your academic calendar</p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)' }}>
+              {Math.max(0, Math.ceil((new Date(semesterSettings.endDate) - new Date()) / (1000 * 60 * 60 * 24)))} Days
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Till Semester End</div>
           </div>
         </div>
+      </div>
+
+      {/* Premium: Semester Attendance Strategy */}
+      {isPremium ? (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="dashboard-card" 
+          style={{ 
+            padding: '24px', 
+            background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(15, 23, 42, 0.4) 100%)',
+            border: '1px solid var(--primary-glow)'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ color: 'var(--text-main)', fontSize: '18px', fontWeight: '800', margin: 0 }}>🧠 Semester Attendance Strategy</h3>
+            <span style={{ fontSize: '10px', background: 'var(--primary-light)', color: 'white', padding: '4px 10px', borderRadius: '100px', fontWeight: '900' }}>PLUS AI</span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {subjects.length === 0 ? (
+              <p style={{ color: 'var(--text-dim)', textAlign: 'center' }}>Add subjects to see your strategy.</p>
+            ) : subjects.map(subject => {
+              const stats = semesterStats[subject.id];
+              if (!stats) return null;
+
+              return (
+                <div key={subject.id} style={{ background: 'rgba(15, 23, 42, 0.6)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>{subject.name}</span>
+                    <span style={{ fontSize: '11px', color: stats.percentage >= (subject.criteria || 75) ? 'var(--success)' : 'var(--danger)', fontWeight: '700' }}>
+                      {stats.percentage}%
+                    </span>
+                  </div>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>PLANNED</div>
+                      <div style={{ fontSize: '14px', fontWeight: '700' }}>{stats.totalPlanned}</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>REMAINING</div>
+                      <div style={{ fontSize: '14px', fontWeight: '700' }}>{stats.remainingClasses}</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>{stats.bunkableNow > 0 ? 'BUNKABLE' : 'MUST ATTEND'}</div>
+                      <div style={{ fontSize: '14px', fontWeight: '800', color: stats.bunkableNow > 0 ? 'var(--success)' : 'var(--danger)' }}>
+                        {stats.bunkableNow > 0 ? stats.bunkableNow : stats.mustAttend}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
       ) : (
-        <div style={{
-          textAlign: 'center',
-          padding: '48px 32px',
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%)',
-          border: '1px solid rgba(139, 92, 246, 0.15)',
-          borderRadius: '16px',
-          color: '#94a3b8'
-        }}>
-          <p style={{ fontSize: '16px', marginBottom: '8px' }}>No insights yet</p>
-          <p style={{ fontSize: '13px' }}>Add subjects and mark attendance to generate insights</p>
+        <div 
+          onClick={() => navigate('/premium')}
+          className="dashboard-card" 
+          style={{ 
+            padding: '32px', 
+            textAlign: 'center', 
+            cursor: 'pointer',
+            background: 'rgba(139, 92, 246, 0.05)',
+            border: '1px dashed var(--primary-glow)'
+          }}
+        >
+          <div style={{ fontSize: '24px', marginBottom: '12px' }}>🔒</div>
+          <h3 style={{ color: 'var(--text-main)', fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>Unlock Semester Intelligence</h3>
+          <p style={{ color: 'var(--text-dim)', fontSize: '12px', marginBottom: '16px' }}>Get predictive bunking, required attendance counts, and full semester planning with TrackTaps Plus.</p>
+          <span style={{ color: 'var(--primary-light)', fontSize: '13px', fontWeight: '600' }}>Upgrade to TrackTaps Plus →</span>
         </div>
       )}
 
-      {/* Subject Breakdown */}
-      {subjects.length > 0 && (
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
-          borderRadius: '16px',
-          padding: '24px'
-        }}>
-          <h3 style={{ color: '#f8fafc', marginBottom: '16px', fontSize: '16px', fontWeight: '700' }}>📚 Subject Breakdown</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {subjects.map((subject) => (
-              <div
-                key={subject.id}
-                style={{
-                  padding: '12px',
-                  background: 'rgba(139, 92, 246, 0.1)',
-                  border: '1px solid rgba(139, 92, 246, 0.2)',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                <div>
-                  <div style={{ color: '#f8fafc', fontWeight: '600', marginBottom: '4px' }}>{subject.name}</div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Target: {subject.criteria}%</div>
-                </div>
-                <div style={{
-                  fontSize: '18px',
-                  fontWeight: '800',
-                  color: subject.attendance >= subject.criteria ? '#10b981' : subject.attendance >= subject.criteria - 10 ? '#f59e0b' : '#ef4444'
-                }}>
-                  {subject.attendance}%
-                </div>
+      {/* Trends - Premium Only */}
+      {isPremium && (
+        <div className="dashboard-card" style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ color: 'var(--text-main)', fontSize: '16px', fontWeight: '700', margin: 0 }}>📈 Attendance Trends</h3>
+            <div style={{ display: 'flex', background: 'rgba(0,0,0,0.2)', padding: '3px', borderRadius: '8px' }}>
+              {['Weekly', 'Monthly'].map(t => (
+                <button
+                  key={t}
+                  onClick={() => timeframe !== t && setTimeframe(t)}
+                  style={{
+                    padding: '4px 12px',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    background: timeframe === t ? 'var(--primary)' : 'transparent',
+                    color: timeframe === t ? 'white' : 'var(--text-muted)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{ height: '150px', display: 'flex', alignItems: 'flex-end', gap: '8px', padding: '10px 0' }}>
+            {(timeframe === 'Weekly' ? [65, 78, 82, 45, 90, 88, 75] : [72, 68, 75, 80]).map((val, i) => (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                <motion.div 
+                  initial={{ height: 0 }}
+                  animate={{ height: `${val}%` }}
+                  style={{ 
+                    width: '100%', 
+                    background: val > 75 ? 'var(--success)' : 'var(--warning)', 
+                    borderRadius: '4px 4px 0 0',
+                    opacity: 0.6 + (val/200)
+                  }} 
+                />
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{timeframe === 'Weekly' ? `W${i+1}` : `M${i+1}`}</span>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* AI Insights List */}
+      <div className="dashboard-card" style={{ padding: '24px' }}>
+        <h3 style={{ color: 'var(--text-main)', marginBottom: '16px', fontSize: '16px', fontWeight: '700' }}>🤖 Smart Alerts</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {insights.length > 0 ? insights.map((insight, idx) => (
+            <div
+              key={idx}
+              style={{
+                padding: '12px',
+                background: insight.type === 'critical' ? 'var(--primary-glow)' : 'var(--primary-glow)',
+                border: insight.type === 'critical' ? '1px solid var(--danger)' : '1px solid var(--primary-glow)',
+                borderRadius: '8px',
+                fontSize: '13px',
+                color: insight.type === 'critical' ? 'var(--danger)' : 'var(--primary-light)'
+              }}>
+              <div style={{ fontWeight: '600', marginBottom: '2px' }}>{insight.icon} {insight.title}</div>
+              <div style={{ fontSize: '12px', opacity: 0.7 }}>{insight.message}</div>
+            </div>
+          )) : (
+            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)', fontSize: '13px' }}>
+              No alerts found. Keep up the good work!
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

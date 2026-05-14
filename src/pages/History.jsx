@@ -24,8 +24,8 @@ function History() {
     if (type.includes('added') || type.includes('marked')) return '#10b981';
     if (type.includes('deleted') || type.includes('cleared')) return '#ef4444';
     if (type.includes('updated')) return '#f59e0b';
-    if (type.includes('synced') || type.includes('import')) return '#a78bfa';
-    return '#94a3b8';
+    if (type.includes('synced') || type.includes('import')) return 'var(--primary-light)';
+    return 'var(--text-dim)';
   };
 
   const formatTime = (isoString) => {
@@ -49,8 +49,8 @@ function History() {
   return (
     <div className="history-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '800', color: '#f8fafc' }}>Attendance History</h2>
-        <span style={{ fontSize: '12px', color: '#94a3b8' }}>{history.length} entries</span>
+        <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>Attendance History</h2>
+        <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{history.length} entries</span>
       </header>
 
       <div id="history-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -61,7 +61,7 @@ function History() {
             background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%)',
             border: '1px solid rgba(139, 92, 246, 0.15)',
             borderRadius: '16px',
-            color: '#94a3b8'
+            color: 'var(--text-dim)'
           }}>
             <p style={{ fontSize: '16px', marginBottom: '8px' }}>No history yet</p>
             <p style={{ fontSize: '13px' }}>Your actions will appear here</p>
@@ -71,8 +71,8 @@ function History() {
             <div
               key={entry.id}
               style={{
-                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
-                border: '1px solid rgba(139, 92, 246, 0.2)',
+                background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.05) 100%)',
+                border: '1px solid var(--primary-glow)',
                 borderRadius: '12px',
                 padding: '16px',
                 display: 'flex',
@@ -89,7 +89,7 @@ function History() {
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{
-                  color: '#f8fafc',
+                  color: 'var(--text-main)',
                   fontWeight: '600',
                   marginBottom: '4px'
                 }}>
@@ -98,7 +98,7 @@ function History() {
                 {entry.subject && (
                   <div style={{
                     fontSize: '12px',
-                    color: '#a78bfa',
+                    color: 'var(--primary-light)',
                     marginBottom: '4px'
                   }}>
                     Subject: {entry.subject}
@@ -106,14 +106,14 @@ function History() {
                 )}
                 <div style={{
                   fontSize: '11px',
-                  color: '#64748b'
+                  color: 'var(--text-muted)'
                 }}>
                   {formatDate(entry.timestamp)} at {formatTime(entry.timestamp)}
                 </div>
               </div>
               <div style={{
                 background: getActionColor(entry.type),
-                color: '#f8fafc',
+                color: 'var(--text-main)',
                 padding: '4px 12px',
                 borderRadius: '6px',
                 fontSize: '10px',

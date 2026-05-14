@@ -10,8 +10,9 @@ const PLANS = [
     price: 2,
     priceInPaise: 200,
     durationDays: 30,
-    description: 'Perfect for a quick boost',
-    color: '#8b5cf6'
+    description: 'Perfect for a quick performance boost',
+    color: 'var(--primary)',
+    features: ['Cloud Sync', 'AI Insights', 'Basic Support']
   },
   {
     id: 'half_yearly',
@@ -19,9 +20,10 @@ const PLANS = [
     price: 5,
     priceInPaise: 500,
     durationDays: 180,
-    description: 'Most popular for students',
+    description: 'Most popular for focused students',
     color: '#d946ef',
-    popular: true
+    popular: true,
+    features: ['Unlimited AI', 'Cloud Backup', 'Theme Unlock', 'Priority Support']
   },
   {
     id: 'yearly',
@@ -29,9 +31,10 @@ const PLANS = [
     price: 9,
     priceInPaise: 900,
     durationDays: 365,
-    description: 'Best value for long-term',
+    description: 'Best value for academic excellence',
     color: '#f59e0b',
-    bestValue: true
+    bestValue: true,
+    features: ['Everything in Super Saver', 'Advanced Reports', 'AI Prediction', 'Lifetime Updates']
   }
 ];
 
@@ -52,20 +55,15 @@ function Premium() {
     setSelectedPlan(plan.id);
 
     try {
-      // 1. Create order on server
       const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          amount: plan.price,
-          planId: plan.id 
-        })
+        body: JSON.stringify({ amount: plan.price, planId: plan.id })
       });
 
       if (!orderResponse.ok) throw new Error('Failed to create order');
       const orderData = await orderResponse.json();
 
-      // 2. Open Razorpay Checkout
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: orderData.amount,
@@ -76,31 +74,23 @@ function Premium() {
         order_id: orderData.id,
         handler: async function (response) {
           try {
-            // 3. Verify payment on server
             const verifyResponse = await fetch('/api/verify-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
+                razorpay_signature: response.razorpay_signature,
+                uid: user.uid,
+                planId: plan.id,
+                amount: plan.price
               })
             });
 
             const verifyData = await verifyResponse.json();
 
             if (verifyData.success) {
-              const expiryDate = new Date();
-              expiryDate.setDate(expiryDate.getDate() + plan.durationDays);
-
-              setSubscription({
-                plan: 'plus',
-                planType: plan.id,
-                status: 'active',
-                expiryDate: expiryDate.toISOString(),
-                paymentId: response.razorpay_payment_id,
-                amountPaid: plan.price
-              });
+              setSubscription(verifyData.subscription);
 
               alert(`✨ Welcome to TrackTaps Plus! Your ${plan.name} plan is now active.`);
               navigate('/');
@@ -115,13 +105,8 @@ function Premium() {
             setSelectedPlan(null);
           }
         },
-        prefill: {
-          name: user.displayName,
-          email: user.email,
-        },
-        theme: {
-          color: plan.color,
-        },
+        prefill: { name: user.displayName, email: user.email },
+        theme: { color: plan.color },
         modal: {
           ondismiss: function() {
             setLoading(false);
@@ -140,177 +125,153 @@ function Premium() {
     }
   };
 
-  const features = [
+  const comparisonFeatures = [
     { icon: '☁️', title: 'Cloud Sync & Backup', desc: 'Secure your data forever.' },
-    { icon: '🤖', title: 'AI Insights Plus', desc: 'Advanced performance analytics.' },
+    { icon: '🤖', title: 'Unlimited AI Usage', desc: 'No daily limits for AI tools.' },
     { icon: '⚡', title: 'Auto Pod.ai Sync', desc: 'Zero manual effort required.' },
-    { icon: '🎨', title: 'Premium Themes', desc: 'Custom skins and animations.' },
+    { icon: '🎨', title: 'Premium Themes', desc: 'Exclusive skins and animations.' },
     { icon: '📊', title: 'Smart Alerts', desc: 'Contextual notification system.' },
-    { icon: '📂', title: 'Export Pro', desc: 'Detailed PDF/Excel reports.' },
+    { icon: '📂', title: 'Export Pro (PDF/JSON)', desc: 'Detailed attendance reports.' },
+    { icon: '🔮', title: 'AI Prediction System', desc: 'Forecast future attendance scores.' },
+    { icon: '🚀', title: 'Smart Recovery Planner', desc: 'AI-driven path to safety.' }
   ];
 
   return (
     <div className="premium-view" style={{ 
-      padding: '24px', 
+      padding: '40px 24px', 
       minHeight: '100vh',
-      background: 'radial-gradient(circle at top right, rgba(139, 92, 246, 0.1), transparent 600px)',
-      color: '#f8fafc'
+      background: 'radial-gradient(circle at top right, var(--primary-glow), transparent 800px)',
+      color: 'var(--text-main)',
+      paddingBottom: '120px'
     }}>
-      <header style={{ marginBottom: '60px', textAlign: 'center' }}>
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '100px', border: '1px solid rgba(139, 92, 246, 0.3)', marginBottom: '16px' }}>
-            <span style={{ fontSize: '12px', fontWeight: '800', color: '#a78bfa', letterSpacing: '1px' }}>PREMIUM ACCESS</span>
+      {/* Animated Background Blobs */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none' }}>
+        <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 10, repeat: Infinity }} style={{ position: 'absolute', top: '10%', left: '10%', width: '400px', height: '400px', background: 'var(--primary-glow)', borderRadius: '50%', filter: 'blur(100px)' }} />
+        <motion.div animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 12, repeat: Infinity }} style={{ position: 'absolute', bottom: '10%', right: '10%', width: '500px', height: '500px', background: 'rgba(217, 70, 239, 0.08)', borderRadius: '50%', filter: 'blur(120px)' }} />
+      </div>
+
+      <header style={{ marginBottom: '80px', textAlign: 'center' }}>
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <div style={{ display: 'inline-block', padding: '8px 24px', background: 'var(--primary-glow)', borderRadius: '100px', border: '1px solid var(--primary-glow)', marginBottom: '24px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '900', color: 'var(--primary-light)', letterSpacing: '2px' }}>THE ULTIMATE STUDENT COMPANION</span>
           </div>
-          <h2 style={{ fontSize: '42px', marginBottom: '16px', fontWeight: '800' }}>Choose Your <span style={{ color: '#a78bfa' }}>Plus</span> Plan</h2>
-          <p style={{ color: '#94a3b8', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
-            Unlock the full potential of TrackTaps with our flexible subscription plans.
+          <h2 style={{ fontSize: '48px', marginBottom: '16px', fontWeight: '800', letterSpacing: '-0.02em' }}>Unlock <span style={{ background: 'linear-gradient(135deg, var(--primary-light), #d946ef)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>TrackTaps Plus</span></h2>
+          <p style={{ color: 'var(--text-dim)', fontSize: '19px', maxWidth: '650px', margin: '0 auto', lineHeight: '1.6' }}>
+            Join 1,000+ students mastering their attendance with AI-powered insights and secure cloud synchronization.
           </p>
         </motion.div>
       </header>
 
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Pricing Cards */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(3, 1fr)', 
-          gap: '20px',
-          marginBottom: '80px',
-          width: '100%'
-        }} className="pricing-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px', marginBottom: '100px' }}>
           {PLANS.map((plan, i) => (
             <motion.div
               key={plan.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ y: -10 }}
-              className="dashboard-card"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.15 }}
+              whileHover={{ y: -12 }}
+              viewport={{ once: true }}
               style={{
-                padding: '40px 32px',
-                textAlign: 'center',
-                position: 'relative',
-                border: plan.bestValue ? '2px solid #f59e0b' : plan.popular ? '2px solid #8b5cf6' : '1px solid rgba(255,255,255,0.1)',
+                padding: '48px 32px',
+                borderRadius: '32px',
                 background: 'rgba(15, 23, 42, 0.6)',
-                backdropFilter: 'blur(10px)',
-                boxShadow: plan.bestValue ? '0 0 30px rgba(245, 158, 11, 0.15)' : plan.popular ? '0 0 30px rgba(139, 92, 246, 0.15)' : 'none'
+                backdropFilter: 'blur(20px)',
+                border: plan.bestValue ? '2px solid #f59e0b' : plan.popular ? '2px solid var(--primary-light)' : '1px solid rgba(255,255,255,0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'relative',
+                boxShadow: plan.bestValue ? '0 20px 50px rgba(245, 158, 11, 0.15)' : plan.popular ? '0 20px 50px rgba(139, 92, 246, 0.15)' : '0 20px 40px rgba(0,0,0,0.3)'
               }}
             >
               {(plan.bestValue || plan.popular) && (
-                <div style={{
-                  position: 'absolute',
-                  top: '12px',
-                  right: '12px',
-                  background: plan.bestValue ? '#f59e0b' : '#8b5cf6',
-                  color: 'white',
-                  padding: '4px 12px',
-                  borderRadius: '100px',
-                  fontSize: '10px',
-                  fontWeight: '800',
-                  textTransform: 'uppercase'
-                }}>
-                  {plan.bestValue ? 'Best Value' : 'Most Popular'}
+                <div style={{ position: 'absolute', top: '20px', right: '20px', background: plan.bestValue ? '#f59e0b' : 'var(--primary-light)', color: 'white', padding: '6px 16px', borderRadius: '100px', fontSize: '11px', fontWeight: '900', textTransform: 'uppercase' }}>
+                  {plan.bestValue ? 'Best Value' : 'Popular'}
                 </div>
               )}
 
-              <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>{plan.name}</h3>
-              <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '24px' }}>{plan.description}</p>
+              <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>{plan.name}</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '32px', minHeight: '40px' }}>{plan.description}</p>
               
-              <div style={{ marginBottom: '32px' }}>
-                <span style={{ fontSize: '48px', fontWeight: '800' }}>₹{plan.price}</span>
-                <span style={{ color: '#64748b', marginLeft: '4px' }}>/ {plan.id === 'monthly' ? 'month' : plan.id === 'yearly' ? 'year' : '6 mo'}</span>
+              <div style={{ marginBottom: '40px' }}>
+                <span style={{ fontSize: '56px', fontWeight: '900' }}>₹{plan.price}</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '16px', marginLeft: '4px' }}>/ {plan.id === 'monthly' ? 'month' : plan.id === 'yearly' ? 'year' : '6 months'}</span>
               </div>
 
-              <ul style={{ textAlign: 'left', listStyle: 'none', padding: 0, marginBottom: '32px', fontSize: '14px', color: '#94a3b8' }}>
-                <li style={{ marginBottom: '12px' }}><i className="fas fa-check" style={{ color: '#10b981', marginRight: '8px' }}></i> All Premium Features</li>
-                <li style={{ marginBottom: '12px' }}><i className="fas fa-check" style={{ color: '#10b981', marginRight: '8px' }}></i> Cloud Sync & Auto Backup</li>
-                <li style={{ marginBottom: '12px' }}><i className="fas fa-check" style={{ color: '#10b981', marginRight: '8px' }}></i> Priority Support</li>
-              </ul>
+              <div style={{ flex: 1, marginBottom: '40px' }}>
+                {plan.features.map((feat, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', color: '#cbd5e1', fontSize: '15px' }}>
+                    <div style={{ minWidth: '20px', height: '20px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="fas fa-check" style={{ color: '#10b981', fontSize: '10px' }}></i>
+                    </div>
+                    {feat}
+                  </div>
+                ))}
+              </div>
 
               <button
                 onClick={() => handleUpgrade(plan)}
-                disabled={loading || (subscription && subscription.planType === plan.id)}
+                disabled={loading || (subscription && subscription.status === 'active' && subscription.planType === plan.id)}
                 style={{
                   width: '100%',
-                  padding: '14px',
-                  borderRadius: '10px',
-                  background: (subscription && subscription.planType === plan.id) ? 'rgba(255,255,255,0.05)' : plan.color,
+                  padding: '18px',
+                  borderRadius: '16px',
+                  background: (subscription && subscription.status === 'active' && subscription.planType === plan.id) ? 'rgba(255,255,255,0.05)' : plan.color,
                   color: 'white',
                   border: 'none',
-                  fontWeight: '700',
-                  cursor: loading || (subscription && subscription.planType === plan.id) ? 'default' : 'pointer',
-                  boxShadow: (subscription && subscription.planType === plan.id) ? 'none' : `0 4px 12px ${plan.color}40`,
-                  transition: 'all 0.2s'
+                  fontWeight: '800',
+                  fontSize: '16px',
+                  cursor: (loading || (subscription && subscription.status === 'active' && subscription.planType === plan.id)) ? 'default' : 'pointer',
+                  boxShadow: (subscription && subscription.status === 'active' && subscription.planType === plan.id) ? 'none' : `0 8px 24px ${plan.color}40`,
+                  transition: 'all 0.3s ease'
                 }}
               >
-                {(subscription && subscription.planType === plan.id) ? 'Current Plan' : loading && selectedPlan === plan.id ? 'Processing...' : `Get ${plan.name}`}
+                {(subscription && subscription.status === 'active' && subscription.planType === plan.id) ? 'Current Plan' : loading && selectedPlan === plan.id ? 'Starting Checkout...' : `Upgrade to ${plan.name}`}
               </button>
             </motion.div>
           ))}
         </div>
 
-        {/* Feature Comparison */}
-        <div className="dashboard-card" style={{ padding: '48px', marginBottom: '40px' }}>
-          <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '48px' }}>Free vs <span style={{ color: '#a78bfa' }}>Plus</span></h3>
+        {/* Comparison Table */}
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="dashboard-card" style={{ padding: '60px 48px', borderRadius: '40px', background: 'rgba(15, 23, 42, 0.4)' }}>
+          <h3 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '800', marginBottom: '64px' }}>Feature Comparison</h3>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '16px', marginBottom: '16px' }}>
-            <div style={{ color: '#64748b', fontWeight: '600' }}>Features</div>
-            <div style={{ textAlign: 'center', color: '#64748b', fontWeight: '600' }}>Free</div>
-            <div style={{ textAlign: 'center', color: '#a78bfa', fontWeight: '600' }}>Plus</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '24px', marginBottom: '24px' }}>
+            <div style={{ color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '13px' }}>Feature</div>
+            <div style={{ textAlign: 'center', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '13px' }}>Free</div>
+            <div style={{ textAlign: 'center', color: 'var(--primary-light)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '13px' }}>TrackTaps Plus</div>
           </div>
 
-          {features.map((feature, idx) => (
-            <div key={idx} style={{ 
-              display: 'grid', 
-              gridTemplateColumns: '1fr 1fr 1fr', 
-              gap: '20px', 
-              padding: '20px 0',
-              alignItems: 'center',
-              borderBottom: idx === features.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '20px', minWidth: '30px' }}>{feature.icon}</span>
+          {comparisonFeatures.map((f, i) => (
+            <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '24px', padding: '24px 0', borderBottom: i === comparisonFeatures.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <span style={{ fontSize: '24px' }}>{f.icon}</span>
                 <div>
-                  <div style={{ fontSize: '15px', fontWeight: '600' }}>{feature.title}</div>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>{feature.desc}</div>
+                  <div style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '16px' }}>{f.title}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>{f.desc}</div>
                 </div>
               </div>
-              <div style={{ textAlign: 'center', color: '#ef4444', fontSize: '18px' }}>
-                <i className="fas fa-times-circle"></i>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ display: 'inline-flex', padding: '8px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.05)', color: '#ef4444' }}>
+                  <i className="fas fa-times"></i>
+                </div>
               </div>
-              <div style={{ textAlign: 'center', color: '#10b981', fontSize: '18px' }}>
-                <i className="fas fa-check-circle"></i>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ display: 'inline-flex', padding: '8px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                  <i className="fas fa-check"></i>
+                </div>
               </div>
             </div>
           ))}
-        </div>
-
-        <p style={{ textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
-          Payments are handled securely via Razorpay. Subscriptions are non-refundable.
-        </p>
+        </motion.div>
       </div>
 
       <style>{`
-        .premium-view {
-          font-family: 'Outfit', sans-serif;
-        }
-        @media (max-width: 1024px) {
-          .pricing-grid {
-            gridTemplateColumns: repeat(2, 1fr) !important;
-          }
-        }
+        .premium-view { font-family: 'Outfit', sans-serif; }
         @media (max-width: 768px) {
-          .pricing-grid {
-            gridTemplateColumns: 1fr !important;
-          }
-          .premium-view {
-            padding: 16px !important;
-            padding-bottom: 120px !important;
-          }
+          .premium-view { padding: 20px 16px !important; }
           h2 { font-size: 32px !important; }
+          .dashboard-card { padding: 32px 20px !important; }
         }
       `}</style>
     </div>

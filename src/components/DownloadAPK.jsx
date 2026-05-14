@@ -21,6 +21,8 @@ const DownloadAPK = () => {
     setIsOpen(false);
   };
 
+  if (isMobile) return null; // Use header button on mobile instead of FAB
+
   return (
     <>
       {/* Floating Action Button */}
@@ -33,22 +35,22 @@ const DownloadAPK = () => {
         className="apk-download-fab"
         style={{
           position: 'fixed',
-          bottom: isMobile ? '100px' : '30px',
-          right: '30px',
+          bottom: isMobile ? 'calc(105px + env(safe-area-inset-bottom, 16px))' : '30px',
+          right: isMobile ? '16px' : '30px',
           zIndex: 999, // Below chatbot and mobile nav but above main content
           background: 'rgba(139, 92, 246, 0.25)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(139, 92, 246, 0.3)',
-          borderRadius: '20px',
-          width: '60px',
-          height: '60px',
+          border: '1px solid var(--primary-glow)',
+          borderRadius: '18px',
+          width: isMobile ? '50px' : '60px',
+          height: isMobile ? '50px' : '60px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 15px rgba(139, 92, 246, 0.3)',
-          transition: 'bottom 0.3s ease'
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 15px var(--primary-glow)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
       >
         {/* Pulsing Aura */}
@@ -66,14 +68,14 @@ const DownloadAPK = () => {
             position: 'absolute',
             inset: '-8px',
             borderRadius: '24px',
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)',
             zIndex: -1
           }}
         />
         
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <span style={{ fontSize: '24px', filter: 'drop-shadow(0 0 5px rgba(139, 92, 246, 0.5))' }}>🤖</span>
-          <span style={{ fontSize: '8px', fontWeight: '800', color: '#a78bfa', marginTop: '-2px' }}>APK</span>
+          <span style={{ fontSize: '8px', fontWeight: '800', color: 'var(--primary-light)', marginTop: '-2px' }}>APK</span>
         </div>
       </motion.div>
 
@@ -103,12 +105,12 @@ const DownloadAPK = () => {
                 position: 'relative',
                 width: '100%',
                 maxWidth: '380px',
-                background: 'linear-gradient(135deg, #1e1b4b 0%, #020617 100%)',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
+                background: 'linear-gradient(135deg, #1e1b4b 0%, var(--bg-primary) 100%)',
+                border: '1px solid var(--primary-glow)',
                 borderRadius: '28px',
                 padding: '32px',
                 textAlign: 'center',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(139, 92, 246, 0.1)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px var(--primary-glow)',
                 overflow: 'hidden'
               }}
             >
@@ -131,41 +133,41 @@ const DownloadAPK = () => {
                     width: '80px',
                     height: '80px',
                     background: 'rgba(139, 92, 246, 0.15)',
-                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                    border: '1px solid var(--primary-glow)',
                     borderRadius: '22px',
                     margin: '0 auto 24px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '40px',
-                    boxShadow: 'inset 0 0 15px rgba(139, 92, 246, 0.2)'
+                    boxShadow: 'inset 0 0 15px var(--primary-glow)'
                   }}
                 >
                   🤖
                 </motion.div>
 
-                <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#f8fafc', marginBottom: '8px', letterSpacing: '-0.5px' }}>TrackTaps Android</h2>
-                <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '28px', lineHeight: '1.5' }}>Experience TrackTaps with native performance and offline access.</p>
+                <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px', letterSpacing: '-0.5px' }}>TrackTaps Android</h2>
+                <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '28px', lineHeight: '1.5' }}>Experience TrackTaps with native performance and offline access.</p>
 
                 <div style={{
                   background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  border: '1px solid var(--border)',
                   borderRadius: '18px',
                   padding: '20px',
                   marginBottom: '28px',
                   textAlign: 'left'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <span style={{ color: '#64748b', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>Version</span>
-                    <span style={{ color: '#f8fafc', fontSize: '13px', fontWeight: '700' }}>v1.2.4</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>Version</span>
+                    <span style={{ color: 'var(--text-main)', fontSize: '13px', fontWeight: '700' }}>v1.2.4</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <span style={{ color: '#64748b', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>Size</span>
-                    <span style={{ color: '#f8fafc', fontSize: '13px', fontWeight: '700' }}>7.67 MB</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>Size</span>
+                    <span style={{ color: 'var(--text-main)', fontSize: '13px', fontWeight: '700' }}>7.67 MB</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#64748b', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>Platform</span>
-                    <span style={{ color: '#f8fafc', fontSize: '13px', fontWeight: '700' }}>Android 8.0+</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>Platform</span>
+                    <span style={{ color: 'var(--text-main)', fontSize: '13px', fontWeight: '700' }}>Android 8.0+</span>
                   </div>
                 </div>
 
@@ -175,7 +177,7 @@ const DownloadAPK = () => {
                   onClick={downloadFile}
                   style={{
                     width: '100%',
-                    background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+                    background: 'linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%)',
                     color: '#fff',
                     border: 'none',
                     padding: '18px',
@@ -183,7 +185,7 @@ const DownloadAPK = () => {
                     fontWeight: '800',
                     fontSize: '16px',
                     cursor: 'pointer',
-                    boxShadow: '0 10px 25px -5px rgba(139, 92, 246, 0.4)',
+                    boxShadow: '0 10px 25px -5px var(--primary-glow)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -198,7 +200,7 @@ const DownloadAPK = () => {
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: '#64748b',
+                    color: 'var(--text-muted)',
                     marginTop: '20px',
                     fontSize: '13px',
                     fontWeight: '600',

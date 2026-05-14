@@ -39,7 +39,7 @@ function Timetable() {
       // Add/update subject
       addTimetableEntry(selectedCell.dayIdx, selectedCell.timeSlot, {
         name: subject.name,
-        color: subject.color || '#8b5cf6',
+        color: subject.color || 'var(--primary)',
         criteria: subject.criteria
       });
     }
@@ -66,8 +66,8 @@ function Timetable() {
     <div className="timetable-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Header */}
       <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '800', color: '#f8fafc' }}>Weekly Schedule</h2>
-        <p style={{ fontSize: '13px', color: '#94a3b8' }}>Click any cell to add a subject</p>
+        <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>Weekly Schedule</h2>
+        <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Click any cell to add a subject</p>
       </header>
 
       {/* Timetable Grid */}
@@ -88,7 +88,7 @@ function Timetable() {
           <div style={{
             fontSize: '12px',
             fontWeight: '700',
-            color: '#64748b',
+            color: 'var(--text-muted)',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
             padding: '12px'
@@ -103,12 +103,12 @@ function Timetable() {
               style={{
                 fontSize: '13px',
                 fontWeight: '700',
-                color: '#a78bfa',
+                color: 'var(--primary-light)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 padding: '12px',
                 textAlign: 'center',
-                background: 'rgba(139, 92, 246, 0.1)',
+                background: 'var(--primary-glow)',
                 borderRadius: '12px'
               }}
             >
@@ -123,7 +123,7 @@ function Timetable() {
               <div style={{
                 fontSize: '12px',
                 fontWeight: '600',
-                color: '#94a3b8',
+                color: 'var(--text-dim)',
                 padding: '12px',
                 textAlign: 'center',
                 display: 'flex',
@@ -147,7 +147,7 @@ function Timetable() {
                         : 'rgba(255,255,255,0.02)',
                       border: cellContent
                         ? `2px solid ${cellContent.color}40`
-                        : '1px solid rgba(139, 92, 246, 0.1)',
+                        : '1px solid var(--primary-glow)',
                       borderRadius: '12px',
                       padding: '12px',
                       minHeight: '80px',
@@ -167,7 +167,7 @@ function Timetable() {
                         <div style={{
                           fontSize: '13px',
                           fontWeight: '700',
-                          color: '#f8fafc',
+                          color: 'var(--text-main)',
                           marginBottom: '4px'
                         }}>
                           {cellContent.name}
@@ -241,7 +241,7 @@ function Timetable() {
             onClick={(e) => e.stopPropagation()}
             style={{
               background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%)',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
+              border: '1px solid var(--primary-glow)',
               borderRadius: '20px',
               padding: '32px',
               maxWidth: '500px',
@@ -252,7 +252,7 @@ function Timetable() {
             }}
           >
             <h3 style={{
-              color: '#f8fafc',
+              color: 'var(--text-main)',
               fontSize: '20px',
               fontWeight: '800',
               marginBottom: '8px'
@@ -260,7 +260,7 @@ function Timetable() {
               Select Subject
             </h3>
             <p style={{
-              color: '#94a3b8',
+              color: 'var(--text-dim)',
               fontSize: '13px',
               marginBottom: '24px'
             }}>
@@ -275,9 +275,9 @@ function Timetable() {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 width: '100%',
-                background: '#1e293b',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
-                color: '#f8fafc',
+                background: 'var(--surface)',
+                border: '1px solid var(--primary-glow)',
+                color: 'var(--text-main)',
                 padding: '12px 16px',
                 borderRadius: '12px',
                 marginBottom: '16px',
@@ -292,7 +292,7 @@ function Timetable() {
                 <div style={{
                   textAlign: 'center',
                   padding: '32px 16px',
-                  color: '#94a3b8'
+                  color: 'var(--text-dim)'
                 }}>
                   <p style={{ marginBottom: '8px' }}>No subjects found</p>
                   <p style={{ fontSize: '12px' }}>Add subjects in the Subjects page first</p>
@@ -304,8 +304,8 @@ function Timetable() {
                     whileHover={{ scale: 1.02, x: 4 }}
                     onClick={() => handleSelectSubject(subject)}
                     style={{
-                      background: `linear-gradient(135deg, ${subject.color || '#8b5cf6'}20 0%, ${subject.color || '#8b5cf6'}10 100%)`,
-                      border: `2px solid ${subject.color || '#8b5cf6'}40`,
+                      background: `linear-gradient(135deg, ${subject.color || 'var(--primary)'}20 0%, ${subject.color || 'var(--primary)'}10 100%)`,
+                      border: `2px solid ${subject.color || 'var(--primary)'}40`,
                       borderRadius: '12px',
                       padding: '16px',
                       textAlign: 'left',
@@ -318,7 +318,7 @@ function Timetable() {
                   >
                     <div>
                       <div style={{
-                        color: '#f8fafc',
+                        color: 'var(--text-main)',
                         fontWeight: '600',
                         marginBottom: '4px'
                       }}>
@@ -326,7 +326,7 @@ function Timetable() {
                       </div>
                       <div style={{
                         fontSize: '12px',
-                        color: '#94a3b8'
+                        color: 'var(--text-dim)'
                       }}>
                         Target: {subject.criteria}%
                       </div>
@@ -334,7 +334,7 @@ function Timetable() {
                     <div style={{
                       width: '24px',
                       height: '24px',
-                      background: subject.color || '#8b5cf6',
+                      background: subject.color || 'var(--primary)',
                       borderRadius: '6px',
                       opacity: 0.7
                     }} />
@@ -349,8 +349,8 @@ function Timetable() {
               style={{
                 width: '100%',
                 background: 'transparent',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
-                color: '#94a3b8',
+                border: '1px solid var(--primary-glow)',
+                color: 'var(--text-dim)',
                 padding: '12px',
                 borderRadius: '12px',
                 fontWeight: '600',

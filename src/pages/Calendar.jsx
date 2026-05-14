@@ -7,6 +7,12 @@ function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 1)); // May 2026
   const [selectedDate, setSelectedDate] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showSemesterModal, setShowSemesterModal] = useState(false);
+  
+  // Multi-select state
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedDates, setSelectedDates] = useState([]); // Array of dateStr
+  const [selectionAnchor, setSelectionAnchor] = useState(null);
 
   // Get data from Zustand store
   const {
@@ -18,7 +24,15 @@ function Calendar() {
     clearAttendance,
     updateDashboardStats,
     updateSubjectStats,
-    generateInsights
+    generateInsights,
+    semesterSettings,
+    setSemesterSettings,
+    addHoliday,
+    removeHoliday,
+    addExamPeriod,
+    removeExamPeriod,
+    addWorkingSaturday,
+    removeWorkingSaturday
   } = useAppStore();
 
   // Sync on mount
@@ -48,8 +62,44 @@ function Calendar() {
     const dateStr = AttendanceEngine.formatDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
     );
-    setSelectedDate(dateStr);
-    setShowModal(true);
+
+    if (isSelectMode) {
+      toggleDateSelection(dateStr);
+    } else {
+      setSelectedDate(dateStr);
+      setShowModal(true);
+    }
+  };
+
+  const handleDateLongPress = (day) => {
+    const dateStr = AttendanceEngine.formatDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+    );
+    if (!isSelectMode) {
+      setIsSelectMode(true);
+      setSelectedDates([dateStr]);
+    }
+  };
+
+  const toggleDateSelection = (dateStr) => {
+    setSelectedDates(prev => 
+      prev.includes(dateStr) 
+        ? prev.filter(d => d !== dateStr) 
+        : [...prev, dateStr]
+    );
+  };
+
+  const handleBatchAction = (state) => {
+    if (selectedDates.length === 0) return;
+    
+    selectedDates.forEach(date => {
+      markAllForDate(date, state);
+    });
+    
+    setIsSelectMode(false);
+    setSelectedDates([]);
+    updateDashboardStats();
+    updateSubjectStats();
   };
 
   const handleMarkAttendance = (eventId, state) => {
@@ -103,40 +153,130 @@ function Calendar() {
     <div className="calendar-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Header */}
       <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '800', color: '#f8fafc' }}>{monthYear}</h2>
+        <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>{monthYear}</h2>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
-            onClick={handlePrevMonth}
+            onClick={() => setShowSemesterModal(true)}
             style={{
-              background: 'rgba(139, 92, 246, 0.1)',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
-              color: '#a78bfa',
+              background: 'var(--surface-glass)',
+              border: '1px solid var(--primary-glow)',
+              color: 'var(--primary-light)',
               padding: '10px 16px',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontWeight: '600',
-              transition: 'all 0.3s'
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}
           >
-            ← Previous
+            <span>🎓</span> Semester Setup
           </button>
-          <button
-            onClick={handleNextMonth}
-            style={{
-              background: 'rgba(139, 92, 246, 0.1)',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
-              color: '#a78bfa',
-              padding: '10px 16px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: '600',
-              transition: 'all 0.3s'
-            }}
-          >
-            Next →
-          </button>
+          <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '10px' }}>
+            <button
+              onClick={handlePrevMonth}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-main)',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              ←
+            </button>
+            <button
+              onClick={handleNextMonth}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-main)',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              →
+            </button>
+          </div>
         </div>
       </header>
+
+      {/* User Guidance Banner */}
+      {(!semesterSettings.startDate || !semesterSettings.endDate) && (
+        <div style={{
+          background: 'rgba(245, 158, 11, 0.1)',
+          border: '1px solid rgba(245, 158, 11, 0.2)',
+          borderRadius: '12px',
+          padding: '16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '16px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '20px' }}>ℹ️</span>
+            <span style={{ color: '#f59e0b', fontSize: '14px', fontWeight: '500' }}>
+              Setup semester dates in Calendar to enable bunk predictions and planned class calculations.
+            </span>
+          </div>
+          <button 
+            onClick={() => setShowSemesterModal(true)}
+            style={{
+              background: '#f59e0b',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: '700',
+              cursor: 'pointer'
+            }}
+          >
+            Configure Now
+          </button>
+        </div>
+      )}
+
+      {/* Multi-select Toolbar */}
+      {isSelectMode && (
+        <motion.div 
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          style={{
+            background: 'var(--primary-glow)',
+            border: '1px solid var(--primary-glow)',
+            borderRadius: '16px',
+            padding: '16px 24px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            zIndex: 50
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <span style={{ color: 'var(--primary-light)', fontWeight: '800', fontSize: '14px' }}>
+              {selectedDates.length} Days Selected
+            </span>
+            <button 
+              onClick={() => { setIsSelectMode(false); setSelectedDates([]); }}
+              style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--text-dim)', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={() => handleBatchAction('present')} style={{ background: '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Present</button>
+            <button onClick={() => handleBatchAction('absent')} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Absent</button>
+            <button onClick={() => handleBatchAction('off')} style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Off</button>
+            <button onClick={() => handleBatchAction(null)} style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Clear</button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Calendar Grid */}
       <div style={{
@@ -159,7 +299,7 @@ function Calendar() {
                 textAlign: 'center',
                 fontSize: '12px',
                 fontWeight: '700',
-                color: '#a78bfa',
+                color: 'var(--primary-light)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 padding: '12px'
@@ -177,23 +317,36 @@ function Calendar() {
           gap: '12px'
         }}>
           {days.map((day, idx) => {
+            const dateStr = day ? AttendanceEngine.formatDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day)) : null;
             const visualState = day ? getDateVisualState(day) : null;
-            const isToday = day && AttendanceEngine.isToday(
-              AttendanceEngine.formatDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))
-            );
+            const isToday = day && AttendanceEngine.isToday(dateStr);
+            const isSelected = selectedDates.includes(dateStr);
 
             return (
               <motion.div
                 key={idx}
-                whileHover={day ? { scale: 1.05 } : {}}
+                onMouseDown={() => {
+                  const timer = setTimeout(() => handleDateLongPress(day), 500);
+                  window.datePressTimer = timer;
+                }}
+                onMouseUp={() => clearTimeout(window.datePressTimer)}
+                onTouchStart={() => {
+                  const timer = setTimeout(() => handleDateLongPress(day), 500);
+                  window.datePressTimer = timer;
+                }}
+                onTouchEnd={() => clearTimeout(window.datePressTimer)}
                 onClick={() => day && handleDateClick(day)}
                 style={{
-                  background: visualState?.color ? `${visualState.color}15` : 'rgba(255,255,255,0.02)',
-                  border: isToday
-                    ? '2px solid #a78bfa'
+                  background: isSelected 
+                    ? 'rgba(139, 92, 246, 0.3)' 
+                    : visualState?.color ? `${visualState.color}15` : 'rgba(255,255,255,0.02)',
+                  border: isSelected
+                    ? '2px solid var(--primary-light)'
+                    : isToday
+                    ? '2px solid var(--primary-light)'
                     : visualState?.color
                     ? `2px solid ${visualState.color}40`
-                    : '1px solid rgba(139, 92, 246, 0.1)',
+                    : '1px solid var(--primary-glow)',
                   borderRadius: '12px',
                   padding: '12px',
                   minHeight: '100px',
@@ -205,15 +358,19 @@ function Calendar() {
                   textAlign: 'center',
                   transition: 'all 0.3s ease',
                   position: 'relative',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  boxShadow: isSelected ? '0 0 15px var(--primary-glow)' : 'none'
                 }}
               >
+                {day && isSelected && (
+                  <div style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '14px' }}>✅</div>
+                )}
                 {day && (
                   <>
                     <div style={{
                       fontSize: '18px',
                       fontWeight: '800',
-                      color: '#f8fafc',
+                      color: 'var(--text-main)',
                       marginBottom: '4px'
                     }}>
                       {day}
@@ -231,7 +388,7 @@ function Calendar() {
                     {getEventsForDate(day).length > 0 && (
                       <div style={{
                         fontSize: '10px',
-                        color: '#94a3b8',
+                        color: 'var(--text-dim)',
                         marginTop: '4px'
                       }}>
                         {getEventsForDate(day).length} class{getEventsForDate(day).length !== 1 ? 'es' : ''}
@@ -255,20 +412,20 @@ function Calendar() {
         background: 'rgba(139, 92, 246, 0.05)',
         borderRadius: '12px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#94a3b8' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
           <div style={{ width: '12px', height: '12px', background: '#10b981', borderRadius: '3px' }} />
           <span>Present</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#94a3b8' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
           <div style={{ width: '12px', height: '12px', background: '#ef4444', borderRadius: '3px' }} />
           <span>Absent</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#94a3b8' }}>
-          <div style={{ width: '12px', height: '12px', background: '#8b5cf6', borderRadius: '3px' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
+          <div style={{ width: '12px', height: '12px', background: 'var(--primary)', borderRadius: '3px' }} />
           <span>Off</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#94a3b8' }}>
-          <div style={{ width: '12px', height: '12px', background: '#94a3b8', borderRadius: '3px' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
+          <div style={{ width: '12px', height: '12px', background: 'var(--text-dim)', borderRadius: '3px' }} />
           <span>Unmarked</span>
         </div>
       </div>
@@ -298,7 +455,7 @@ function Calendar() {
             onClick={(e) => e.stopPropagation()}
             style={{
               background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%)',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
+              border: '1px solid var(--primary-glow)',
               borderRadius: '20px',
               padding: '32px',
               maxWidth: '600px',
@@ -311,7 +468,7 @@ function Calendar() {
             {/* Header */}
             <div style={{ marginBottom: '24px' }}>
               <h3 style={{
-                color: '#f8fafc',
+                color: 'var(--text-main)',
                 fontSize: '22px',
                 fontWeight: '800',
                 marginBottom: '8px'
@@ -319,7 +476,7 @@ function Calendar() {
                 {AttendanceEngine.formatDateForDisplay(selectedDate)}
               </h3>
               <p style={{
-                color: '#94a3b8',
+                color: 'var(--text-dim)',
                 fontSize: '13px'
               }}>
                 {AttendanceEngine.getDayName(selectedDate)}
@@ -334,16 +491,16 @@ function Calendar() {
                 gap: '12px',
                 marginBottom: '24px',
                 padding: '16px',
-                background: 'rgba(139, 92, 246, 0.1)',
+                background: 'var(--primary-glow)',
                 borderRadius: '12px',
-                border: '1px solid rgba(139, 92, 246, 0.2)'
+                border: '1px solid var(--primary-glow)'
               }}>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   onClick={() => handleMarkAllForDate('present')}
                   style={{
                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: '#f8fafc',
+                    color: 'var(--text-main)',
                     border: 'none',
                     padding: '12px',
                     borderRadius: '8px',
@@ -360,7 +517,7 @@ function Calendar() {
                   onClick={() => handleMarkAllForDate('absent')}
                   style={{
                     background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                    color: '#f8fafc',
+                    color: 'var(--text-main)',
                     border: 'none',
                     padding: '12px',
                     borderRadius: '8px',
@@ -376,8 +533,8 @@ function Calendar() {
                   whileHover={{ scale: 1.05 }}
                   onClick={() => handleMarkAllForDate('off')}
                   style={{
-                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                    color: '#f8fafc',
+                    background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+                    color: 'var(--text-main)',
                     border: 'none',
                     padding: '12px',
                     borderRadius: '8px',
@@ -433,7 +590,7 @@ function Calendar() {
                     >
                       <div style={{ flex: 1 }}>
                         <div style={{
-                          color: '#f8fafc',
+                          color: 'var(--text-main)',
                           fontWeight: '600',
                           marginBottom: '4px'
                         }}>
@@ -441,7 +598,7 @@ function Calendar() {
                         </div>
                         <div style={{
                           fontSize: '12px',
-                          color: '#94a3b8'
+                          color: 'var(--text-dim)'
                         }}>
                           {event.timeSlot} • {event.dayName}
                         </div>
@@ -458,7 +615,7 @@ function Calendar() {
                           onClick={() => handleMarkAttendance(event.id, 'present')}
                           style={{
                             background: state === 'present' ? '#10b981' : 'rgba(16, 185, 129, 0.1)',
-                            color: state === 'present' ? '#f8fafc' : '#10b981',
+                            color: state === 'present' ? 'var(--text-main)' : '#10b981',
                             border: `1px solid ${state === 'present' ? '#10b981' : 'rgba(16, 185, 129, 0.3)'}`,
                             padding: '6px 12px',
                             borderRadius: '6px',
@@ -475,7 +632,7 @@ function Calendar() {
                           onClick={() => handleMarkAttendance(event.id, 'absent')}
                           style={{
                             background: state === 'absent' ? '#ef4444' : 'rgba(239, 68, 68, 0.1)',
-                            color: state === 'absent' ? '#f8fafc' : '#ef4444',
+                            color: state === 'absent' ? 'var(--text-main)' : '#ef4444',
                             border: `1px solid ${state === 'absent' ? '#ef4444' : 'rgba(239, 68, 68, 0.3)'}`,
                             padding: '6px 12px',
                             borderRadius: '6px',
@@ -491,9 +648,9 @@ function Calendar() {
                           whileHover={{ scale: 1.05 }}
                           onClick={() => handleMarkAttendance(event.id, 'off')}
                           style={{
-                            background: state === 'off' ? '#8b5cf6' : 'rgba(139, 92, 246, 0.1)',
-                            color: state === 'off' ? '#f8fafc' : '#a78bfa',
-                            border: `1px solid ${state === 'off' ? '#8b5cf6' : 'rgba(139, 92, 246, 0.3)'}`,
+                            background: state === 'off' ? 'var(--primary)' : 'var(--primary-glow)',
+                            color: state === 'off' ? 'var(--text-main)' : 'var(--primary-light)',
+                            border: `1px solid ${state === 'off' ? 'var(--primary)' : 'var(--primary-glow)'}`,
                             padding: '6px 12px',
                             borderRadius: '6px',
                             fontSize: '11px',
@@ -532,7 +689,7 @@ function Calendar() {
               <div style={{
                 textAlign: 'center',
                 padding: '32px 16px',
-                color: '#94a3b8'
+                color: 'var(--text-dim)'
               }}>
                 <p style={{ marginBottom: '8px' }}>No classes scheduled for this date</p>
                 <p style={{ fontSize: '12px' }}>Add subjects to your timetable to see them here</p>
@@ -546,8 +703,8 @@ function Calendar() {
               style={{
                 width: '100%',
                 background: 'transparent',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
-                color: '#94a3b8',
+                border: '1px solid var(--primary-glow)',
+                color: 'var(--text-dim)',
                 padding: '12px',
                 borderRadius: '12px',
                 fontWeight: '600',
@@ -558,6 +715,155 @@ function Calendar() {
             >
               Close
             </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
+      {/* Semester Setup Modal */}
+      {showSemesterModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={() => setShowSemesterModal(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+            backdropFilter: 'blur(8px)',
+            padding: '20px'
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 30 }}
+            animate={{ scale: 1, y: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+              border: '1px solid var(--primary-glow)',
+              borderRadius: '24px',
+              padding: '32px',
+              maxWidth: '800px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div>
+                <h3 style={{ color: 'var(--text-main)', fontSize: '24px', fontWeight: '800', margin: 0 }}>🎓 Semester Intelligence</h3>
+                <p style={{ color: 'var(--text-dim)', fontSize: '13px', margin: '4px 0 0 0' }}>Configure your academic calendar for accurate predictions.</p>
+              </div>
+              <button onClick={() => setShowSemesterModal(false)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-dim)', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '20px' }}>×</button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+              <div className="setting-item">
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--primary-light)', marginBottom: '8px' }}>Semester Start Date</label>
+                <input 
+                  type="date" 
+                  value={semesterSettings?.startDate} 
+                  onChange={(e) => setSemesterSettings({ startDate: e.target.value })}
+                  style={{ width: '100%', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid var(--primary-glow)', color: 'var(--text-main)', padding: '12px', borderRadius: '12px', fontSize: '14px' }}
+                />
+              </div>
+              <div className="setting-item">
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--primary-light)', marginBottom: '8px' }}>Semester End Date</label>
+                <input 
+                  type="date" 
+                  value={semesterSettings?.endDate} 
+                  onChange={(e) => setSemesterSettings({ endDate: e.target.value })}
+                  style={{ width: '100%', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid var(--primary-glow)', color: 'var(--text-main)', padding: '12px', borderRadius: '12px', fontSize: '14px' }}
+                />
+              </div>
+              <div className="setting-item">
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--primary-light)', marginBottom: '8px' }}>Attendance Target (%)</label>
+                <input 
+                  type="number" 
+                  value={semesterSettings?.minRequirement} 
+                  onChange={(e) => setSemesterSettings({ minRequirement: parseInt(e.target.value) })}
+                  style={{ width: '100%', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid var(--primary-glow)', color: 'var(--text-main)', padding: '12px', borderRadius: '12px', fontSize: '14px' }}
+                />
+              </div>
+            </div>
+
+            {/* Holidays */}
+            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h4 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>🏝️ Holidays & Breaks</h4>
+                <button 
+                  onClick={() => {
+                    const name = prompt("Holiday name:");
+                    const date = prompt("Date (YYYY-MM-DD):");
+                    if (name && date) addHoliday({ name, date });
+                  }}
+                  style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  + Add Holiday
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {!semesterSettings?.holidays || semesterSettings.holidays.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No holidays added yet.</p>
+                ) : semesterSettings.holidays.map(h => (
+                  <div key={h.id} style={{ background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--primary-glow)', padding: '8px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '600' }}>{h.name}</span>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{h.date}</span>
+                    <button onClick={() => removeHoliday(h.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Exams */}
+            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h4 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>📝 Exam Periods</h4>
+                <button 
+                  onClick={() => {
+                    const name = prompt("Exam name:");
+                    const start = prompt("Start Date (YYYY-MM-DD):");
+                    const end = prompt("End Date (YYYY-MM-DD):");
+                    if (name && start && end) addExamPeriod({ name, startDate: start, endDate: end });
+                  }}
+                  style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  + Add Exam
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {!semesterSettings?.examPeriods || semesterSettings.examPeriods.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No exams defined.</p>
+                ) : semesterSettings.examPeriods.map(e => (
+                  <div key={e.id} style={{ background: 'rgba(15, 23, 42, 0.9)', border: '1px solid #ef444450', padding: '8px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '600', color: '#fca5a5' }}>{e.name}</span>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{e.startDate} to {e.endDate}</span>
+                    <button onClick={() => removeExamPeriod(e.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowSemesterModal(false)}
+              style={{
+                width: '100%',
+                background: 'linear-gradient(135deg, #a855f7 0%, var(--primary) 100%)',
+                color: 'white',
+                border: 'none',
+                padding: '16px',
+                borderRadius: '16px',
+                fontWeight: '800',
+                fontSize: '15px',
+                cursor: 'pointer',
+                boxShadow: '0 8px 24px var(--primary-glow)'
+              }}
+            >
+              Save Academic Calendar
+            </button>
           </motion.div>
         </motion.div>
       )}

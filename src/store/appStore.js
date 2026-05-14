@@ -14,6 +14,129 @@ const useAppStore = create(
   devtools(
     persist(
       (set, get) => ({
+        // ─── SEMESTER SETTINGS ───────────────────────────────────────────────
+        semesterSettings: {
+          startDate: new Date().toISOString().split('T')[0], // Default today
+          endDate: new Date(new Date().setMonth(new Date().getMonth() + 4)).toISOString().split('T')[0], // Default 4 months
+          minRequirement: 75,
+          workingDays: [1, 2, 3, 4, 5], // Mon-Fri
+          holidays: [], // Array of { id, date, name, type: 'holiday' | 'restricted' }
+          examPeriods: [], // Array of { id, name, startDate, endDate }
+          workingSaturdays: [], // Array of { id, date, name }
+        },
+        
+        theme: 'default',
+        setTheme: (themeName) => {
+          console.log(`🎨 [ThemeEngine] Switching to: ${themeName}`);
+          set({ theme: themeName });
+          
+          const body = document.body;
+          const html = document.documentElement;
+          if (!body || !html) {
+            console.error("❌ [ThemeEngine] DOM not ready.");
+            return;
+          }
+
+          const { subscription } = get();
+          console.log(`💎 [ThemeEngine] Premium Status: ${subscription?.status === 'active' ? 'Active' : 'Inactive'}`);
+
+          // Robustly remove all possible theme classes from both body and html
+          const themeClasses = [
+            'light-mode', 'theme-default', 'theme-amoled', 'theme-neon', 
+            'theme-cyberpunk', 'theme-midnight', 'theme-gold', 
+            'theme-minimal', 'theme-pod'
+          ];
+          
+          body.classList.remove(...themeClasses);
+          html.classList.remove(...themeClasses);
+
+          // Apply new theme to both for maximum reliability
+          const targetClass = themeName === 'light' ? 'light-mode' : `theme-${themeName}`;
+          console.log(`✅ [ThemeEngine] Applying CSS class: ${targetClass}`);
+          
+          body.classList.add(targetClass);
+          html.classList.add(targetClass);
+          
+          localStorage.setItem('tracktaps_theme', themeName);
+          localStorage.setItem('theme', themeName); // Sync legacy key too
+          
+          get().pushToCloud();
+        },
+        
+        setSemesterSettings: (settings) => {
+          set((state) => ({
+            semesterSettings: { ...state.semesterSettings, ...settings }
+          }));
+          get().fullSync();
+          get().pushToCloud();
+        },
+
+        addHoliday: (holiday) => {
+          set((state) => ({
+            semesterSettings: {
+              ...state.semesterSettings,
+              holidays: [...state.semesterSettings.holidays, { ...holiday, id: `hol_${Date.now()}` }]
+            }
+          }));
+          get().fullSync();
+          get().pushToCloud();
+        },
+
+        removeHoliday: (id) => {
+          set((state) => ({
+            semesterSettings: {
+              ...state.semesterSettings,
+              holidays: state.semesterSettings.holidays.filter(h => h.id !== id)
+            }
+          }));
+          get().fullSync();
+          get().pushToCloud();
+        },
+
+        addExamPeriod: (period) => {
+          set((state) => ({
+            semesterSettings: {
+              ...state.semesterSettings,
+              examPeriods: [...state.semesterSettings.examPeriods, { ...period, id: `exam_${Date.now()}` }]
+            }
+          }));
+          get().fullSync();
+          get().pushToCloud();
+        },
+
+        removeExamPeriod: (id) => {
+          set((state) => ({
+            semesterSettings: {
+              ...state.semesterSettings,
+              examPeriods: state.semesterSettings.examPeriods.filter(e => e.id !== id)
+            }
+          }));
+          get().fullSync();
+          get().pushToCloud();
+        },
+
+        addWorkingSaturday: (saturday) => {
+          set((state) => ({
+            semesterSettings: {
+              ...state.semesterSettings,
+              workingSaturdays: [...state.semesterSettings.workingSaturdays, { ...saturday, id: `sat_${Date.now()}` }]
+            }
+          }));
+          get().fullSync();
+          get().pushToCloud();
+        },
+
+        removeWorkingSaturday: (id) => {
+          set((state) => ({
+            semesterSettings: {
+              ...state.semesterSettings,
+              workingSaturdays: state.semesterSettings.workingSaturdays.filter(s => s.id !== id)
+            }
+          }));
+          get().fullSync();
+          get().pushToCloud();
+        },
+
         // ─── AUTHENTICATION ──────────────────────────────────────────────────
         user: null,
         role: 'USER', // 'USER', 'PREMIUM', 'ADMIN_OWNER'
@@ -21,19 +144,34 @@ const useAppStore = create(
           plan: 'free', // 'free' or 'plus'
           status: 'inactive',
           expiryDate: null,
-          paymentId: null
+          paymentId: null,
+          features: {
+            aiUsageLimit: 5, // 5 requests per day for free
+            aiRequestsToday: 0,
+            aiImportLimit: 1, // 1 import per day for free
+            aiImportsToday: 0,
+            lastAiImportDate: null,
+            hasBadge: false,
+            hasGlow: false,
+            theme: 'default' // 'default', 'neon', 'sunset', 'forest'
+          }
         },
 
-        setUser: (user) => set({ user, isAuthLoading: false }),
+        isAuthLoading: true, 
+        isRestoringSession: false, 
+        setUser: (user) => set({ user, isAuthLoading: false, isRestoringSession: false }),
 
         login: async () => {
+          set({ isAuthLoading: true });
           try {
             const user = await authService.loginWithGoogle();
-            set({ user });
-            // Initial sync after login
-            await get().pullFromCloud();
+            if (user) {
+              set({ user, isAuthLoading: false });
+              await get().pullFromCloud();
+            }
             return user;
           } catch (error) {
+            set({ isAuthLoading: false });
             console.error("Login failed:", error);
             throw error;
           }
@@ -42,62 +180,134 @@ const useAppStore = create(
         logout: async () => {
           try {
             await authService.logout();
-            set({ user: null });
+            set({ user: null, role: 'USER', subscription: { plan: 'free', status: 'inactive' } });
           } catch (error) {
             console.error("Logout failed:", error);
             throw error;
           }
         },
 
-        initAuth: () => {
-          authService.init();
+        initAuth: async () => {
+          console.log("🛠️ [AppStore] initAuth started");
+          set({ isAuthLoading: true });
+          
+          const timeoutId = setTimeout(() => {
+            const { isAuthLoading } = get();
+            if (isAuthLoading) {
+              console.warn("⚠️ [AppStore] Auth initialization timed out.");
+              set({ isAuthLoading: false, isRestoringSession: false });
+            }
+          }, 10000); 
+
+          try {
+            // Initialize persistence before setting up the listener
+            await authService.init();
+          } catch (err) {
+            console.error("❌ [AppStore] Auth init failed:", err);
+          }
+
+          // Load local theme
+          const localTheme = localStorage.getItem('tracktaps_theme') || 'default';
+          get().setTheme(localTheme);
+
           const unsubscribe = authService.onAuthChange((user) => {
+            console.log("👤 [AppStore] Auth change:", user ? user.email : 'No user');
+            clearTimeout(timeoutId);
+
             if (user) {
-              const isAdmin = user.email === 'mustan5372@gmail.com' || user.email === 'tracktaps@gmail.com';
-              
-              // Check if user is banned or should be auto-upgraded (Admin/Owner)
-              syncService.fetchFromCloud(user.uid).then(cloudData => {
-                if (cloudData && cloudData.banned) {
-                  alert("🚫 Your account has been suspended by an administrator.");
-                  get().logout();
-                  return;
-                }
-
-                // Owner/Admin gets auto-premium
-                const isOwner = user.email === 'mustan5372@gmail.com' || user.email === 'tracktaps@gmail.com';
-                
-                const cloudSub = cloudData?.subscription || { plan: 'free', status: 'inactive' };
-                const currentSub = get().subscription;
-
-                // Sync subscription if cloud is active or if user is owner
-                const updatedSub = isOwner ? {
-                  plan: 'plus',
-                  planType: 'lifetime',
-                  status: 'active',
-                  expiryDate: '2099-12-31'
-                } : (cloudSub.status === 'active' ? cloudSub : currentSub);
-
-                set({ 
-                  user, 
-                  isAuthLoading: false,
-                  role: isOwner ? 'ADMIN_OWNER' : (updatedSub.status === 'active' ? 'PREMIUM' : 'USER'),
-                  subscription: updatedSub
-                });
-                
-                // Auto-sync profile to cloud to ensure Admin Panel has real names
-                get().pushToCloud();
-              });
-              
-              // Only pull automatically if local state is empty to avoid overwriting new data
-              const { subjects } = get();
-              if (subjects.length === 0) {
-                get().pullFromCloud(false);
-              }
+              get().handleUserAuthenticated(user);
             } else {
-              set({ user: null, isAuthLoading: false, role: 'USER' });
+              set({ user: null, isAuthLoading: false, isRestoringSession: false, role: 'USER' });
             }
           });
+
           return unsubscribe;
+        },
+
+        handleUserAuthenticated: async (user) => {
+          // STRICT SECURITY: Only specific email gets Admin Owner role
+          const isOwner = user.email === 'mustan5372@gmail.com';
+          
+          try {
+            // Optimized parallel fetch for premium status
+            const cloudData = await syncService.fetchFromCloud(user.uid);
+            
+            if (cloudData && cloudData.banned) {
+              alert("🚫 Your account has been suspended by an administrator.");
+              get().logout();
+              return;
+            }
+
+            const cloudSub = cloudData?.subscription || { plan: 'free', status: 'inactive' };
+            
+            // STRICT SECURITY: If not owner, status must be verified from cloud
+            let updatedSub = { ...get().subscription };
+            
+            if (isOwner) {
+              updatedSub = {
+                ...updatedSub,
+                plan: 'plus',
+                planType: 'lifetime',
+                status: 'active',
+                expiryDate: '2099-12-31'
+              };
+            } else if (cloudSub && cloudSub.status === 'active') {
+              // Only trust cloud for active status
+              updatedSub = { ...updatedSub, ...cloudSub };
+            } else {
+              // Ensure strictly FREE for everyone else
+              updatedSub = { 
+                ...updatedSub, 
+                plan: 'free', 
+                status: 'inactive',
+                features: {
+                  ...updatedSub.features,
+                  aiUsageLimit: 5,
+                  aiImportLimit: 1,
+                  hasBadge: false,
+                  hasGlow: false
+                }
+              };
+            }
+
+            set({ 
+              user, 
+              isAuthLoading: false,
+              role: isOwner ? 'ADMIN_OWNER' : (updatedSub.status === 'active' ? 'PREMIUM' : 'USER'),
+              subscription: updatedSub
+            });
+
+            // Only pull data automatically if local state is empty
+            const { subjects } = get();
+            if (subjects.length === 0 && cloudData && (cloudData.subjects || cloudData.timetable)) {
+              set({
+                subjects: cloudData.subjects || [],
+                timetable: cloudData.timetable || {},
+                calendarEvents: cloudData.calendarEvents || [],
+                attendanceData: cloudData.attendanceData || {},
+                history: cloudData.history || [],
+                lastCloudSync: cloudData.lastSynced || new Date().toISOString()
+              });
+              get().fullSync();
+            }
+            
+            // Trigger Premium Auto-Sync immediately after auth
+            if (updatedSub.status === 'active') {
+              get().performAutoPodaiSync();
+              // Setup periodic background sync every 20 minutes
+              if (!window.podaiSyncTimer) {
+                window.podaiSyncTimer = setInterval(() => {
+                  get().performAutoPodaiSync();
+                }, 20 * 60 * 1000); 
+              }
+            }
+            
+            // Background push to ensure cloud has latest profile info
+            get().pushToCloud();
+          } catch (error) {
+            console.error("Auth user processing failed:", error);
+            set({ user, isAuthLoading: false }); // Still set user so app is usable
+          }
         },
 
         // ─── CLOUD SYNC ─────────────────────────────────────────────────────
@@ -180,14 +390,103 @@ const useAppStore = create(
 
         // ─── SUBSCRIPTION ACTIONS ───────────────────────────────────────────
         setSubscription: (subData) => {
-          set({ subscription: subData });
-          // Auto-sync after subscription update
+          const current = get().subscription;
+          set({ 
+            subscription: { 
+              ...current, 
+              ...subData,
+              features: {
+                ...current.features,
+                aiUsageLimit: subData.status === 'active' ? Infinity : 5,
+                hasBadge: subData.status === 'active',
+                hasGlow: subData.status === 'active'
+              }
+            },
+            role: subData.status === 'active' ? 'PREMIUM' : 'USER'
+          });
+          get().pushToCloud();
+        },
+
+        incrementAiUsage: () => {
+          const sub = get().subscription;
+          if (sub.status === 'active') return true;
+          
+          // Reset daily count if date changed
+          const today = new Date().toDateString();
+          const lastUsed = sub.features.lastAiUsedDate;
+          
+          let currentToday = sub.features.aiRequestsToday || 0;
+          if (lastUsed !== today) {
+            currentToday = 0;
+          }
+
+          if (currentToday >= sub.features.aiUsageLimit) {
+            return false;
+          }
+
+          set({
+            subscription: {
+              ...sub,
+              features: {
+                ...sub.features,
+                aiRequestsToday: currentToday + 1,
+                lastAiUsedDate: today
+              }
+            }
+          });
+          return true;
+        },
+
+        incrementAiImportUsage: () => {
+          const sub = get().subscription;
+          if (sub.status === 'active') return true;
+          
+          const today = new Date().toDateString();
+          const lastImport = sub.features.lastAiImportDate;
+          
+          let currentToday = sub.features.aiImportsToday || 0;
+          if (lastImport !== today) {
+            currentToday = 0;
+          }
+
+          if (currentToday >= (sub.features.aiImportLimit || 1)) {
+            return false;
+          }
+
+          set({
+            subscription: {
+              ...sub,
+              features: {
+                ...sub.features,
+                aiImportsToday: currentToday + 1,
+                lastAiImportDate: today
+              }
+            }
+          });
+          return true;
+        },
+
+        setTheme: (themeName) => {
+          const sub = get().subscription;
+          if (sub.status !== 'active' && themeName !== 'default') {
+            alert("💎 Premium Required: Custom themes are a TrackTaps Plus feature.");
+            return;
+          }
+          set({
+            subscription: {
+              ...sub,
+              features: {
+                ...sub.features,
+                theme: themeName
+              }
+            }
+          });
           get().pushToCloud();
         },
 
         isPremium: () => {
           const { subscription } = get();
-          return subscription.plan === 'plus' && subscription.status === 'active';
+          return subscription.status === 'active';
         },
 
         // ─── SUBJECTS ───────────────────────────────────────────────────────
@@ -243,20 +542,51 @@ const useAppStore = create(
         
         deleteSubject: (subjectId) => {
           const subject = get().subjects.find(s => s.id === subjectId);
-          set((state) => ({
-            subjects: state.subjects.filter(s => s.id !== subjectId)
-          }));
-          
-          if (subject) {
-            get().addHistoryEntry({
-              type: 'subject_deleted',
-              subject: subject.name,
-              description: `Deleted subject: ${subject.name}`
-            });
+          if (!subject) return;
+
+          const subjectName = subject.name;
+
+          set((state) => {
+            // 1. Filter subjects
+            const newSubjects = state.subjects.filter(s => s.id !== subjectId);
             
-            // Auto-sync
-            get().pushToCloud();
-          }
+            // 2. Filter timetable
+            const newTimetable = { ...state.timetable };
+            Object.keys(newTimetable).forEach(key => {
+              if (newTimetable[key].name === subjectName) {
+                delete newTimetable[key];
+              }
+            });
+
+            // 3. Filter attendanceData
+            // We need to find all calendar events for this subject to know which IDs to remove
+            const eventIdsToRemove = state.calendarEvents
+              .filter(e => e.subjectName === subjectName)
+              .map(e => e.id);
+            
+            const newAttendanceData = { ...state.attendanceData };
+            eventIdsToRemove.forEach(id => {
+              delete newAttendanceData[id];
+            });
+
+            return {
+              subjects: newSubjects,
+              timetable: newTimetable,
+              attendanceData: newAttendanceData
+            };
+          });
+          
+          get().addHistoryEntry({
+            type: 'subject_deleted',
+            subject: subjectName,
+            description: `Deleted subject: ${subjectName} and cleared all related data.`
+          });
+          
+          // Refresh everything
+          get().fullSync();
+          
+          // Auto-sync to cloud
+          get().pushToCloud();
         },
 
         // ─── TIMETABLE ──────────────────────────────────────────────────────
@@ -301,16 +631,32 @@ const useAppStore = create(
           get().pushToCloud();
         },
 
-        // ─── CALENDAR EVENTS ────────────────────────────────────────────────
-        calendarEvents: [],
-        
-        setCalendarEvents: (events) => set({ calendarEvents: events }),
-        
         syncTimetableToCalendar: () => {
-          const { timetable, subjects } = get();
+          const { timetable, subjects, semesterSettings } = get();
           
-          const events = AttendanceEngine.generateCalendarEventsFromTimetable(timetable, subjects);
+          const events = AttendanceEngine.generateCalendarEventsFromTimetable(timetable, subjects, semesterSettings);
           set({ calendarEvents: events });
+        },
+
+        // ─── SEMESTER STATS ──────────────────────────────────────────────────
+        semesterStats: {},
+        
+        updateSemesterStats: () => {
+          const { subjects, semesterSettings, timetable, calendarEvents, attendanceData } = get();
+          
+          const stats = {};
+          subjects.forEach(subject => {
+            stats[subject.id] = AttendanceEngine.calculateSemesterSubjectMetrics(
+              subject.name,
+              semesterSettings,
+              timetable,
+              calendarEvents,
+              attendanceData,
+              subjects
+            );
+          });
+          
+          set({ semesterStats: stats });
         },
 
         // ─── ATTENDANCE DATA ────────────────────────────────────────────────
@@ -451,6 +797,15 @@ const useAppStore = create(
         
         clearHistory: () => set({ history: [] }),
 
+        // ─── NOTIFICATIONS ──────────────────────────────────────────────────
+        toast: null, // { message, type: 'success' | 'error' | 'info', visible: boolean }
+        showToast: (message, type = 'success') => {
+          set({ toast: { message, type, visible: true } });
+          setTimeout(() => {
+            set({ toast: { ...get().toast, visible: false } });
+          }, 4000);
+        },
+
         // ─── POD.AI SYNC ────────────────────────────────────────────────────
         podaiSyncStatus: {
           connected: false,
@@ -462,6 +817,89 @@ const useAppStore = create(
         setPodaiSyncStatus: (status) => set((state) => ({
           podaiSyncStatus: { ...state.podaiSyncStatus, ...status }
         })),
+
+        /**
+         * Automatic background sync for premium users
+         */
+        performAutoPodaiSync: async () => {
+          const { subscription, podaiSyncStatus } = get();
+          const token = localStorage.getItem('pod_auth_token');
+          
+          // Only sync if premium and connected
+          if (subscription.status !== 'active' || !token || podaiSyncStatus.syncing) {
+            return;
+          }
+
+          console.log("🔄 [AppStore] Starting Premium Auto-Sync...");
+          set({ podaiSyncStatus: { ...podaiSyncStatus, syncing: true, error: null } });
+
+          try {
+            // 1. Fetch Classrooms
+            const classRes = await fetch('/api/pod/classrooms', {
+              headers: { 'Authorization': `Token ${token}` }
+            });
+            if (!classRes.ok) throw new Error("Connection failed");
+            const classData = await classRes.json();
+            const classrooms = classData.classrooms || [];
+
+            if (classrooms.length === 0) {
+              set({ podaiSyncStatus: { ...get().podaiSyncStatus, syncing: false } });
+              return;
+            }
+
+            // 2. Fetch Attendance for each classroom in parallel
+            const attendanceResults = {};
+            await Promise.all(classrooms.map(async (classroom) => {
+              try {
+                const attRes = await fetch(`/api/pod/attendance?classroom=${classroom.token}`, {
+                  headers: { 'Authorization': `Token ${token}` }
+                });
+                if (attRes.ok) {
+                  const attData = await attRes.json();
+                  attendanceResults[classroom.token] = {
+                    total: attData.total || 0,
+                    attended: attData.attended || 0,
+                    avgAttendance: attData.averagePercent || 0,
+                    missed: attData.missed || 0
+                  };
+                }
+              } catch (e) {
+                console.warn(`Failed to sync classroom ${classroom.token}`);
+              }
+            }));
+
+            // 3. Merge and Update
+            const subjectsToSync = classrooms.map(classroom => ({
+              token: classroom.token,
+              title: classroom.title,
+              ...(attendanceResults[classroom.token] || { total: 0, attended: 0, avgAttendance: 0, missed: 0 })
+            }));
+
+            const { subjects } = get();
+            const merged = PodAiService.mergeSubjects(subjects, subjectsToSync);
+            
+            set({ 
+              subjects: merged,
+              podaiSyncStatus: {
+                connected: true,
+                syncing: false,
+                lastSync: new Date().toISOString(),
+                error: null
+              }
+            });
+
+            get().fullSync();
+            get().pushToCloud();
+            
+            // Notify user of success
+            get().showToast("✨ Pod.ai attendance synced successfully!", "success");
+            
+            console.log("✅ [AppStore] Premium Auto-Sync complete");
+          } catch (error) {
+            console.error("❌ [AppStore] Auto-Sync failed:", error);
+            set({ podaiSyncStatus: { ...get().podaiSyncStatus, syncing: false, error: error.message } });
+          }
+        },
         
         syncPodaiSubjects: async (podaiSubjects) => {
           const { subjects } = get();
@@ -564,10 +1002,10 @@ const useAppStore = create(
           
           // Calculate classes needed to reach target
           const needed = Math.ceil(
-            (target * stats.total - target * stats.present) / (100 - target)
+            (target * stats.total - 100 * stats.present) / (100 - target)
           );
           
-          return Math.max(0, needed);
+          return Math.max(0, stats.total === 0 ? 1 : needed);
         },
         
         /**
@@ -576,6 +1014,7 @@ const useAppStore = create(
         fullSync: () => {
           get().syncTimetableToCalendar();
           get().updateSubjectStats();
+          get().updateSemesterStats();
           get().updateDashboardStats();
           get().generateInsights();
         },

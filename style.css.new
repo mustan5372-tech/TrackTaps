@@ -1,0 +1,300 @@
+:root {
+    /* Color Palette - Deep Dark Mode */
+    --bg-primary: #020617;
+    --bg-deep: #000000;
+    --surface: #0f172a;
+    --surface-glass: rgba(15, 23, 42, 0.7);
+    --border: rgba(139, 92, 246, 0.2);
+    
+    /* Brand Colors */
+    --primary: #8b5cf6;
+    --primary-light: #a78bfa;
+    --primary-dark: #7c3aed;
+    --primary-glow: rgba(139, 92, 246, 0.5);
+    
+    /* Accents */
+    --accent: #d946ef;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #0ea5e9;
+    
+    /* Text */
+    --text-main: #f8fafc;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    
+    /* Spacing & Sizes */
+    --sidebar-width: 260px;
+    --header-height: 70px;
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+    
+    /* Transitions & Shadows */
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow-premium: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(139, 92, 246, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-main);
+    overflow-x: hidden;
+    line-height: 1.5;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* --- Layout Architecture --- */
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background: var(--bg-deep);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Sidebar - Desktop Only (Hidden on Mobile) */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--surface-glass);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    transition: transform var(--transition);
+}
+
+.content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin-left: var(--sidebar-width); /* Desktop offset */
+    width: calc(100% - var(--sidebar-width));
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    z-index: 1;
+    transition: margin var(--transition), width var(--transition);
+}
+
+.main-content {
+    flex: 1;
+    padding: 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* --- Navigation UI Components --- */
+
+/* Sidebar Branding */
+.sidebar-branding {
+    padding: 32px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-menu {
+    flex: 1;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nav-btn {
+    padding: 14px 18px;
+    border-radius: var(--radius-sm);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all var(--transition);
+    border: 1px solid transparent;
+}
+
+.nav-btn:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--primary-light);
+    transform: translateX(4px);
+}
+
+.nav-btn.active {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%);
+    color: var(--primary-light);
+    border-color: var(--border);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile Header & Nav (Hidden on Desktop) */
+.mobile-header, .mobile-nav {
+    display: none !important;
+}
+
+/* --- Responsive Engine (768px Breakpoint) --- */
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        display: none !important;
+    }
+
+    .content-wrapper {
+        margin-left: 0;
+        width: 100%;
+        padding-bottom: 80px; /* Space for mobile nav */
+    }
+
+    .main-content {
+        padding: 20px 16px;
+    }
+
+    .mobile-header {
+        display: flex !important;
+        height: 70px;
+        width: 100%;
+        background: rgba(2, 6, 23, 0.8);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        align-items: center;
+        justify-content: center;
+        position: sticky;
+        top: 0;
+        z-index: 900;
+    }
+
+    .mobile-nav {
+        display: flex !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 70px;
+        background: rgba(7, 11, 26, 0.98);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border);
+        z-index: 10000;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+}
+
+/* --- Global UI Components --- */
+
+.dashboard-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    transition: all var(--transition);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-premium);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--text-main) 0%, var(--primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Admin Dashboard Specifics */
+.admin-view {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.admin-header {
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+/* --- Authentication Components --- */
+
+.google-login-btn {
+    background: #ffffff;
+    color: #020617;
+    border: none;
+    padding: 16px 32px;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: all var(--transition);
+}
+
+.google-login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.google-login-btn img {
+    width: 24px;
+    height: 24px;
+}
+
+/* --- UTILS --- */
+.hidden { display: none !important; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+
+/* Modal System */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}

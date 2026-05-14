@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
+import { motion } from 'framer-motion';
 
 function Settings() {
   const navigate = useNavigate();
@@ -45,14 +46,22 @@ function Settings() {
     pushToCloud,
     pullFromCloud,
     subscription,
-    clearAppData
+    clearAppData,
+    semesterSettings,
+    setSemesterSettings,
+    addHoliday,
+    removeHoliday,
+    addExamPeriod,
+    removeExamPeriod,
+    addWorkingSaturday,
+    removeWorkingSaturday,
+    theme,
+    setTheme
   } = useAppStore();
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('tracktaps_settings') || '{}');
     setSettings(prev => ({ ...prev, ...saved }));
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.body.className = `${savedTheme}-mode`;
   }, []);
 
   const handleChange = (key, value) => {
@@ -61,12 +70,7 @@ function Settings() {
     localStorage.setItem('tracktaps_settings', JSON.stringify(newSettings));
   };
 
-  const handleThemeChange = (newTheme) => {
-    handleChange('theme', newTheme);
-    handleChange('displayMode', newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.body.className = `${newTheme}-mode`;
-  };
+  // handleThemeChange removed in favor of appStore.setTheme
 
   const handleExportData = () => {
     try {
@@ -184,13 +188,36 @@ function Settings() {
           <div className="card-header">
             <span className="card-title">☁️ Account & Cloud Sync</span>
           </div>
-          <div style={{ padding: '20px' }}>
+          <div style={{ padding: '20px', position: 'relative' }}>
+            {isAuthLoading && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(15, 23, 42, 0.8)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 10,
+                borderRadius: '16px',
+                backdropFilter: 'blur(4px)'
+              }}>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  style={{ width: '40px', height: '40px', border: '3px solid var(--primary-glow)', borderTopColor: 'var(--primary)', borderRadius: '50%', marginBottom: '12px' }}
+                />
+                <span style={{ fontSize: '13px', color: 'var(--primary-light)', fontWeight: '600' }}>Signing you in...</span>
+              </div>
+            )}
             {!user ? (
               <div style={{ textAlign: 'center', padding: '10px' }}>
-                <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '20px' }}>
+                <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '20px' }}>
                   Sign in with Google to enable cross-device sync and cloud backups.
                 </p>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={login}
                   disabled={isAuthLoading}
                   style={{
@@ -199,39 +226,29 @@ function Settings() {
                     justifyContent: 'center',
                     gap: '12px',
                     width: '100%',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    color: '#f8fafc',
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, var(--surface-glass) 100%)',
+                    color: 'var(--text-main)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                    padding: '14px',
-                    borderRadius: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
+                    padding: '16px',
+                    borderRadius: '16px',
+                    fontWeight: '700',
+                    cursor: isAuthLoading ? 'not-allowed' : 'pointer',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     backdropFilter: 'blur(10px)',
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(139, 92, 246, 0.2)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)'
                   }}
                 >
                   <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" style={{ width: '20px', height: '20px' }} />
-                  {isAuthLoading ? 'Connecting...' : 'Sign in with Google'}
-                </button>
+                  {isAuthLoading ? 'Authenticating...' : 'Continue with Google'}
+                </motion.button>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '12px' }}>
-                  <img src={user.photoURL} alt={user.displayName} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '2px solid #8b5cf6' }} />
+                  <img src={user.photoURL} alt={user.displayName} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '2px solid var(--primary)' }} />
                   <div style={{ flex: 1 }}>
-                    <p style={{ color: '#f8fafc', fontWeight: '700', margin: 0 }}>{user.displayName}</p>
-                    <p style={{ color: '#94a3b8', fontSize: '12px', margin: 0 }}>{user.email}</p>
+                    <p style={{ color: 'var(--text-main)', fontWeight: '700', margin: 0 }}>{user.displayName}</p>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '12px', margin: 0 }}>{user.email}</p>
                   </div>
                   <button
                     onClick={logout}
@@ -253,9 +270,9 @@ function Settings() {
                     }}
                     disabled={isSyncing}
                     style={{
-                      background: 'rgba(139, 92, 246, 0.1)',
-                      border: '1px solid rgba(139, 92, 246, 0.3)',
-                      color: '#a78bfa',
+                      background: 'var(--primary-glow)',
+                      border: '1px solid var(--primary-glow)',
+                      color: 'var(--primary-light)',
                       padding: '12px',
                       borderRadius: '8px',
                       fontWeight: '600',
@@ -269,9 +286,9 @@ function Settings() {
                     onClick={() => pullFromCloud(true)}
                     disabled={isSyncing}
                     style={{
-                      background: 'rgba(139, 92, 246, 0.1)',
-                      border: '1px solid rgba(139, 92, 246, 0.3)',
-                      color: '#a78bfa',
+                      background: 'var(--primary-glow)',
+                      border: '1px solid var(--primary-glow)',
+                      color: 'var(--primary-light)',
                       padding: '12px',
                       borderRadius: '8px',
                       fontWeight: '600',
@@ -283,8 +300,13 @@ function Settings() {
                   </button>
                 </div>
                 {lastCloudSync && (
-                  <p style={{ color: '#64748b', fontSize: '11px', textAlign: 'center', margin: 0 }}>
-                    Last Cloud Sync: {new Date(lastCloudSync).toLocaleString()}
+                  <p style={{ color: 'var(--text-muted)', fontSize: '11px', textAlign: 'center', margin: 0 }}>
+                    Last Cloud Backup: {new Date(lastCloudSync).toLocaleString()}
+                  </p>
+                )}
+                {podaiSyncStatus?.lastSync && (
+                  <p style={{ color: 'var(--primary-light)', fontSize: '11px', textAlign: 'center', margin: '4px 0 0 0', fontWeight: '500' }}>
+                    Last Pod.ai Sync: {new Date(podaiSyncStatus.lastSync).toLocaleString()} {subscription?.status === 'active' ? '(Auto)' : '(Manual)'}
                   </p>
                 )}
               </div>
@@ -292,86 +314,6 @@ function Settings() {
           </div>
         </div>
 
-        {/* Profile Settings */}
-        <div className="dashboard-card">
-          <div className="card-header">
-            <span className="card-title">👤 Profile Information</span>
-          </div>
-          <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Name</label>
-              <input
-                type="text"
-                value={settings.userName}
-                onChange={(e) => handleChange('userName', e.target.value)}
-                style={{
-                  width: '100%',
-                  background: '#1e293b',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#f8fafc',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  fontFamily: 'inherit'
-                }}
-                placeholder="Your name"
-              />
-            </div>
-            <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>College</label>
-              <input
-                type="text"
-                value={settings.collegeName}
-                onChange={(e) => handleChange('collegeName', e.target.value)}
-                style={{
-                  width: '100%',
-                  background: '#1e293b',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#f8fafc',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  fontFamily: 'inherit'
-                }}
-                placeholder="College name"
-              />
-            </div>
-            <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Academic Year</label>
-              <input
-                type="text"
-                value={settings.acadYear}
-                onChange={(e) => handleChange('acadYear', e.target.value)}
-                style={{
-                  width: '100%',
-                  background: '#1e293b',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#f8fafc',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  fontFamily: 'inherit'
-                }}
-                placeholder="e.g., 2024-2025"
-              />
-            </div>
-            <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Semester</label>
-              <input
-                type="text"
-                value={settings.semester}
-                onChange={(e) => handleChange('semester', e.target.value)}
-                style={{
-                  width: '100%',
-                  background: '#1e293b',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#f8fafc',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  fontFamily: 'inherit'
-                }}
-                placeholder="e.g., Semester 3"
-              />
-            </div>
-          </div>
-        </div>
 
         {/* Attendance Criteria */}
         <div className="dashboard-card">
@@ -380,7 +322,7 @@ function Settings() {
           </div>
           <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
             <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
+              <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
                 Default Target: {settings.defaultCriteria}%
               </label>
               <input
@@ -389,11 +331,11 @@ function Settings() {
                 max="100"
                 value={settings.defaultCriteria}
                 onChange={(e) => handleChange('defaultCriteria', parseInt(e.target.value))}
-                style={{ width: '100%', accentColor: '#8b5cf6', cursor: 'pointer' }}
+                style={{ width: '100%', accentColor: 'var(--primary)', cursor: 'pointer' }}
               />
             </div>
             <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
+              <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
                 Warning Level: {settings.warningThreshold}%
               </label>
               <input
@@ -406,7 +348,7 @@ function Settings() {
               />
             </div>
             <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
+              <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
                 Critical Level: {settings.criticalThreshold}%
               </label>
               <input
@@ -421,67 +363,107 @@ function Settings() {
           </div>
         </div>
 
-        {/* Appearance */}
-        <div className="dashboard-card">
-          <div className="card-header">
-            <span className="card-title">🎨 Appearance</span>
+        {/* Premium Appearance */}
+        <div className="dashboard-card" style={{ overflow: 'hidden' }}>
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="card-title">🎨 Premium Themes & Appearance</span>
+            {subscription?.status !== 'active' && (
+              <span style={{ 
+                fontSize: '10px', 
+                background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
+                color: 'white', 
+                padding: '4px 10px', 
+                borderRadius: '100px', 
+                fontWeight: '900' 
+              }}>UPGRADE TO PLUS</span>
+            )}
           </div>
-          <div style={{ padding: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => handleThemeChange('dark')}
-              style={{
-                flex: 1,
-                minWidth: '120px',
-                padding: '12px',
-                borderRadius: '8px',
-                border: settings.theme === 'dark' ? '2px solid #8b5cf6' : '1px solid rgba(255,255,255,0.1)',
-                background: settings.theme === 'dark' ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
-                color: '#f8fafc',
-                cursor: 'pointer',
-                fontWeight: '500'
-              }}
-            >
-              🌙 Dark Mode
-            </button>
-            <button
-              onClick={() => handleThemeChange('light')}
-              style={{
-                flex: 1,
-                minWidth: '120px',
-                padding: '12px',
-                borderRadius: '8px',
-                border: settings.theme === 'light' ? '2px solid #8b5cf6' : '1px solid rgba(255,255,255,0.1)',
-                background: settings.theme === 'light' ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
-                color: '#f8fafc',
-                cursor: 'pointer',
-                fontWeight: '500'
-              }}
-            >
-              ☀️ Light Mode
-            </button>
-            <label style={{
-              flex: 1,
-              minWidth: '120px',
-              padding: '12px',
-              borderRadius: '8px',
-              border: settings.glassEffect ? '2px solid #8b5cf6' : '1px solid rgba(255,255,255,0.1)',
-              background: settings.glassEffect ? 'rgba(139, 92, 246, 0.1)' : 'transparent',
-              color: '#f8fafc',
-              cursor: 'pointer',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px'
+          
+          <div style={{ padding: '24px' }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '13px', marginBottom: '20px' }}>
+              Personalize your TrackTaps experience with high-fidelity themes.
+            </p>
+
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+              gap: '16px' 
             }}>
-              <input
-                type="checkbox"
-                checked={settings.glassEffect}
-                onChange={(e) => handleChange('glassEffect', e.target.checked)}
-                style={{ cursor: 'pointer' }}
-              />
-              ✨ Glass Effect
-            </label>
+              {[
+                { id: 'default', name: 'Default Dark', type: 'free', bg: 'var(--bg-primary)', primary: 'var(--primary)', icon: '🌙' },
+                { id: 'light', name: 'Basic Light', type: 'free', bg: 'var(--text-main)', primary: '#7c3aed', icon: '☀️' },
+                { id: 'amoled', name: 'AMOLED Dark', type: 'premium', bg: '#000000', primary: '#ffffff', icon: '🌑' },
+                { id: 'neon', name: 'Neon Purple', type: 'premium', bg: '#1e1b4b', primary: '#d946ef', icon: '🔮' },
+                { id: 'cyberpunk', name: 'Cyberpunk', type: 'premium', bg: '#050505', primary: '#00f2ff', icon: '⚡' },
+                { id: 'midnight', name: 'Midnight Blue', type: 'premium', bg: 'var(--surface)', primary: '#38bdf8', icon: '🌊' },
+                { id: 'gold', name: 'Royal Gold', type: 'premium', bg: '#0c0a09', primary: '#f59e0b', icon: '👑' },
+                { id: 'minimal', name: 'Minimal White', type: 'premium', bg: '#ffffff', primary: '#111827', icon: '⬜' },
+                { id: 'pod', name: 'Pod Purple', type: 'premium', bg: 'var(--bg-primary)', primary: '#6366f1', icon: '📦' },
+              ].map(t => {
+                const isLocked = t.type === 'premium' && subscription?.status !== 'active';
+                const isActive = theme === t.id;
+
+                return (
+                  <motion.div
+                    key={t.id}
+                    whileHover={{ y: -4 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      if (isLocked) {
+                        navigate('/premium');
+                        return;
+                      }
+                      setTheme(t.id);
+                    }}
+                    style={{
+                      background: t.bg,
+                      border: isActive ? `2px solid ${t.primary}` : '1px solid rgba(255,255,255,0.05)',
+                      borderRadius: '16px',
+                      padding: '16px',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                      minHeight: '100px',
+                      boxShadow: isActive ? `0 0 20px ${t.primary}30` : 'none',
+                      opacity: isLocked ? 0.7 : 1
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '20px' }}>{t.icon}</span>
+                      {isLocked && <span style={{ fontSize: '14px' }}>🔒</span>}
+                    </div>
+                    
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: t.id === 'light' || t.id === 'minimal' ? 'var(--surface)' : 'var(--text-main)' }}>
+                        {t.name}
+                      </div>
+                      <div style={{ 
+                        height: '4px', 
+                        width: '24px', 
+                        background: t.primary, 
+                        borderRadius: '100px',
+                        marginTop: '4px'
+                      }} />
+                    </div>
+
+                    {isActive && (
+                      <div style={{ 
+                        position: 'absolute', 
+                        top: '12px', 
+                        right: '12px', 
+                        width: '8px', 
+                        height: '8px', 
+                        background: t.primary, 
+                        borderRadius: '50%',
+                        boxShadow: `0 0 10px ${t.primary}`
+                      }} />
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -491,7 +473,7 @@ function Settings() {
             <span className="card-title">🔗 Pod.ai Integration</span>
           </div>
           <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <p style={{ color: '#94a3b8', fontSize: '14px' }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
               Pod.ai integration is now available at <strong>/pod</strong>. Visit the Pod Dashboard to manage your attendance and activities.
             </p>
             <a 
@@ -500,8 +482,8 @@ function Settings() {
                 padding: '12px',
                 borderRadius: '8px',
                 border: 'none',
-                background: 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)',
-                color: '#f8fafc',
+                background: 'linear-gradient(135deg, #a855f7 0%, var(--primary) 100%)',
+                color: 'var(--text-main)',
                 cursor: 'pointer',
                 fontWeight: '600',
                 textAlign: 'center',
@@ -533,12 +515,12 @@ function Settings() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
                 <p style={{ margin: 0, fontSize: '14px', fontWeight: '600' }}>
-                  Current Plan: <span style={{ color: subscription?.plan === 'plus' ? '#a78bfa' : '#94a3b8' }}>
+                  Current Plan: <span style={{ color: subscription?.plan === 'plus' ? 'var(--primary-light)' : 'var(--text-dim)' }}>
                     {subscription?.plan === 'plus' ? `${subscription.planType?.toUpperCase() || 'PLUS'}` : 'Free'}
                   </span>
                 </p>
                 {subscription?.expiryDate && (
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
                     Expires on: {new Date(subscription.expiryDate).toLocaleDateString()}
                   </p>
                 )}
@@ -548,9 +530,9 @@ function Settings() {
                 style={{
                   padding: '8px 16px',
                   borderRadius: '8px',
-                  background: subscription?.plan === 'plus' ? 'rgba(255,255,255,0.05)' : 'rgba(139, 92, 246, 0.1)',
-                  color: subscription?.plan === 'plus' ? '#f8fafc' : '#a78bfa',
-                  border: '1px solid rgba(139, 92, 246, 0.3)',
+                  background: subscription?.plan === 'plus' ? 'rgba(255,255,255,0.05)' : 'var(--primary-glow)',
+                  color: subscription?.plan === 'plus' ? 'var(--text-main)' : 'var(--primary-light)',
+                  border: '1px solid var(--primary-glow)',
                   fontSize: '13px',
                   fontWeight: '600',
                   cursor: 'pointer'
@@ -559,7 +541,7 @@ function Settings() {
                 {subscription?.plan === 'plus' ? 'Manage' : 'Upgrade'}
               </button>
             </div>
-            <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>
+            <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)' }}>
               {subscription?.plan === 'plus' 
                 ? 'Your premium features are active across all devices.' 
                 : 'Unlock Cloud Sync, AI Insights, and more with Plus.'}
@@ -574,16 +556,16 @@ function Settings() {
           </div>
           <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
             <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Default Duration (min)</label>
+              <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Default Duration (min)</label>
               <input
                 type="number"
                 value={settings.defaultDuration}
                 onChange={(e) => handleChange('defaultDuration', parseInt(e.target.value))}
                 style={{
                   width: '100%',
-                  background: '#1e293b',
+                  background: 'var(--surface)',
                   border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#f8fafc',
+                  color: 'var(--text-main)',
                   padding: '10px 12px',
                   borderRadius: '8px',
                   fontFamily: 'inherit'
@@ -591,7 +573,7 @@ function Settings() {
               />
             </div>
             <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Grid Start Hour</label>
+              <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Grid Start Hour</label>
               <input
                 type="number"
                 min="0"
@@ -600,9 +582,9 @@ function Settings() {
                 onChange={(e) => handleChange('gridStartHour', parseInt(e.target.value))}
                 style={{
                   width: '100%',
-                  background: '#1e293b',
+                  background: 'var(--surface)',
                   border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#f8fafc',
+                  color: 'var(--text-main)',
                   padding: '10px 12px',
                   borderRadius: '8px',
                   fontFamily: 'inherit'
@@ -610,7 +592,7 @@ function Settings() {
               />
             </div>
             <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Grid End Hour</label>
+              <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Grid End Hour</label>
               <input
                 type="number"
                 min="0"
@@ -619,9 +601,9 @@ function Settings() {
                 onChange={(e) => handleChange('gridEndHour', parseInt(e.target.value))}
                 style={{
                   width: '100%',
-                  background: '#1e293b',
+                  background: 'var(--surface)',
                   border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#f8fafc',
+                  color: 'var(--text-main)',
                   padding: '10px 12px',
                   borderRadius: '8px',
                   fontFamily: 'inherit'
@@ -642,9 +624,9 @@ function Settings() {
               style={{
                 padding: '12px',
                 borderRadius: '8px',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
-                background: 'rgba(139, 92, 246, 0.1)',
-                color: '#a78bfa',
+                border: '1px solid var(--primary-glow)',
+                background: 'var(--primary-glow)',
+                color: 'var(--primary-light)',
                 cursor: 'pointer',
                 fontWeight: '500'
               }}
@@ -654,9 +636,9 @@ function Settings() {
             <label style={{
               padding: '12px',
               borderRadius: '8px',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
-              background: 'rgba(139, 92, 246, 0.1)',
-              color: '#a78bfa',
+              border: '1px solid var(--primary-glow)',
+              background: 'var(--primary-glow)',
+              color: 'var(--primary-light)',
               cursor: 'pointer',
               fontWeight: '500',
               textAlign: 'center'
@@ -696,16 +678,41 @@ function Settings() {
           <div className="card-header">
             <span className="card-title">ℹ️ About TrackTaps</span>
           </div>
-          <div style={{ padding: '20px', color: '#94a3b8', fontSize: '14px', lineHeight: '1.6' }}>
+          <div style={{ padding: '20px', color: 'var(--text-dim)', fontSize: '14px', lineHeight: '1.6' }}>
             <p><strong>Version:</strong> 1.0.0</p>
             <p><strong>Platform:</strong> Web & Mobile</p>
             <p style={{ marginTop: '16px' }}>TrackTaps is a smart attendance tracking platform designed to help students manage their academic attendance efficiently with AI-powered insights and predictions.</p>
-            <p style={{ marginTop: '12px', fontSize: '12px', color: '#64748b' }}>© 2026 TrackTaps. All rights reserved.</p>
+            <p style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>© 2026 TrackTaps. All rights reserved.</p>
           </div>
         </div>
+          {subscription?.status === 'active' && (
+            <div 
+              onClick={() => navigate('/ai-import')}
+              style={{ 
+                marginTop: '24px', 
+                padding: '16px', 
+                background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(15, 23, 42, 0.4) 100%)', 
+                borderRadius: '16px', 
+                border: '1px solid var(--primary-glow)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '20px' }}>✨</span>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>Beta: AI Semester Import</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Auto-detect holidays from your college calendar.</div>
+                </div>
+              </div>
+              <span style={{ fontSize: '12px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', padding: '4px 10px', borderRadius: '100px', fontWeight: '800' }}>EXPERIMENTAL</span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
 export default Settings;

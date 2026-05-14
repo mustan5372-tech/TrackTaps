@@ -27,7 +27,7 @@ const LogOut = ({ size = 24 }) => (
 const SkeletonCard = () => (
   <div style={{
     background: 'rgba(255, 255, 255, 0.02)',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
+    border: '1px solid var(--border)',
     borderRadius: '20px',
     padding: '24px',
     height: '220px',
@@ -81,21 +81,21 @@ const LoadingStatus = () => {
         width: '60px',
         height: '60px',
         borderRadius: '50%',
-        border: '3px solid rgba(139, 92, 246, 0.1)',
-        borderTopColor: '#8b5cf6',
+        border: '3px solid var(--primary-glow)',
+        borderTopColor: 'var(--primary)',
         animation: 'spin 1s linear infinite'
       }} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <p style={{ 
           fontSize: '18px', 
           fontWeight: '600', 
-          color: '#f8fafc',
+          color: 'var(--text-main)',
           margin: 0,
           animation: 'pulse 2s infinite'
         }}>
           {messages[msgIdx]}
         </p>
-        <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>This usually takes a few seconds</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>This usually takes a few seconds</p>
       </div>
     </div>
   );
@@ -118,7 +118,7 @@ export default function Pod() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
-  const { syncPodaiSubjects, setPodaiSyncStatus, fullSync } = useAppStore();
+  const { syncPodaiSubjects, setPodaiSyncStatus, fullSync, subscription } = useAppStore();
 
   // Check if already logged in
   useEffect(() => {
@@ -295,21 +295,21 @@ export default function Pod() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+        background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface) 100%)',
         padding: '20px'
       }}>
         <div style={{
-          background: '#1e293b',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          background: 'var(--surface)',
+          border: '1px solid var(--primary-glow)',
           borderRadius: '16px',
           padding: '40px',
           maxWidth: '400px',
           width: '100%'
         }}>
-          <h1 style={{ color: '#f8fafc', marginBottom: '8px', fontSize: '24px', fontWeight: '700' }}>
+          <h1 style={{ color: 'var(--text-main)', marginBottom: '8px', fontSize: '24px', fontWeight: '700' }}>
             Pod.ai Dashboard
           </h1>
-          <p style={{ color: '#94a3b8', marginBottom: '32px', fontSize: '14px' }}>
+          <p style={{ color: 'var(--text-dim)', marginBottom: '32px', fontSize: '14px' }}>
             Sign in to your Pod.ai account
           </p>
 
@@ -329,7 +329,7 @@ export default function Pod() {
 
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
+              <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
                 Email
               </label>
               <input
@@ -339,9 +339,9 @@ export default function Pod() {
                 placeholder="your.email@medicaps.ac.in"
                 style={{
                   width: '100%',
-                  background: '#0f172a',
+                  background: 'var(--surface)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: '#f8fafc',
+                  color: 'var(--text-main)',
                   padding: '10px 12px',
                   borderRadius: '8px',
                   fontFamily: 'inherit',
@@ -352,7 +352,7 @@ export default function Pod() {
             </div>
 
             <div>
-              <label style={{ color: '#94a3b8', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
+              <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
                 Password
               </label>
               <div style={{ position: 'relative' }}>
@@ -363,9 +363,9 @@ export default function Pod() {
                   placeholder="Your password"
                   style={{
                     width: '100%',
-                    background: '#0f172a',
+                    background: 'var(--surface)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#f8fafc',
+                    color: 'var(--text-main)',
                     padding: '10px 12px',
                     paddingRight: '40px',
                     borderRadius: '8px',
@@ -384,7 +384,7 @@ export default function Pod() {
                     transform: 'translateY(-50%)',
                     background: 'none',
                     border: 'none',
-                    color: '#94a3b8',
+                    color: 'var(--text-dim)',
                     cursor: 'pointer',
                     padding: '4px'
                   }}
@@ -398,8 +398,8 @@ export default function Pod() {
               type="submit"
               disabled={isLoading}
               style={{
-                background: isLoading ? 'rgba(139, 92, 246, 0.5)' : 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)',
-                color: '#f8fafc',
+                background: isLoading ? 'rgba(139, 92, 246, 0.5)' : 'linear-gradient(135deg, #a855f7 0%, var(--primary) 100%)',
+                color: 'var(--text-main)',
                 border: 'none',
                 padding: '12px',
                 borderRadius: '8px',
@@ -421,9 +421,9 @@ export default function Pod() {
 
   return (
     <div style={{ 
-      background: '#0f172a', 
+      background: 'var(--surface)', 
       height: '100vh', 
-      color: '#f8fafc', 
+      color: 'var(--text-main)', 
       display: 'flex', 
       flexDirection: 'column',
       overflow: 'hidden'
@@ -470,8 +470,8 @@ export default function Pod() {
       {/* Fixed Header */}
       <div style={{
         padding: '20px',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-        background: '#0f172a',
+        borderBottom: '1px solid var(--border)',
+        background: 'var(--surface)',
         zIndex: 10
       }}>
         <div 
@@ -488,9 +488,9 @@ export default function Pod() {
             <button
               onClick={() => navigate('/')}
               style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                color: '#94a3b8',
+                background: 'var(--surface-glass)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-dim)',
                 width: '40px',
                 height: '40px',
                 borderRadius: '12px',
@@ -501,22 +501,29 @@ export default function Pod() {
                 transition: 'all 0.3s ease'
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                e.currentTarget.style.color = '#f8fafc';
+                e.currentTarget.style.background = 'var(--border)';
+                e.currentTarget.style.color = 'var(--text-main)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-                e.currentTarget.style.color = '#94a3b8';
+                e.currentTarget.style.background = 'var(--surface-glass)';
+                e.currentTarget.style.color = 'var(--text-dim)';
               }}
               title="Back to TrackTaps"
             >
               🏠
             </button>
             <div>
-              <h1 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 4px 0', background: 'linear-gradient(135deg, #a78bfa 0%, #c084fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              <h1 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 4px 0', background: 'linear-gradient(135deg, var(--primary-light) 0%, #c084fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 Pod Dashboard
               </h1>
-              <p style={{ color: '#94a3b8', margin: 0, fontSize: '13px' }}>Welcome back, {displayName}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <p style={{ color: 'var(--text-dim)', margin: 0, fontSize: '13px' }}>Welcome back, {displayName}</p>
+                {subscription?.status === 'active' && (
+                  <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '2px 8px', borderRadius: '4px', fontWeight: '700', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                    ✨ AUTO-SYNC ACTIVE
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           
@@ -528,15 +535,15 @@ export default function Pod() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)',
+                background: 'linear-gradient(135deg, #a855f7 0%, var(--primary) 100%)',
                 border: 'none',
-                color: '#f8fafc',
+                color: 'var(--text-main)',
                 padding: '10px 20px',
                 borderRadius: '12px',
                 cursor: (isSyncing || attendanceLoading || isActuallyLoading) ? 'not-allowed' : 'pointer',
                 fontWeight: '700',
                 fontSize: '14px',
-                boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
+                boxShadow: '0 0 20px var(--primary-glow)',
                 transition: 'all 0.3s ease',
                 opacity: (isSyncing || attendanceLoading || isActuallyLoading) ? 0.7 : 1
               }}
@@ -584,12 +591,12 @@ export default function Pod() {
               style={{
                 background: 'none',
                 border: 'none',
-                color: activeTab === tab ? '#a78bfa' : '#64748b',
+                color: activeTab === tab ? 'var(--primary-light)' : 'var(--text-muted)',
                 padding: '12px 0',
                 fontSize: '15px',
                 fontWeight: '700',
                 cursor: 'pointer',
-                borderBottom: activeTab === tab ? '3px solid #a78bfa' : '3px solid transparent',
+                borderBottom: activeTab === tab ? '3px solid var(--primary-light)' : '3px solid transparent',
                 transition: 'all 0.3s ease'
               }}
             >
@@ -674,9 +681,9 @@ export default function Pod() {
                   </div>
                 </>
               ) : classrooms.length === 0 && !error ? (
-                <div style={{ textAlign: 'center', padding: '80px 20px', color: '#94a3b8' }}>
+                <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-dim)' }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>🍃</div>
-                  <h3 style={{ color: '#f8fafc', margin: '0 0 8px 0' }}>No classrooms found</h3>
+                  <h3 style={{ color: 'var(--text-main)', margin: '0 0 8px 0' }}>No classrooms found</h3>
                   <p style={{ margin: 0 }}>We couldn't find any active classrooms in your Pod.ai account.</p>
                 </div>
               ) : (
@@ -693,8 +700,8 @@ export default function Pod() {
                       <div
                         key={classroom.token}
                         style={{
-                          background: 'rgba(255, 255, 255, 0.03)',
-                          border: '1px solid rgba(255, 255, 255, 0.05)',
+                          background: 'var(--surface-glass)',
+                          border: '1px solid var(--border)',
                           borderRadius: '20px',
                           padding: '24px',
                           transition: 'all 0.3s ease',
@@ -702,7 +709,7 @@ export default function Pod() {
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                          <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: '#f8fafc', flex: 1 }}>
+                          <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: 'var(--text-main)', flex: 1 }}>
                             {classroom.title}
                           </h3>
                           <span style={{ 
@@ -718,7 +725,7 @@ export default function Pod() {
                         </div>
 
                         {classroom.creatorDetails?.name && (
-                          <p style={{ color: '#64748b', fontSize: '13px', margin: '0 0 20px 0', fontWeight: '500' }}>
+                          <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '0 0 20px 0', fontWeight: '500' }}>
                             👨‍🏫 {classroom.creatorDetails.name}
                           </p>
                         )}
@@ -736,26 +743,26 @@ export default function Pod() {
                               gap: '16px',
                               marginBottom: '20px'
                             }}>
-                              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                                <p style={{ color: '#64748b', fontSize: '11px', margin: '0 0 4px 0', fontWeight: '700', textTransform: 'uppercase' }}>Attended</p>
-                                <p style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: '#f8fafc' }}>{att.attended}</p>
+                              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                                <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '0 0 4px 0', fontWeight: '700', textTransform: 'uppercase' }}>Attended</p>
+                                <p style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>{att.attended}</p>
                               </div>
-                              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                                <p style={{ color: '#64748b', fontSize: '11px', margin: '0 0 4px 0', fontWeight: '700', textTransform: 'uppercase' }}>Total</p>
-                                <p style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: '#f8fafc' }}>{att.total}</p>
+                              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                                <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '0 0 4px 0', fontWeight: '700', textTransform: 'uppercase' }}>Total</p>
+                                <p style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>{att.total}</p>
                               </div>
                             </div>
 
                             <div style={{
                               height: '6px',
-                              background: 'rgba(255, 255, 255, 0.05)',
+                              background: 'var(--border)',
                               borderRadius: '10px',
                               overflow: 'hidden'
                             }}>
                               <div style={{
                                 height: '100%',
                                 width: `${Math.min(percentage, 100)}%`,
-                                background: `linear-gradient(90deg, ${getAttendanceColor(percentage)} 0%, #f8fafc 200%)`,
+                                background: `linear-gradient(90deg, ${getAttendanceColor(percentage)} 0%, var(--text-main) 200%)`,
                                 transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)',
                                 boxShadow: `0 0 10px ${getAttendanceColor(percentage)}`
                               }} />

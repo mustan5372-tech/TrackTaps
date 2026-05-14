@@ -68,8 +68,8 @@ const FounderCard = ({ name, role, description, initials, index }) => {
       onHoverEnd={() => setIsHovered(false)}
       onMouseMove={handleMouseMove}
       style={{
-        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%)',
-        border: '1.5px solid rgba(139, 92, 246, 0.4)',
+        background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.1) 100%)',
+        border: '1.5px solid var(--primary-glow)',
         borderRadius: '24px',
         padding: '48px 40px',
         textAlign: 'center',
@@ -106,7 +106,7 @@ const FounderCard = ({ name, role, description, initials, index }) => {
             position: 'absolute',
             width: '300px',
             height: '300px',
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)',
             borderRadius: '50%',
             left: mousePosition.x - 150,
             top: mousePosition.y - 150,
@@ -136,14 +136,14 @@ const FounderCard = ({ name, role, description, initials, index }) => {
           width: '100px',
           height: '100px',
           margin: '0 auto 28px',
-          background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
+          background: 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: '40px',
           fontWeight: '800',
-          color: '#f8fafc',
+          color: 'var(--text-main)',
           boxShadow: isHovered 
             ? '0 0 50px rgba(139, 92, 246, 0.8), 0 0 100px rgba(168, 85, 247, 0.4)' 
             : '0 0 30px rgba(139, 92, 246, 0.5)',
@@ -160,9 +160,9 @@ const FounderCard = ({ name, role, description, initials, index }) => {
         transition={{ duration: 0.3 }}
         style={{
           display: 'inline-block',
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(168, 85, 247, 0.15) 100%)',
+          background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.15) 100%)',
           border: '1px solid rgba(139, 92, 246, 0.5)',
-          color: '#a78bfa',
+          color: 'var(--primary-light)',
           padding: '8px 20px',
           borderRadius: '24px',
           fontSize: '11px',
@@ -180,7 +180,7 @@ const FounderCard = ({ name, role, description, initials, index }) => {
       <motion.h3 
         animate={isHovered ? { y: -5 } : { y: 0 }}
         style={{ 
-          color: '#f8fafc', 
+          color: 'var(--text-main)', 
           fontSize: '22px', 
           fontWeight: '800', 
           marginBottom: '12px',
@@ -212,8 +212,8 @@ const FounderCard = ({ name, role, description, initials, index }) => {
           style={{
             width: '40px',
             height: '40px',
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(168, 85, 247, 0.15) 100%)',
-            border: '1px solid rgba(139, 92, 246, 0.4)',
+            background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.15) 100%)',
+            border: '1px solid var(--primary-glow)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -230,8 +230,8 @@ const FounderCard = ({ name, role, description, initials, index }) => {
           style={{
             width: '40px',
             height: '40px',
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(168, 85, 247, 0.15) 100%)',
-            border: '1px solid rgba(139, 92, 246, 0.4)',
+            background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.15) 100%)',
+            border: '1px solid var(--primary-glow)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -276,7 +276,7 @@ const RoadmapPhase = ({ phase, items, index }) => {
           top: 0,
           bottom: 0,
           width: '3px',
-          background: 'linear-gradient(180deg, rgba(139, 92, 246, 0.8) 0%, rgba(139, 92, 246, 0.2) 100%)',
+          background: 'linear-gradient(180deg, rgba(139, 92, 246, 0.8) 0%, var(--primary-glow) 100%)',
           transform: 'translateX(-50%)',
           boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)'
         }}
@@ -292,7 +292,7 @@ const RoadmapPhase = ({ phase, items, index }) => {
           top: '24px',
           width: '20px',
           height: '20px',
-          background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
+          background: 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
           borderRadius: '50%',
           transform: 'translateX(-50%)',
           boxShadow: '0 0 30px rgba(139, 92, 246, 0.9), 0 0 60px rgba(168, 85, 247, 0.5)',
@@ -383,7 +383,7 @@ const RoadmapPhase = ({ phase, items, index }) => {
           <motion.h4 
             animate={isHovered ? { y: -5 } : { y: 0 }}
             style={{
-              color: '#a78bfa',
+              color: 'var(--primary-light)',
               fontSize: '13px',
               fontWeight: '800',
               textTransform: 'uppercase',
@@ -415,7 +415,7 @@ const RoadmapPhase = ({ phase, items, index }) => {
                   style={{
                     width: '8px',
                     height: '8px',
-                    background: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)',
+                    background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%)',
                     borderRadius: '50%',
                     boxShadow: '0 0 10px rgba(139, 92, 246, 0.5)'
                   }}
@@ -521,8 +521,8 @@ function About() {
                 alignItems: 'center',
                 gap: '8px',
                 background: 'rgba(139, 92, 246, 0.15)',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
-                color: '#a78bfa',
+                border: '1px solid var(--primary-glow)',
+                color: 'var(--primary-light)',
                 padding: '10px 20px',
                 borderRadius: '20px',
                 fontSize: '12px',
@@ -538,7 +538,7 @@ function About() {
                 style={{
                   width: '8px',
                   height: '8px',
-                  background: '#a78bfa',
+                  background: 'var(--primary-light)',
                   borderRadius: '50%'
                 }}
               />
@@ -553,10 +553,10 @@ function About() {
               style={{
                 fontSize: 'clamp(36px, 8vw, 72px)',
                 fontWeight: '800',
-                color: '#f8fafc',
+                color: 'var(--text-main)',
                 lineHeight: '1.2',
                 marginBottom: '24px',
-                background: 'linear-gradient(135deg, #f8fafc 0%, #a78bfa 100%)',
+                background: 'linear-gradient(135deg, var(--text-main) 0%, var(--primary-light) 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
@@ -564,7 +564,7 @@ function About() {
             >
               Smart Attendance <br />
               <span style={{
-                background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
+                background: 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
@@ -577,7 +577,7 @@ function About() {
             <BlurRevealText delay={0.4}>
               <p style={{
                 fontSize: '18px',
-                color: '#94a3b8',
+                color: 'var(--text-dim)',
                 lineHeight: '1.8',
                 maxWidth: '700px',
                 marginBottom: '40px'
@@ -598,8 +598,8 @@ function About() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '12px',
-                  background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
-                  color: '#f8fafc',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
+                  color: 'var(--text-main)',
                   padding: '14px 32px',
                   borderRadius: '12px',
                   textDecoration: 'none',
@@ -607,7 +607,7 @@ function About() {
                   fontSize: '15px',
                   border: 'none',
                   cursor: 'pointer',
-                  boxShadow: '0 0 30px rgba(139, 92, 246, 0.4)',
+                  boxShadow: '0 0 30px var(--primary-glow)',
                   transition: 'all 0.3s'
                 }}
                 onMouseEnter={(e) => {
@@ -615,7 +615,7 @@ function About() {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 0 30px rgba(139, 92, 246, 0.4)';
+                  e.currentTarget.style.boxShadow = '0 0 30px var(--primary-glow)';
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
@@ -640,7 +640,7 @@ function About() {
               fontWeight: '800',
               textAlign: 'center',
               marginBottom: '60px',
-              color: '#f8fafc'
+              color: 'var(--text-main)'
             }}>
               Why TrackTaps?
             </h2>
@@ -696,10 +696,10 @@ function About() {
                 />
                 <div style={{ position: 'relative', zIndex: 1 }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>{feature.icon}</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#f8fafc', marginBottom: '12px' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '12px' }}>
                     {feature.title}
                   </h3>
-                  <p style={{ color: '#94a3b8', fontSize: '15px', lineHeight: '1.6' }}>
+                  <p style={{ color: 'var(--text-dim)', fontSize: '15px', lineHeight: '1.6' }}>
                     {feature.desc}
                   </p>
                 </div>
@@ -716,7 +716,7 @@ function About() {
               fontWeight: '800',
               textAlign: 'center',
               marginBottom: '16px',
-              color: '#f8fafc'
+              color: 'var(--text-main)'
             }}>
               Founders & Core Team
             </h2>
@@ -725,7 +725,7 @@ function About() {
           <BlurRevealText delay={0.2}>
             <p style={{
               fontSize: '16px',
-              color: '#94a3b8',
+              color: 'var(--text-dim)',
               textAlign: 'center',
               maxWidth: '600px',
               margin: '0 auto 80px',
@@ -784,7 +784,7 @@ function About() {
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%)',
+              background: 'radial-gradient(circle at center, var(--primary-glow) 0%, transparent 70%)',
               pointerEvents: 'none'
             }}
           />
@@ -792,7 +792,7 @@ function About() {
             <h3 style={{
               fontSize: 'clamp(28px, 6vw, 48px)',
               fontWeight: '700',
-              color: '#f8fafc',
+              color: 'var(--text-main)',
               lineHeight: '1.4',
               maxWidth: '800px',
               margin: '0 auto',
@@ -812,7 +812,7 @@ function About() {
               fontWeight: '800',
               textAlign: 'center',
               marginBottom: '80px',
-              color: '#f8fafc'
+              color: 'var(--text-main)'
             }}>
               Product Roadmap
             </h2>
@@ -845,7 +845,7 @@ function About() {
               fontSize: '40px',
               fontWeight: '800',
               marginBottom: '16px',
-              color: '#f8fafc'
+              color: 'var(--text-main)'
             }}>
               Ready to Transform Your Attendance?
             </h2>
@@ -853,7 +853,7 @@ function About() {
           <BlurRevealText delay={0.2}>
             <p style={{
               fontSize: '18px',
-              color: '#94a3b8',
+              color: 'var(--text-dim)',
               marginBottom: '40px'
             }}>
               Join thousands of students already using TrackTaps to master their academic journey.
@@ -870,8 +870,8 @@ function About() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '12px',
-                background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
-                color: '#f8fafc',
+                background: 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
+                color: 'var(--text-main)',
                 padding: '16px 40px',
                 borderRadius: '12px',
                 textDecoration: 'none',
@@ -879,7 +879,7 @@ function About() {
                 fontSize: '16px',
                 border: 'none',
                 cursor: 'pointer',
-                boxShadow: '0 0 30px rgba(139, 92, 246, 0.4)',
+                boxShadow: '0 0 30px var(--primary-glow)',
                 transition: 'all 0.3s'
               }}
               onMouseEnter={(e) => {
@@ -887,7 +887,7 @@ function About() {
                 e.currentTarget.style.transform = 'translateY(-2px)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 0 30px rgba(139, 92, 246, 0.4)';
+                e.currentTarget.style.boxShadow = '0 0 30px var(--primary-glow)';
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >

@@ -144,9 +144,9 @@ function ContactUs() {
         <h2 style={{
           fontSize: '36px',
           fontWeight: '800',
-          color: '#f8fafc',
+          color: 'var(--text-main)',
           marginBottom: '12px',
-          background: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)',
+          background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%)',
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
@@ -155,7 +155,7 @@ function ContactUs() {
         </h2>
         <p style={{
           fontSize: '16px',
-          color: '#94a3b8',
+          color: 'var(--text-dim)',
           maxWidth: '600px',
           margin: '0 auto',
           lineHeight: '1.6'
@@ -168,7 +168,7 @@ function ContactUs() {
       <div
         style={{
           background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          border: '1px solid var(--primary-glow)',
           borderRadius: '24px',
           padding: '48px',
           backdropFilter: 'blur(10px)',
@@ -185,7 +185,7 @@ function ContactUs() {
             <label style={{
               fontSize: '14px',
               fontWeight: '600',
-              color: '#f8fafc',
+              color: 'var(--text-main)',
               display: 'flex',
               alignItems: 'center',
               gap: '6px'
@@ -200,10 +200,10 @@ function ContactUs() {
               placeholder="John Doe"
               style={{
                 background: 'rgba(15, 23, 42, 0.5)',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
+                border: '1px solid var(--primary-glow)',
                 borderRadius: '12px',
                 padding: '14px 16px',
-                color: '#f8fafc',
+                color: 'var(--text-main)',
                 fontSize: '14px',
                 transition: 'all 0.3s ease',
                 outline: 'none',
@@ -211,11 +211,11 @@ function ContactUs() {
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = 'rgba(139, 92, 246, 0.6)';
-                e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                e.target.style.boxShadow = '0 0 0 3px var(--primary-glow)';
                 e.target.style.background = 'rgba(15, 23, 42, 0.8)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+                e.target.style.borderColor = 'var(--primary-glow)';
                 e.target.style.boxShadow = '0 0 0 0 rgba(139, 92, 246, 0)';
                 e.target.style.background = 'rgba(15, 23, 42, 0.5)';
               }}
@@ -227,7 +227,7 @@ function ContactUs() {
             <label style={{
               fontSize: '14px',
               fontWeight: '600',
-              color: '#f8fafc',
+              color: 'var(--text-main)',
               display: 'flex',
               alignItems: 'center',
               gap: '6px'
@@ -242,10 +242,10 @@ function ContactUs() {
               placeholder="your@email.com"
               style={{
                 background: 'rgba(15, 23, 42, 0.5)',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
+                border: '1px solid var(--primary-glow)',
                 borderRadius: '12px',
                 padding: '14px 16px',
-                color: '#f8fafc',
+                color: 'var(--text-main)',
                 fontSize: '14px',
                 transition: 'all 0.3s ease',
                 outline: 'none',
@@ -253,11 +253,11 @@ function ContactUs() {
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = 'rgba(139, 92, 246, 0.6)';
-                e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                e.target.style.boxShadow = '0 0 0 3px var(--primary-glow)';
                 e.target.style.background = 'rgba(15, 23, 42, 0.8)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+                e.target.style.borderColor = 'var(--primary-glow)';
                 e.target.style.boxShadow = '0 0 0 0 rgba(139, 92, 246, 0)';
                 e.target.style.background = 'rgba(15, 23, 42, 0.5)';
               }}
@@ -269,7 +269,7 @@ function ContactUs() {
             <label style={{
               fontSize: '14px',
               fontWeight: '600',
-              color: '#f8fafc',
+              color: 'var(--text-main)',
               display: 'flex',
               alignItems: 'center',
               gap: '6px'
@@ -284,10 +284,10 @@ function ContactUs() {
               placeholder="What is this about?"
               style={{
                 background: 'rgba(15, 23, 42, 0.5)',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
+                border: '1px solid var(--primary-glow)',
                 borderRadius: '12px',
                 padding: '14px 16px',
-                color: '#f8fafc',
+                color: 'var(--text-main)',
                 fontSize: '14px',
                 transition: 'all 0.3s ease',
                 outline: 'none',
@@ -295,11 +295,11 @@ function ContactUs() {
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = 'rgba(139, 92, 246, 0.6)';
-                e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                e.target.style.boxShadow = '0 0 0 3px var(--primary-glow)';
                 e.target.style.background = 'rgba(15, 23, 42, 0.8)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+                e.target.style.borderColor = 'var(--primary-glow)';
                 e.target.style.boxShadow = '0 0 0 0 rgba(139, 92, 246, 0)';
                 e.target.style.background = 'rgba(15, 23, 42, 0.5)';
               }}
@@ -311,7 +311,7 @@ function ContactUs() {
             <label style={{
               fontSize: '14px',
               fontWeight: '600',
-              color: '#f8fafc',
+              color: 'var(--text-main)',
               display: 'flex',
               alignItems: 'center',
               gap: '6px'
@@ -324,10 +324,10 @@ function ContactUs() {
               onChange={handleChange}
               style={{
                 background: 'rgba(15, 23, 42, 0.5)',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
+                border: '1px solid var(--primary-glow)',
                 borderRadius: '12px',
                 padding: '14px 16px',
-                color: '#f8fafc',
+                color: 'var(--text-main)',
                 fontSize: '14px',
                 transition: 'all 0.3s ease',
                 outline: 'none',
@@ -336,17 +336,17 @@ function ContactUs() {
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = 'rgba(139, 92, 246, 0.6)';
-                e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                e.target.style.boxShadow = '0 0 0 3px var(--primary-glow)';
                 e.target.style.background = 'rgba(15, 23, 42, 0.8)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+                e.target.style.borderColor = 'var(--primary-glow)';
                 e.target.style.boxShadow = '0 0 0 0 rgba(139, 92, 246, 0)';
                 e.target.style.background = 'rgba(15, 23, 42, 0.5)';
               }}
             >
               {categories.map(cat => (
-                <option key={cat.value} value={cat.value} style={{ background: '#0f172a', color: '#f8fafc' }}>
+                <option key={cat.value} value={cat.value} style={{ background: 'var(--surface)', color: 'var(--text-main)' }}>
                   {cat.label}
                 </option>
               ))}
@@ -358,7 +358,7 @@ function ContactUs() {
             <label style={{
               fontSize: '14px',
               fontWeight: '600',
-              color: '#f8fafc',
+              color: 'var(--text-main)',
               display: 'flex',
               alignItems: 'center',
               gap: '6px'
@@ -373,10 +373,10 @@ function ContactUs() {
               rows="5"
               style={{
                 background: 'rgba(15, 23, 42, 0.5)',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
+                border: '1px solid var(--primary-glow)',
                 borderRadius: '12px',
                 padding: '14px 16px',
-                color: '#f8fafc',
+                color: 'var(--text-main)',
                 fontSize: '14px',
                 transition: 'all 0.3s ease',
                 outline: 'none',
@@ -387,11 +387,11 @@ function ContactUs() {
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = 'rgba(139, 92, 246, 0.6)';
-                e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                e.target.style.boxShadow = '0 0 0 3px var(--primary-glow)';
                 e.target.style.background = 'rgba(15, 23, 42, 0.8)';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+                e.target.style.borderColor = 'var(--primary-glow)';
                 e.target.style.boxShadow = '0 0 0 0 rgba(139, 92, 246, 0)';
                 e.target.style.background = 'rgba(15, 23, 42, 0.5)';
               }}
@@ -424,8 +424,8 @@ function ContactUs() {
             style={{
               background: submitted 
                 ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.8) 0%, rgba(16, 185, 129, 0.6) 100%)'
-                : 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)',
-              color: '#f8fafc',
+                : 'linear-gradient(135deg, #a855f7 0%, var(--primary) 100%)',
+              color: 'var(--text-main)',
               border: 'none',
               padding: '14px 32px',
               borderRadius: '12px',
@@ -438,7 +438,7 @@ function ContactUs() {
               justifyContent: 'center',
               gap: '8px',
               opacity: loading || submitted ? 0.8 : 1,
-              boxShadow: '0 10px 30px rgba(139, 92, 246, 0.3)'
+              boxShadow: '0 10px 30px var(--primary-glow)'
             }}
           >
             {loading ? (
@@ -473,7 +473,7 @@ function ContactUs() {
             background: toastType === 'success' 
               ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(16, 185, 129, 0.7) 100%)'
               : 'linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(239, 68, 68, 0.7) 100%)',
-            color: '#f8fafc',
+            color: 'var(--text-main)',
             padding: '16px 24px',
             borderRadius: '12px',
             fontSize: '14px',
