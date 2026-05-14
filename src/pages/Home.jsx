@@ -476,6 +476,8 @@ function Home() {
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 2, repeat: Infinity }}
             id="overall-trend" 
+            style={{ marginTop: '12px', fontSize: '12px', color: 'var(--success)', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+          >
             <span>↑</span> 2.4% from last week
           </motion.div>
         </motion.div>
