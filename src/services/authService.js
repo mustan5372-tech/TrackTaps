@@ -99,19 +99,26 @@ const authService = {
 
   handleRedirectResult: async () => {
     // Only relevant for mobile browsers that used signInWithRedirect
-    if (isNativeAPK()) return null;
+    if (isNativeAPK()) {
+      console.log("⏭️ [Auth] Skipping redirect check (Native APK environment)");
+      return null;
+    }
     
     try {
-      console.log("🔄 [Auth] Checking for redirect result...");
+      console.log("🔄 [Auth] Checking getRedirectResult()...");
       const { getRedirectResult } = await import("firebase/auth");
       const result = await getRedirectResult(auth);
-      if (result) {
-        console.log("✅ [Auth] Redirect Result Found:", result.user.email);
+      
+      if (result && result.user) {
+        console.log("✅ [Auth] Redirect Login Success:", result.user.email);
         return result.user;
       }
+      
+      console.log("ℹ️ [Auth] No redirect result found in current session.");
       return null;
     } catch (error) {
-      console.error("❌ [Auth] Redirect result error:", error);
+      console.error("❌ [Auth] getRedirectResult Error:", error.code, error.message);
+      // alert("Auth Redirect Error: " + error.message); // Helpful for mobile debugging
       return null;
     }
   },

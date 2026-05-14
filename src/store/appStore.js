@@ -197,26 +197,9 @@ const useAppStore = create(
               console.warn("⚠️ [AppStore] Auth initialization timed out.");
               set({ isAuthLoading: false, isRestoringSession: false });
             }
-          }, 15000); // Increased timeout for redirects
+          }, 15000);
 
-          try {
-            // 1. Initialize persistence
-            await authService.init();
-            
-            // 2. Handle redirect results (Mobile Browser Flow)
-            const redirectUser = await authService.handleRedirectResult();
-            if (redirectUser) {
-              console.log("🎯 [AppStore] Logged in via Redirect:", redirectUser.email);
-              // handleUserAuthenticated will be called by the listener below
-            }
-          } catch (err) {
-            console.error("❌ [AppStore] Auth init failed:", err);
-          }
-
-          // Load local theme
-          const localTheme = localStorage.getItem('tracktaps_theme') || 'default';
-          get().setTheme(localTheme);
-
+          // 1. Set up the listener FIRST to catch any state changes
           const unsubscribe = authService.onAuthChange((user) => {
             console.log("👤 [AppStore] Auth state change:", user ? user.email : 'No user');
             clearTimeout(timeoutId);
@@ -227,6 +210,24 @@ const useAppStore = create(
               set({ user: null, isAuthLoading: false, isRestoringSession: false, role: 'USER' });
             }
           });
+
+          try {
+            // 2. Initialize persistence
+            await authService.init();
+            
+            // 3. Handle redirect results (Mobile Browser Flow)
+            const redirectUser = await authService.handleRedirectResult();
+            if (redirectUser) {
+              console.log("🎯 [AppStore] Manual handling of redirect user:", redirectUser.email);
+              get().handleUserAuthenticated(redirectUser);
+            }
+          } catch (err) {
+            console.error("❌ [AppStore] Auth init failed:", err);
+          }
+
+          // Load local theme
+          const localTheme = localStorage.getItem('tracktaps_theme') || 'default';
+          get().setTheme(localTheme);
 
           return unsubscribe;
         },
