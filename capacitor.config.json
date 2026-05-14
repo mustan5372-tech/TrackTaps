@@ -32,6 +32,11 @@
     "StatusBar": {
       "backgroundColor": "#020617",
       "style": "DARK"
+    },
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "629606821213-92f7q8909h1v6v7q8909h1v.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": true
     }
   }
 }

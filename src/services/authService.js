@@ -40,23 +40,34 @@ const authService = {
       if (!auth.app) throw new Error("Firebase not initialized");
 
       const isMobile = isMobileApp();
-      console.log(`🔐 [Auth] Starting Google Auth (${isMobile ? 'Redirect' : 'Popup'} Flow)...`);
+      console.log(`🔐 [Auth] Starting Google Auth (${isMobile ? 'Native' : 'Web'} Flow)...`);
       
-      // Ensure persistence is definitely set before starting auth
       await authService.init();
 
       if (isMobile) {
-        // Mobile flow: Redirect is much more reliable in WebViews
-        // Capacitor will stay in-app thanks to allowNavigation in config
-        // NOTE: User must configure deep links in AndroidManifest.xml
-        const { signInWithRedirect } = await import("firebase/auth");
-        console.log("🚀 [Auth] Calling signInWithRedirect...");
-        await signInWithRedirect(auth, googleProvider);
-        return null; // The page will redirect
+        // NATIVE FLOW: No browser redirects, just a native account chooser popup
+        console.log("🚀 [Auth] Triggering Native Google Sign-In Popup...");
+        const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+        
+        // This opens the native Android/iOS account picker
+        const nativeUser = await GoogleAuth.signIn();
+        
+        if (nativeUser && nativeUser.authentication.idToken) {
+          console.log("✅ [Auth] Native Sign-In Success, linking with Firebase...");
+          const { GoogleAuthProvider, signInWithCredential } = await import("firebase/auth");
+          
+          const credential = GoogleAuthProvider.credential(nativeUser.authentication.idToken);
+          const result = await signInWithCredential(auth, credential);
+          
+          console.log("🎉 [Auth] Firebase Native Auth Success:", result.user.email);
+          return result.user;
+        }
+        throw new Error("Native Google Sign-In failed to return an ID Token.");
       } else {
-        // Desktop flow: Popup is better UX
+        // WEB FLOW: Standard popup for desktop
+        const { signInWithPopup } = await import("firebase/auth");
         const result = await signInWithPopup(auth, googleProvider);
-        console.log("✅ [Auth] Login Success:", result.user.email);
+        console.log("✅ [Auth] Web Login Success:", result.user.email);
         return result.user;
       }
     } catch (error) {
@@ -66,7 +77,11 @@ const authService = {
   },
 
   handleRedirectResult: async () => {
+    // Redirect flow is now DEPRECATED for mobile in favor of Native Popup
+    // We only keep this for web fallback scenarios if needed
     try {
+      if (isMobileApp()) return null; // Native flow doesn't use redirects
+      
       const { getRedirectResult } = await import("firebase/auth");
       const result = await getRedirectResult(auth);
       if (result) {
