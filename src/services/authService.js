@@ -4,7 +4,15 @@ import {
   onAuthStateChanged,
   browserLocalPersistence,
   indexedDBLocalPersistence,
-  setPersistence
+  setPersistence,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  updateProfile,
+  linkWithCredential,
+  EmailAuthProvider
 } from "firebase/auth";
 import { auth, googleProvider } from "./firebase";
 
@@ -58,9 +66,7 @@ const authService = {
 
       } else {
         // --- 2. WEB FLOW (Original Stable Version) ---
-        // Restore to the exact logic that was "working fine" before
         console.log("🌐 [Auth] Using standard Firebase Web Popup...");
-        const { signInWithPopup } = await import("firebase/auth");
         const result = await signInWithPopup(auth, googleProvider);
         return result.user;
       }
@@ -70,27 +76,101 @@ const authService = {
     }
   },
 
+  // --- Email Authentication ---
+  signupWithEmail: async (email, password, fullName) => {
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      // Update display name
+      await updateProfile(result.user, { displayName: fullName });
+      return result.user;
+    } catch (error) {
+      console.error("❌ [Auth] Email Signup Failure:", error);
+      throw error;
+    }
+  },
+
+  loginWithEmail: async (email, password) => {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      return result.user;
+    } catch (error) {
+      console.error("❌ [Auth] Email Login Failure:", error);
+      throw error;
+    }
+  },
+
+  resetPassword: async (email) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error("❌ [Auth] Password Reset Failure:", error);
+      throw error;
+    }
+  },
+
+  // --- Phone Authentication ---
+  setupRecaptcha: async (containerId) => {
+    try {
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+      }
+      
+      console.log("🛠️ [Auth] Setting up Recaptcha on:", containerId);
+      
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+        'size': 'invisible',
+        'callback': (response) => {
+          console.log("✅ [Auth] Recaptcha verified");
+        },
+        'expired-callback': () => {
+          console.warn("⚠️ [Auth] Recaptcha expired");
+        }
+      });
+      
+      // Explicitly render to ensure it's ready
+      await window.recaptchaVerifier.render();
+      return window.recaptchaVerifier;
+    } catch (error) {
+      console.error("❌ [Auth] Recaptcha setup failed:", error);
+      throw error;
+    }
+  },
+
+  sendOTP: async (phoneNumber, verifier) => {
+    try {
+      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier);
+      return confirmationResult;
+    } catch (error) {
+      console.error("❌ [Auth] Send OTP Failure:", error);
+      throw error;
+    }
+  },
+
+  verifyOTP: async (confirmationResult, code) => {
+    try {
+      const result = await confirmationResult.confirm(code);
+      return result.user;
+    } catch (error) {
+      console.error("❌ [Auth] OTP Verification Failure:", error);
+      throw error;
+    }
+  },
+
   handleRedirectResult: async () => {
-    // Only relevant for mobile browsers that used signInWithRedirect
     if (isNativeAPK()) {
-      console.log("⏭️ [Auth] Skipping redirect check (Native APK environment)");
       return null;
     }
     
     try {
-      console.log("🔄 [Auth] Checking getRedirectResult()...");
       const { getRedirectResult } = await import("firebase/auth");
       const result = await getRedirectResult(auth);
       
       if (result && result.user) {
-        console.log("✅ [Auth] Redirect Login Success:", result.user.email);
         return result.user;
       }
-      
-      console.log("ℹ️ [Auth] No redirect result found in current session.");
       return null;
     } catch (error) {
-      console.error("❌ [Auth] getRedirectResult Error:", error.code, error.message);
+      console.error("❌ [Auth] getRedirectResult Error:", error);
       return null;
     }
   },

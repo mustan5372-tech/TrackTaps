@@ -17,10 +17,11 @@ import BunkCalculator from './pages/BunkCalculator';
 import useAppStore from './store/appStore';
 import { motion } from 'framer-motion';
 import GlobalToast from './components/GlobalToast';
+import AuthModal from './components/AuthModal';
 import logo from '../icon.png';
 
 function App() {
-  const { initAuth, isAuthLoading, isRestoringSession } = useAppStore();
+  const { initAuth, isAuthLoading, isRestoringSession, isAuthModalOpen, setAuthModalOpen } = useAppStore();
 
   useEffect(() => {
     // Initialize Auth (which also initializes theme from appStore)
@@ -70,6 +71,7 @@ function App() {
   return (
     <BrowserRouter>
       <GlobalToast />
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
       <Routes>
         <Route path="/pod" element={<Pod />} />
         <Route path="/" element={<AppShell><Home /></AppShell>} />

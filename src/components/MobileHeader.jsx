@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import useAppStore from '../store/appStore';
 
 function MobileHeader() {
-  const { user, login, subscription, podaiSyncStatus } = useAppStore();
+  const { user, login, subscription, podaiSyncStatus, setAuthModalOpen } = useAppStore();
   
   const downloadFile = () => {
     const link = document.createElement('a');
@@ -100,7 +100,7 @@ function MobileHeader() {
           // If NOT logged in, show Login Button
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={() => login()}
+            onClick={() => setAuthModalOpen(true)}
             style={{
               background: 'linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%)',
               border: 'none',

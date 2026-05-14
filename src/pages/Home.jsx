@@ -39,7 +39,8 @@ function Home() {
     getTodaySchedule,
     fullSync,
     subscription,
-    semesterStats
+    semesterStats,
+    setAuthModalOpen
   } = useAppStore();
 
   // Non-logged-in landing page (no Google login - auth handled elsewhere)
@@ -125,31 +126,61 @@ function Home() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center', width: '100%' }}
           >
-            <Link
-              to="/about"
+            <button
+              onClick={() => setAuthModalOpen(true)}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '10px',
-                padding: '14px 28px',
+                padding: '16px 32px',
                 background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
                 border: 'none',
-                borderRadius: '14px',
+                borderRadius: '16px',
                 color: '#f8fafc',
-                fontSize: 'clamp(14px, 3.5vw, 16px)',
-                fontWeight: '700',
-                textDecoration: 'none',
-                boxShadow: '0 10px 30px rgba(139, 92, 246, 0.3)',
+                fontSize: 'clamp(14px, 4vw, 18px)',
+                fontWeight: '800',
+                cursor: 'pointer',
+                boxShadow: '0 10px 30px rgba(139, 92, 246, 0.4)',
                 transition: 'all 0.3s ease',
                 width: '100%',
                 justifyContent: 'center',
                 maxWidth: '300px'
               }}
             >
-              <span>Explore TrackTaps</span>
+              <span>Get Started Now</span>
               <span>→</span>
+            </button>
+
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(139, 92, 246, 0.3)',
+                color: 'var(--text-main)',
+                padding: '12px 24px',
+                borderRadius: '14px',
+                fontSize: '14px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                width: '100%',
+                maxWidth: '300px'
+              }}
+            >
+              Already have an account? Login
+            </button>
+
+            <Link
+              to="/about"
+              style={{
+                fontSize: '13px',
+                color: 'var(--text-dim)',
+                textDecoration: 'none',
+                marginTop: '8px'
+              }}
+            >
+              Learn more about features
             </Link>
           </motion.div>
         </motion.div>

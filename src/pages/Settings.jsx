@@ -56,7 +56,8 @@ function Settings() {
     addWorkingSaturday,
     removeWorkingSaturday,
     theme,
-    setTheme
+    setTheme,
+    setAuthModalOpen
   } = useAppStore();
 
   useEffect(() => {
@@ -242,7 +243,7 @@ function Settings() {
                 <motion.button
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={login}
+                  onClick={() => setAuthModalOpen(true)}
                   disabled={isAuthLoading}
                   style={{
                     display: 'flex',

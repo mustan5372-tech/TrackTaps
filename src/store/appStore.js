@@ -159,6 +159,8 @@ const useAppStore = create(
 
         isAuthLoading: true, 
         isRestoringSession: false, 
+        isAuthModalOpen: false,
+        setAuthModalOpen: (isOpen) => set({ isAuthModalOpen: isOpen }),
         setUser: (user) => set({ user, isAuthLoading: false, isRestoringSession: false }),
 
         login: async () => {

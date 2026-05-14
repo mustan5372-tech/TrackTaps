@@ -40,14 +40,13 @@ const PLANS = [
 
 function Premium() {
   const navigate = useNavigate();
-  const { user, subscription, setSubscription } = useAppStore();
+  const { user, subscription, setSubscription, setAuthModalOpen } = useAppStore();
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
   const handleUpgrade = async (plan) => {
     if (!user) {
-      alert('Please sign in with Google first to upgrade to Plus.');
-      navigate('/settings');
+      setAuthModalOpen(true);
       return;
     }
 
