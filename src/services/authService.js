@@ -42,10 +42,15 @@ const authService = {
       const isMobile = isMobileApp();
       console.log(`🔐 [Auth] Starting Google Auth (${isMobile ? 'Redirect' : 'Popup'} Flow)...`);
       
+      // Ensure persistence is definitely set before starting auth
+      await authService.init();
+
       if (isMobile) {
         // Mobile flow: Redirect is much more reliable in WebViews
         // Capacitor will stay in-app thanks to allowNavigation in config
+        // NOTE: User must configure deep links in AndroidManifest.xml
         const { signInWithRedirect } = await import("firebase/auth");
+        console.log("🚀 [Auth] Calling signInWithRedirect...");
         await signInWithRedirect(auth, googleProvider);
         return null; // The page will redirect
       } else {

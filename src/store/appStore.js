@@ -203,6 +203,39 @@ const useAppStore = create(
             // Initialize persistence before setting up the listener
             await authService.init();
             
+            // CAPACITOR DEEP LINK HANDLING (Critical for APK Auth Return)
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+              console.log("📱 [AppStore] Native platform detected. Initializing Deep Link listeners...");
+              try {
+                const { App } = await import('@capacitor/app');
+                
+                // Handle app opened via URL (Google Auth Callback)
+                App.addListener('appUrlOpen', async (data) => {
+                  console.log('🔗 [AppStore] App opened via URL:', data.url);
+                  
+                  // Even if the URL is just our scheme, check for redirect result
+                  // Firebase SDK will check the internal storage for the pending redirect
+                  const redirectUser = await authService.handleRedirectResult();
+                  if (redirectUser) {
+                    console.log("📥 [AppStore] Captured redirect user from deep link:", redirectUser.email);
+                    get().handleUserAuthenticated(redirectUser);
+                  }
+                });
+                
+                // Also check if app was launched via URL
+                const launchUrl = await App.getLaunchUrl();
+                if (launchUrl) {
+                  console.log('🚀 [AppStore] App launched via URL:', launchUrl.url);
+                  const redirectUser = await authService.handleRedirectResult();
+                  if (redirectUser) {
+                    get().handleUserAuthenticated(redirectUser);
+                  }
+                }
+              } catch (capErr) {
+                console.error("❌ [AppStore] Capacitor App plugin failed:", capErr);
+              }
+            }
+
             // Check for redirect result (important for mobile APK login)
             const redirectUser = await authService.handleRedirectResult();
             if (redirectUser) {

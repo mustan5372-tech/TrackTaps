@@ -6,6 +6,7 @@
   "server": {
     "url": "https://www.tracktaps.online/",
     "cleartext": true,
+    "androidScheme": "tracktaps",
     "allowNavigation": [
       "accounts.google.com",
       "*.google.com",
