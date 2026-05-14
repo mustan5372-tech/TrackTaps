@@ -1,23 +1,54 @@
 /* REACT LAYOUT FIXES - PREMIUM MOBILE-FIRST ADAPTIVE ENGINE */
 
 :root {
+    /* Main Backgrounds */
+    --bg-deep: #020617;
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    
+    /* Surfaces & Glass */
+    --surface: rgba(30, 41, 59, 0.5);
+    --surface-glass: rgba(15, 23, 42, 0.6);
+    --surface-bright: rgba(255, 255, 255, 0.03);
+    
+    /* Branding & Accents */
     --primary: #8b5cf6;
     --primary-light: #a78bfa;
     --primary-glow: rgba(139, 92, 246, 0.3);
-    --bg-deep: #020617;
-    --bg-primary: #0f172a;
-    --surface: rgba(30, 41, 59, 0.5);
-    --surface-glass: rgba(15, 23, 42, 0.6);
-    --border: rgba(255, 255, 255, 0.08);
+    --accent: #d946ef;
+    
+    /* Typography */
     --text-main: #f8fafc;
     --text-dim: #94a3b8;
     --text-muted: #64748b;
-    --card-radius: 24px;
-    --section-gap: 32px;
-    --mobile-side-padding: 20px;
+    --text-on-primary: #ffffff;
+    
+    /* System */
+    --border: rgba(255, 255, 255, 0.08);
+    --border-bright: rgba(255, 255, 255, 0.15);
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
+    
+    /* Geometry */
+    --card-radius: 24px;
+    --button-radius: 14px;
+    --section-gap: 32px;
+    --mobile-side-padding: 20px;
+    
+    /* Shadows */
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.3);
+    --shadow-premium: 0 0 30px rgba(139, 92, 246, 0.2);
+}
+
+body {
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 /* App Container - Clean Flex Layout */

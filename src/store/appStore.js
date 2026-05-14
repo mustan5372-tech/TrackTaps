@@ -4,6 +4,7 @@ import AttendanceEngine from '../services/attendanceEngine';
 import PodAiService from '../services/podaiService';
 import authService from '../services/authService';
 import syncService from '../services/syncService';
+import { applyTheme } from '../services/themeEngine';
 
 /**
  * Centralized App Store using Zustand
@@ -28,39 +29,39 @@ const useAppStore = create(
         theme: 'default',
         setTheme: (themeName) => {
           console.log(`🎨 [ThemeEngine] Switching to: ${themeName}`);
-          set({ theme: themeName });
           
-          const body = document.body;
-          const html = document.documentElement;
-          if (!body || !html) {
-            console.error("❌ [ThemeEngine] DOM not ready.");
-            return;
+          const { subscription } = get();
+          const isPremium = subscription?.status === 'active';
+          
+          // PREMIUM GATING: Allow 'default' and 'light' for everyone. Others require premium.
+          if (!isPremium && themeName !== 'default' && themeName !== 'light') {
+            console.warn("💎 [ThemeEngine] Theme locked: Premium required.");
+            // We return false so the UI can show a modal if needed
+            return false; 
           }
 
-          const { subscription } = get();
-          console.log(`💎 [ThemeEngine] Premium Status: ${subscription?.status === 'active' ? 'Active' : 'Inactive'}`);
-
-          // Robustly remove all possible theme classes from both body and html
-          const themeClasses = [
-            'light-mode', 'theme-default', 'theme-amoled', 'theme-neon', 
-            'theme-cyberpunk', 'theme-midnight', 'theme-gold', 
-            'theme-minimal', 'theme-pod'
-          ];
+          // Apply to DOM instantly
+          applyTheme(themeName);
           
-          body.classList.remove(...themeClasses);
-          html.classList.remove(...themeClasses);
-
-          // Apply new theme to both for maximum reliability
-          const targetClass = themeName === 'light' ? 'light-mode' : `theme-${themeName}`;
-          console.log(`✅ [ThemeEngine] Applying CSS class: ${targetClass}`);
+          // Update State
+          set((state) => ({ 
+            theme: themeName,
+            subscription: {
+              ...state.subscription,
+              features: {
+                ...state.subscription.features,
+                theme: themeName
+              }
+            }
+          }));
           
-          body.classList.add(targetClass);
-          html.classList.add(targetClass);
-          
+          // Persist Locally
           localStorage.setItem('tracktaps_theme', themeName);
-          localStorage.setItem('theme', themeName); // Sync legacy key too
           
+          // Sync to Cloud
           get().pushToCloud();
+          
+          return true;
         },
         
         setSemesterSettings: (settings) => {
@@ -478,23 +479,6 @@ const useAppStore = create(
           return true;
         },
 
-        setTheme: (themeName) => {
-          const sub = get().subscription;
-          if (sub.status !== 'active' && themeName !== 'default') {
-            alert("💎 Premium Required: Custom themes are a TrackTaps Plus feature.");
-            return;
-          }
-          set({
-            subscription: {
-              ...sub,
-              features: {
-                ...sub.features,
-                theme: themeName
-              }
-            }
-          });
-          get().pushToCloud();
-        },
 
         isPremium: () => {
           const { subscription } = get();

@@ -138,9 +138,9 @@ function Subjects() {
   };
 
   const getAttendanceColor = (percentage) => {
-    if (percentage >= 75) return '#10b981';
-    if (percentage >= 65) return '#f59e0b';
-    return '#ef4444';
+    if (percentage >= 75) return 'var(--success)';
+    if (percentage >= 65) return 'var(--warning)';
+    return 'var(--danger)';
   };
 
   return (
@@ -267,8 +267,8 @@ function Subjects() {
                 });
               }}
               style={{
-                background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.05) 100%)',
-                border: '1px solid var(--primary-glow)',
+                background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-glass) 100%)',
+                border: '1px solid var(--border)',
                 borderRadius: '16px',
                 padding: '20px',
                 cursor: 'pointer',

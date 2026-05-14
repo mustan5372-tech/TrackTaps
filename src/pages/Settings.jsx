@@ -434,15 +434,14 @@ function Settings() {
                     whileHover={{ y: -4 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      if (isLocked) {
+                      const success = setTheme(t.id);
+                      if (!success) {
                         navigate('/premium');
-                        return;
                       }
-                      setTheme(t.id);
                     }}
                     style={{
                       background: t.bg,
-                      border: isActive ? `2px solid ${t.primary}` : '1px solid rgba(255,255,255,0.05)',
+                      border: isActive ? `2px solid ${t.primary}` : '1px solid var(--border)',
                       borderRadius: '16px',
                       padding: '16px',
                       cursor: 'pointer',
@@ -452,7 +451,8 @@ function Settings() {
                       gap: '12px',
                       minHeight: '100px',
                       boxShadow: isActive ? `0 0 20px ${t.primary}30` : 'none',
-                      opacity: isLocked ? 0.7 : 1
+                      opacity: isLocked ? 0.6 : 1,
+                      transition: 'all 0.3s ease'
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -21,8 +21,8 @@ const staggerContainer = {
 const cardHover = {
   hover: { 
     y: -8,
-    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(139, 92, 246, 0.2)',
-    borderColor: 'rgba(139, 92, 246, 0.5)',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px var(--primary-glow)',
+    borderColor: 'var(--primary-light)',
     transition: { duration: 0.4, ease: "easeOut" }
   }
 };
@@ -72,9 +72,9 @@ function Home() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              background: 'rgba(139, 92, 246, 0.12)',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
-              color: '#a78bfa',
+              background: 'var(--surface-glass)',
+              border: '1px solid var(--border)',
+              color: 'var(--primary-light)',
               padding: '8px 18px',
               borderRadius: '20px',
               fontSize: '12px',
@@ -90,7 +90,7 @@ function Home() {
               style={{
                 width: '7px',
                 height: '7px',
-                background: '#a78bfa',
+                background: 'var(--primary-light)',
                 borderRadius: '50%',
                 display: 'inline-block'
               }}
@@ -104,7 +104,7 @@ function Home() {
             marginBottom: '16px', 
             letterSpacing: '-0.02em', 
             lineHeight: '1.15',
-            background: 'linear-gradient(135deg, #f8fafc 0%, #a78bfa 100%)', 
+            background: 'linear-gradient(135deg, var(--text-main) 0%, var(--primary-light) 100%)', 
             WebkitBackgroundClip: 'text', 
             WebkitTextFillColor: 'transparent',
             wordBreak: 'break-word'
@@ -113,7 +113,7 @@ function Home() {
           </h1>
           <p style={{ 
             fontSize: 'clamp(14px, 3.5vw, 18px)', 
-            color: '#94a3b8', 
+            color: 'var(--text-dim)', 
             maxWidth: '500px', 
             margin: '0 auto 32px', 
             lineHeight: '1.7',
@@ -135,14 +135,14 @@ function Home() {
                 alignItems: 'center',
                 gap: '10px',
                 padding: '16px 32px',
-                background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
+                background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
                 border: 'none',
                 borderRadius: '16px',
-                color: '#f8fafc',
+                color: 'var(--text-on-primary)',
                 fontSize: 'clamp(14px, 4vw, 18px)',
                 fontWeight: '800',
                 cursor: 'pointer',
-                boxShadow: '0 10px 30px rgba(139, 92, 246, 0.4)',
+                boxShadow: '0 10px 30px var(--primary-glow)',
                 transition: 'all 0.3s ease',
                 width: '100%',
                 justifyContent: 'center',
@@ -157,7 +157,7 @@ function Home() {
               onClick={() => setAuthModalOpen(true)}
               style={{
                 background: 'transparent',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
+                border: '1px solid var(--border)',
                 color: 'var(--text-main)',
                 padding: '12px 24px',
                 borderRadius: '14px',
@@ -223,8 +223,8 @@ function Home() {
               <div 
                 key={idx}
                 style={{
-                  background: 'rgba(30, 41, 59, 0.4)',
-                  border: '1px solid rgba(139, 92, 246, 0.2)',
+                  background: 'var(--surface-glass)',
+                  border: '1px solid var(--border)',
                   borderRadius: '16px',
                   padding: '20px',
                   textAlign: 'left',
@@ -297,10 +297,10 @@ function Home() {
             gap: 24px !important;
             text-align: left !important;
             align-items: flex-start !important;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(15, 23, 42, 0.4) 100%) !important;
+            background: linear-gradient(135deg, var(--primary-glow) 0%, var(--bg-primary) 100%) !important;
             border-radius: 0 0 32px 32px !important;
             border: none !important;
-            border-bottom: 1px solid rgba(139, 92, 246, 0.2) !important;
+            border-bottom: 1px solid var(--border) !important;
             margin-top: -8px !important;
           }
           .hero-welcome {
@@ -322,7 +322,7 @@ function Home() {
             align-items: center !important;
             justify-content: space-between !important;
             padding: 16px 20px !important;
-            background: rgba(139, 92, 246, 0.1) !important;
+            background: var(--surface) !important;
             border-radius: 16px !important;
           }
           #hero-overall-perc {
@@ -390,7 +390,7 @@ function Home() {
             left: '5%',
             width: '500px',
             height: '500px',
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)',
             borderRadius: '50%',
             filter: 'blur(80px)'
           }}
@@ -404,7 +404,7 @@ function Home() {
             right: '5%',
             width: '600px',
             height: '600px',
-            background: 'radial-gradient(circle, rgba(168, 85, 247, 0.06) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)',
             borderRadius: '50%',
             filter: 'blur(100px)'
           }}
@@ -416,8 +416,8 @@ function Home() {
         variants={fadeInUp}
         className="dashboard-hero" 
         style={{
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-glass) 100%)',
+          border: '1px solid var(--border)',
           borderRadius: '24px',
           padding: '48px',
           display: 'flex',
@@ -425,7 +425,7 @@ function Home() {
           alignItems: 'center',
           gap: '40px',
           backdropFilter: 'blur(10px)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+          boxShadow: 'var(--shadow-md)'
         }}
       >
         <div className="hero-welcome">
@@ -476,8 +476,6 @@ function Home() {
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 2, repeat: Infinity }}
             id="overall-trend" 
-            style={{ marginTop: '12px', fontSize: '12px', color: '#10b981', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
-          >
             <span>↑</span> 2.4% from last week
           </motion.div>
         </motion.div>
@@ -498,9 +496,9 @@ function Home() {
       >
         {[
           { label: 'Total Subjects', value: dashboardStats.totalSubjects, color: 'var(--primary-light)', icon: '📚' },
-          { label: 'Day Streak', value: dashboardStats.streak, color: '#f59e0b', icon: '🔥' },
-          { label: 'Safe', value: dashboardStats.safeSubjects, color: '#10b981', icon: '🛡️' },
-          { label: 'Critical', value: dashboardStats.criticalSubjects, color: '#ef4444', icon: '🚨' }
+          { label: 'Day Streak', value: dashboardStats.streak, color: 'var(--warning)', icon: '🔥' },
+          { label: 'Safe', value: dashboardStats.safeSubjects, color: 'var(--success)', icon: '🛡️' },
+          { label: 'Critical', value: dashboardStats.criticalSubjects, color: 'var(--danger)', icon: '🚨' }
         ].map((stat, i) => (
           <motion.div 
             key={i}
@@ -539,8 +537,8 @@ function Home() {
         }}
       >
         <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="prediction-card" style={{
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)',
-          border: '1px solid rgba(16, 185, 129, 0.2)',
+          background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-glass) 100%)',
+          border: '1px solid var(--border)',
           borderRadius: '24px',
           padding: '28px',
           backdropFilter: 'blur(10px)'
@@ -563,7 +561,7 @@ function Home() {
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <div style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#f59e0b', color: 'white', fontSize: '10px', fontWeight: '900', padding: '4px 12px', borderRadius: '100px', transform: 'rotate(5deg)' }}>PLUS AI</div>
+            <div style={{ position: 'absolute', top: '-10px', right: '-10px', background: 'var(--warning)', color: 'white', fontSize: '10px', fontWeight: '900', padding: '4px 12px', borderRadius: '100px', transform: 'rotate(5deg)' }}>PLUS AI</div>
             <div className="pred-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
               <span className="pred-icon" style={{ fontSize: '28px' }}>🔮</span>
               <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--primary-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Prediction</span>
@@ -575,8 +573,8 @@ function Home() {
           </motion.div>
         ) : (
           <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="prediction-card" style={{
-            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)',
-            border: '1px solid rgba(239, 68, 68, 0.2)',
+            background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-glass) 100%)',
+            border: '1px solid var(--border)',
             borderRadius: '24px',
             padding: '28px',
             backdropFilter: 'blur(10px)'

@@ -422,15 +422,15 @@ function Calendar() {
                 onClick={() => day && handleDateClick(day)}
                 style={{
                   background: isSelected 
-                    ? 'rgba(139, 92, 246, 0.3)' 
-                    : visualState?.color ? `${visualState.color}15` : 'rgba(255,255,255,0.02)',
+                    ? 'var(--primary-glow)' 
+                    : visualState?.color ? `${visualState.color}15` : 'var(--surface-bright)',
                   border: isSelected
                     ? '2px solid var(--primary-light)'
                     : isToday
                     ? '2px solid var(--primary-light)'
                     : visualState?.color
                     ? `2px solid ${visualState.color}40`
-                    : '1px solid var(--primary-glow)',
+                    : '1px solid var(--border)',
                   borderRadius: '12px',
                   padding: '12px',
                   minHeight: '100px',
@@ -493,15 +493,15 @@ function Calendar() {
         justifyContent: 'center',
         flexWrap: 'wrap',
         padding: '16px',
-        background: 'rgba(139, 92, 246, 0.05)',
+        background: 'var(--primary-glow)',
         borderRadius: '12px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
-          <div style={{ width: '12px', height: '12px', background: '#10b981', borderRadius: '3px' }} />
+          <div style={{ width: '12px', height: '12px', background: 'var(--success)', borderRadius: '3px' }} />
           <span>Present</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
-          <div style={{ width: '12px', height: '12px', background: '#ef4444', borderRadius: '3px' }} />
+          <div style={{ width: '12px', height: '12px', background: 'var(--danger)', borderRadius: '3px' }} />
           <span>Absent</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
@@ -538,7 +538,7 @@ function Calendar() {
             animate={{ scale: 1, y: 0 }}
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%)',
+              background: 'linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-primary) 100%)',
               border: '1px solid var(--primary-glow)',
               borderRadius: '20px',
               padding: '32px',
@@ -583,7 +583,7 @@ function Calendar() {
                   whileHover={{ scale: 1.05 }}
                   onClick={() => handleMarkAllForDate('present')}
                   style={{
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    background: 'linear-gradient(135deg, var(--success) 0%, #059669 100%)',
                     color: 'var(--text-main)',
                     border: 'none',
                     padding: '12px',

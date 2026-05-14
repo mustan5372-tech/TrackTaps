@@ -92,8 +92,8 @@ function Timetable() {
 
       {/* Timetable Grid */}
       <div className="timetable-grid-container" style={{
-        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%)',
-        border: '1px solid rgba(139, 92, 246, 0.15)',
+        background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-glass) 100%)',
+        border: '1px solid var(--border)',
         borderRadius: '20px',
         padding: '24px',
         overflow: 'auto'
@@ -164,10 +164,10 @@ function Timetable() {
                     style={{
                       background: cellContent
                         ? `linear-gradient(135deg, ${cellContent.color}20 0%, ${cellContent.color}10 100%)`
-                        : 'rgba(255,255,255,0.02)',
+                        : 'var(--surface-bright)',
                       border: cellContent
                         ? `2px solid ${cellContent.color}40`
-                        : '1px solid var(--primary-glow)',
+                        : '1px solid var(--border)',
                       borderRadius: '12px',
                       padding: '12px',
                       minHeight: '80px',
@@ -260,8 +260,8 @@ function Timetable() {
             animate={{ scale: 1, y: 0 }}
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%)',
-              border: '1px solid var(--primary-glow)',
+              background: 'linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-primary) 100%)',
+              border: '1px solid var(--border)',
               borderRadius: '20px',
               padding: '32px',
               maxWidth: '500px',

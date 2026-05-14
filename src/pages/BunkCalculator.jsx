@@ -41,9 +41,9 @@ function BunkCalculator() {
   const selectedSubject = subjects.find(s => s.id === selectedSubjectId);
 
   const getStatusColor = (percentage) => {
-    if (percentage >= 75) return '#10b981';
-    if (percentage >= 65) return '#f59e0b';
-    return '#ef4444';
+    if (percentage >= 75) return 'var(--success)';
+    if (percentage >= 65) return 'var(--warning)';
+    return 'var(--danger)';
   };
 
   return (
@@ -83,7 +83,7 @@ function BunkCalculator() {
         .premium-lock-overlay {
           position: absolute;
           inset: 0;
-          background: rgba(15, 23, 42, 0.85);
+          background: 'var(--bg-primary)';
           backdrop-filter: blur(12px);
           display: flex;
           flex-direction: column;
@@ -135,8 +135,8 @@ function BunkCalculator() {
             onChange={(e) => setSelectedSubjectId(e.target.value)}
             style={{
               width: '100%',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'var(--surface-bright)',
+              border: '1px solid var(--border)',
               borderRadius: '16px',
               padding: '16px',
               color: 'var(--text-main)',
@@ -196,14 +196,14 @@ function BunkCalculator() {
               transition={{ duration: 0.3 }}
             >
               <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '32px' }}>
-                <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ padding: '20px', background: 'var(--surface)', borderRadius: '20px', border: '1px solid var(--border)' }}>
                   <div style={{ fontSize: '12px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '8px' }}>Current Attendance</div>
                   <div style={{ fontSize: '32px', fontWeight: '800', color: getStatusColor(selectedStats.percentage) }}>{selectedStats.percentage}%</div>
                   <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>{selectedStats.present} / {selectedStats.total} classes</div>
                 </div>
-                <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ padding: '20px', background: 'var(--surface)', borderRadius: '20px', border: '1px solid var(--border)' }}>
                   <div style={{ fontSize: '12px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '8px' }}>Safe to Bunk</div>
-                  <div style={{ fontSize: '32px', fontWeight: '800', color: selectedStats.bunkableNow > 0 ? '#10b981' : '#ef4444' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '800', color: selectedStats.bunkableNow > 0 ? 'var(--success)' : 'var(--danger)' }}>
                     {selectedStats.bunkableNow} <span style={{ fontSize: '16px' }}>Classes</span>
                   </div>
                   <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Until you hit {selectedSubject?.criteria || 75}%</div>
@@ -226,7 +226,7 @@ function BunkCalculator() {
                   <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '14px', color: 'var(--text-main)' }}>Must attend to reach {selectedSubject?.criteria || 75}%:</span>
-                    <span style={{ fontSize: '16px', fontWeight: '800', color: '#10b981' }}>{selectedStats.mustAttend} Classes</span>
+                    <span style={{ fontSize: '16px', fontWeight: '800', color: 'var(--success)' }}>{selectedStats.mustAttend} Classes</span>
                   </div>
                 </div>
               </div>
