@@ -8,23 +8,9 @@ import {
 } from "firebase/auth";
 import { auth, googleProvider } from "./firebase";
 
-// Enhanced native platform detection for Remote URL apps
+// Conservative detection: Only use Native plugin if the bridge is definitely available
 const isNativeAPK = () => {
-  const isCapacitorGlobal = !!window.Capacitor?.isNativePlatform();
-  const isCapacitorUA = navigator.userAgent.includes('Capacitor');
-  const isCapacitorProtocol = window.location.protocol === 'capacitor:';
-  
-  const isNative = isCapacitorGlobal || isCapacitorUA || isCapacitorProtocol;
-  
-  console.log("🔍 [Auth] Environment Detection:", {
-    isCapacitorGlobal,
-    isCapacitorUA,
-    isCapacitorProtocol,
-    isNative,
-    userAgent: navigator.userAgent
-  });
-  
-  return isNative;
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform());
 };
 
 const isMobileBrowser = () => {
@@ -51,15 +37,13 @@ const authService = {
       if (!auth.app) throw new Error("Firebase not initialized");
 
       const isAPK = isNativeAPK();
-      const isMobileWeb = isMobileBrowser();
-      
-      console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : (isMobileWeb ? 'MOBILE WEB' : 'DESKTOP')}`);
+      console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : 'WEB'}`);
       
       await authService.init();
 
       if (isAPK) {
         // --- 1. NATIVE APK FLOW (Native Plugin) ---
-        console.log("🚀 [Auth] Using Capacitor Native Auth...");
+        console.log("🚀 [Auth] Using Capacitor Native Auth plugin...");
         const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
         try { await GoogleAuth.initialize(); } catch (e) {}
 
@@ -73,29 +57,15 @@ const authService = {
         throw new Error("Native Auth failed to return ID Token.");
 
       } else {
-        // --- 2. WEB FLOW (Popup with Redirect Fallback) ---
-        console.log("🌐 [Auth] Attempting Web Popup Login...");
-        const { signInWithPopup, signInWithRedirect } = await import("firebase/auth");
-        
-        try {
-          // Popup is generally more reliable for custom domains if not blocked
-          const result = await signInWithPopup(auth, googleProvider);
-          console.log("✅ [Auth] Popup Login Success:", result.user.email);
-          return result.user;
-        } catch (error) {
-          if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
-            console.warn("⚠️ [Auth] Popup failed/blocked, falling back to Redirect...");
-            await signInWithRedirect(auth, googleProvider);
-            return null;
-          }
-          throw error;
-        }
+        // --- 2. WEB FLOW (Original Stable Version) ---
+        // Restore to the exact logic that was "working fine" before
+        console.log("🌐 [Auth] Using standard Firebase Web Popup...");
+        const { signInWithPopup } = await import("firebase/auth");
+        const result = await signInWithPopup(auth, googleProvider);
+        return result.user;
       }
     } catch (error) {
       console.error("❌ [Auth] Google Login Failure:", error);
-      if (error.message?.includes('10') || error.message?.includes('DEVELOPER_ERROR')) {
-        alert("🔒 Auth Error: Please ensure your SHA-1 and Client ID are correctly configured in Firebase.");
-      }
       throw error;
     }
   },
@@ -121,7 +91,6 @@ const authService = {
       return null;
     } catch (error) {
       console.error("❌ [Auth] getRedirectResult Error:", error.code, error.message);
-      // alert("Auth Redirect Error: " + error.message); // Helpful for mobile debugging
       return null;
     }
   },
