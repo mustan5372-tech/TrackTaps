@@ -8,31 +8,52 @@ class AttendanceEngine {
   /**
    * Generate calendar events from timetable
    * Creates recurring weekly events for each timetable entry
+   * FIX: Ensures that events are generated for the ENTIRE semester range
+   * independently of when a subject was added to the system.
    */
   static generateCalendarEventsFromTimetable(timetableData, subjects, semesterSettings = {}) {
     const events = [];
     const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
-    const startDate = semesterSettings.startDate ? this.parseDate(semesterSettings.startDate) : new Date();
-    const endDate = semesterSettings.endDate ? this.parseDate(semesterSettings.endDate) : new Date(startDate.getFullYear(), startDate.getMonth() + 4, startDate.getDate());
+    // CRITICAL: Ensure we have a valid start and end date from semester settings
+    // If missing, we default to today, but the UI should ensure these are set.
+    const semesterStartStr = semesterSettings.startDate;
+    const semesterEndStr = semesterSettings.endDate;
+
+    if (!semesterStartStr) {
+      console.warn("⚠️ [AttendanceEngine] semesterSettings.startDate is missing! Defaulting to today.");
+    }
+
+    const startDate = semesterStartStr ? this.parseDate(semesterStartStr) : new Date();
+    const endDate = semesterEndStr ? this.parseDate(semesterEndStr) : new Date(startDate.getFullYear(), startDate.getMonth() + 4, startDate.getDate());
+    
     const holidays = semesterSettings.holidays || [];
     const examPeriods = semesterSettings.examPeriods || [];
     const workingSaturdays = semesterSettings.workingSaturdays || [];
+
+    console.log("📅 [AttendanceEngine] Generating events from", this.formatDate(startDate), "to", this.formatDate(endDate));
 
     Object.entries(timetableData).forEach(([cellKey, subjectData]) => {
       const [dayIdx, timeSlot] = cellKey.split('-');
       const dayNum = parseInt(dayIdx);
       const dayName = days[dayNum];
 
-      // Find subject details
+      // Find subject details for metadata (color, code, etc.)
       const subject = subjects.find(s => s.name === subjectData.name);
 
+      // We start from the absolute beginning of the semester
       let currentDate = new Date(startDate);
-      // Find first occurrence of this day
-      while (currentDate.getDay() !== (dayNum + 1) % 7) {
+      
+      // Find first occurrence of this weekday starting from semester start
+      // getDay(): 0=Sun, 1=Mon, ..., 6=Sat
+      // our dayNum: 0=Mon, 1=Tue, ..., 6=Sun
+      const targetDay = (dayNum + 1) % 7; 
+      
+      while (currentDate.getDay() !== targetDay) {
         currentDate.setDate(currentDate.getDate() + 1);
       }
 
+      // Generate events for every week until the end of the semester
       while (currentDate <= endDate) {
         const dateStr = this.formatDate(currentDate);
         
@@ -48,6 +69,9 @@ class AttendanceEngine {
 
         if (!isHoliday && !isExamPeriod) {
           const eventId = `${dateStr}-${dayNum}-${timeSlot}`;
+          
+          // CRITICAL FIX: We do NOT check subject.createdAt here.
+          // The event is created as long as it's in the timetable and within semester dates.
           events.push({
             id: eventId,
             date: dateStr,
@@ -67,20 +91,15 @@ class AttendanceEngine {
         currentDate.setDate(currentDate.getDate() + 7);
       }
 
-      // 3. Handle Working Saturdays (if the day index corresponds to Saturday)
-      // Actually, if it's a working Saturday, we usually follow a specific day's timetable (e.g., "Monday Timetable on Saturday")
-      // But for simplicity, we'll assume classes on Saturdays are added explicitly to the timetable if they are regular
-      // If they are one-offs, we check workingSaturdays.
+      // 3. Handle Working Saturdays
       workingSaturdays.forEach(ws => {
-        const wsDate = this.parseDate(ws.date);
-        // If this ws follows this day's schedule
         if (ws.followsDay === dayNum) {
           const dateStr = ws.date;
           const eventId = `${dateStr}-${dayNum}-${timeSlot}-ws`;
           events.push({
             id: eventId,
             date: dateStr,
-            dayOfWeek: 5, // Saturday is 5 in 0-6 Mon-Sun
+            dayOfWeek: 5, // Saturday
             dayName: 'SAT',
             timeSlot: timeSlot,
             subjectName: subjectData.name,
@@ -95,7 +114,8 @@ class AttendanceEngine {
       });
     });
 
-    return events;
+    // Sort events by date and time for consistency
+    return events.sort((a, b) => a.date.localeCompare(b.date) || a.timeSlot.localeCompare(b.timeSlot));
   }
 
   /**
@@ -113,26 +133,19 @@ class AttendanceEngine {
     const today = this.formatDate(new Date());
     const remainingClasses = subjectEvents.filter(e => e.date >= today && !this.getAttendanceState(e.id, attendanceData)).length;
     
-    const target = subject?.criteria || 75;
+    const target = Number(subject?.criteria) || 75;
+    const conducted = Number(stats.total) || 0;
+    const present = Number(stats.present) || 0;
+
+    // ─── SAFE BUNK CALCULATION (USER FORMULA) ───────────────────────────────
+    // Formula: floor((attended * 100) / threshold - total)
+    const safeBunks = Math.max(0, Math.floor((present * 100) / target - conducted));
+
+    const bunkableNow = safeBunks;
     
-    // Bunk Calculation: How many future classes can be missed while staying above target?
-    // Formula: (Present) / (Conducted + Remaining - Missable) >= Target%
-    // Let M be missable classes: M <= Conducted + Remaining - (Present / Target)
-    
-    const conducted = stats.total;
-    const present = stats.present;
-    
-    // Max missable classes total in semester to stay at target
-    // target = present / (totalPlanned - missable)
-    // missable = totalPlanned - (present / (target/100))
-    const maxMissableTotal = Math.floor(totalPlanned - (present / (target / 100)));
-    
-    // Bunkable now = maxMissableTotal - (conducted - present)
-    const bunkableNow = Math.max(0, maxMissableTotal - stats.absent);
-    
-    // Must attend: If bunkable is 0, how many more must be attended to reach target?
+    // ─── MUST ATTEND CALCULATION ───────────────────────────────────────────
     let mustAttend = 0;
-    if (stats.percentage < target) {
+    if (conducted > 0 && (present / conducted) * 100 < target) {
       mustAttend = Math.ceil((target * conducted - 100 * present) / (100 - target));
     }
 
@@ -144,10 +157,10 @@ class AttendanceEngine {
       mustAttend,
       target,
       prediction: {
-        ifMissNext1: conducted > 0 ? Math.round((present / (conducted + 1)) * 100) : 0,
-        ifMissNext2: conducted > 0 ? Math.round((present / (conducted + 2)) * 100) : 0,
-        ifAttendNext1: Math.round(((present + 1) / (conducted + 1)) * 100),
-        ifAttendNext2: Math.round(((present + 2) / (conducted + 2)) * 100)
+        ifMissNext1: (conducted + 1) > 0 ? Math.round((present / (conducted + 1)) * 100) : 0,
+        ifAttendNext1: (conducted + 1) > 0 ? Math.round(((present + 1) / (conducted + 1)) * 100) : 0,
+        ifMissNext2: (conducted + 2) > 0 ? Math.round((present / (conducted + 2)) * 100) : 0,
+        ifAttendNext2: (conducted + 2) > 0 ? Math.round(((present + 2) / (conducted + 2)) * 100) : 0
       }
     };
   }
@@ -161,7 +174,6 @@ class AttendanceEngine {
 
   /**
    * Mark attendance for a specific event
-   * States: 'present', 'absent', 'off', null (unmarked)
    */
   static markAttendance(eventId, state, attendanceData) {
     const newData = { ...attendanceData };
@@ -170,7 +182,7 @@ class AttendanceEngine {
     }
 
     newData[eventId] = {
-      state: state, // 'present', 'absent', 'off', null
+      state: state,
       timestamp: new Date().toISOString(),
       markedAt: new Date().toLocaleString()
     };
@@ -223,9 +235,17 @@ class AttendanceEngine {
     const subjectEvents = calendarEvents.filter(e => e.subjectName === subjectName);
     const subject = subjects.find(s => s.name === subjectName);
 
-    // Baseline from Pod.ai or other imports - ensure numeric
-    let present = Number(subject?.initialPresent) || 0;
-    let total = Number(subject?.initialTotal) || 0;
+    // Baseline stats - ensure numeric and handle potential string formats from Pod.ai
+    const parseValue = (val) => {
+      if (typeof val === 'string' && val.includes('%')) {
+        return parseFloat(val.replace('%', ''));
+      }
+      const num = Number(val);
+      return isNaN(num) ? 0 : num;
+    };
+
+    let present = parseValue(subject?.initialPresent ?? subject?.present ?? 0);
+    let total = parseValue(subject?.initialTotal ?? subject?.total ?? 0);
     
     let tracktapsPresent = 0;
     let tracktapsAbsent = 0;
@@ -325,7 +345,6 @@ class AttendanceEngine {
       else unmarkedCount++;
     });
 
-    // Determine visual state
     if (unmarkedCount > 0) {
       return { type: 'unmarked', color: '#94a3b8', label: `${unmarkedCount} unmarked` };
     }
@@ -457,7 +476,6 @@ class AttendanceEngine {
     const stats = this.calculateOverallStats(subjects, calendarEvents, attendanceData);
     const insights = [];
 
-    // Critical subjects
     stats.subjectStats.forEach(stat => {
       if (stat.status === 'critical') {
         const target = 75;
@@ -472,7 +490,6 @@ class AttendanceEngine {
       }
     });
 
-    // Safe subjects
     const safeCount = stats.subjectStats.filter(s => s.status === 'safe').length;
     if (safeCount > 0) {
       insights.push({
@@ -482,7 +499,6 @@ class AttendanceEngine {
       });
     }
 
-    // Overall status
     if (stats.overallPercentage < 65) {
       insights.push({
         type: 'warning',

@@ -34,30 +34,26 @@ function MobileHeader() {
         />
       </div>
       
-      {/* CENTER: APK Button */}
+      {/* CENTER: APK Button (Disabled) */}
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={downloadFile}
+        <div
           style={{
-            background: 'rgba(139, 92, 246, 0.12)',
-            border: '1px solid rgba(139, 92, 246, 0.25)',
-            color: 'var(--primary-light)',
-            padding: '7px 16px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px dashed rgba(255, 255, 255, 0.1)',
+            color: 'var(--text-dim)',
+            padding: '7px 12px',
             borderRadius: '100px',
-            fontSize: '11px',
+            fontSize: '9px',
             fontWeight: '800',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            backdropFilter: 'blur(12px)',
-            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-            letterSpacing: '0.02em'
+            gap: '6px',
+            opacity: 0.8
           }}
         >
-          <span style={{ fontSize: '14px' }}>🤖</span> 
-          <span>APK</span>
-        </motion.button>
+          <span style={{ fontSize: '12px' }}>⏳</span> 
+          <span>SOON</span>
+        </div>
       </div>
  
       {/* RIGHT: Login Button or Premium Status */}

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 
 function Subjects() {
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [editingIdx, setEditingIdx] = useState(null);
   const [formData, setFormData] = useState({
@@ -146,36 +148,20 @@ function Subjects() {
       <style>{`
         @media (max-width: 768px) {
           .subjects-view {
-            padding: 4px 12px 100px 12px !important;
+            padding: 8px 0 120px 0 !important;
           }
           .view-header {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 16px !important;
-          }
-          .view-header h2 {
-            font-size: 24px !important;
-          }
-          .view-header > div {
-            width: 100% !important;
-            align-items: stretch !important;
-          }
-          .view-header > div > div {
-            flex-direction: column !important;
-            gap: 10px !important;
-          }
-          .action-btn, .primary-btn {
-            width: 100% !important;
-            justify-content: center !important;
-            padding: 14px !important;
+            padding: 24px 20px !important;
+            background: var(--bg-primary) !important;
+            border-bottom: 1px solid var(--border) !important;
+            margin-bottom: 12px !important;
           }
           .subjects-grid {
-            grid-template-columns: 1fr !important;
-            gap: 12px !important;
+            padding: 0 16px !important;
+            gap: 16px !important;
           }
           .subject-card {
-            padding: 16px !important;
-            border-radius: 20px !important;
+            padding: 20px !important;
           }
         }
       `}</style>
@@ -263,6 +249,23 @@ function Subjects() {
               key={idx}
               className="subject-card"
               onClick={() => handleEditSubject(idx)}
+              onMouseEnter={() => {
+                const stats = subjectStats?.[subject.id];
+                const present = stats?.present ?? Number(subject.initialPresent || subject.present || 0);
+                const total = stats?.total ?? Number(subject.initialTotal || subject.total || 0);
+                const threshold = subject.criteria || 75;
+                const isPremium = subscription?.status === 'active';
+                const safeBunks = Math.max(0, Math.floor((present * 100) / threshold - total));
+                
+                console.log("📊 [SubjectCardDebug]", {
+                  subjectName: subject.name,
+                  attended: present,
+                  total: total,
+                  threshold: threshold,
+                  isPremium: isPremium,
+                  safeBunks: safeBunks
+                });
+              }}
               style={{
                 background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.05) 100%)',
                 border: '1px solid var(--primary-glow)',
@@ -312,35 +315,75 @@ function Subjects() {
                 padding: '12px', 
                 background: 'rgba(15, 23, 42, 0.4)', 
                 borderRadius: '12px',
-                border: '1px solid var(--primary-glow)'
+                border: '1px solid var(--primary-glow)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
               }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bunk Prediction</div>
+                   {subscription?.status === 'active' ? (
+                     <div style={{ 
+                       fontSize: '12px', 
+                       fontWeight: '800', 
+                       color: (semesterStats?.[subject.id]?.bunkableNow > 0) ? '#10b981' : 'var(--text-dim)' 
+                     }}>
+                       {semesterStats?.[subject.id]?.bunkableNow || 0} Classes Safe
+                     </div>
+                   ) : (
+                     <span style={{ fontSize: '9px', background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '2px 6px', borderRadius: '4px', fontWeight: '800' }}>PLUS</span>
+                   )}
+                </div>
+                
                 {subscription?.status === 'active' ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bunkable Now</div>
-                      <div style={{ fontSize: '16px', fontWeight: '800', color: semesterStats?.[subject.id]?.bunkableNow > 0 ? '#10b981' : '#ef4444' }}>
-                        {semesterStats?.[subject.id]?.bunkableNow || 0} Classes
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Semester Total</div>
-                      <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-main)' }}>
-                        {semesterStats?.[subject.id]?.totalPlanned || 0} Planned
-                      </div>
-                    </div>
-                    <div style={{ gridColumn: '1 / -1', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>TRAJECTORY</div>
-                      <div style={{ display: 'flex', gap: '8px', fontSize: '11px' }}>
-                        <span style={{ color: '#ef4444' }}>Miss 1: {semesterStats?.[subject.id]?.prediction?.ifMissNext1 ?? 0}%</span>
-                        <span style={{ color: 'var(--text-muted)' }}>|</span>
-                        <span style={{ color: '#10b981' }}>Attend 1: {semesterStats?.[subject.id]?.prediction?.ifAttendNext1 ?? 0}%</span>
-                      </div>
-                    </div>
-                  </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/bunk-calculator?subjectId=${subject.id}`);
+                    }}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(139, 92, 246, 0.1)',
+                      border: '1px solid var(--primary-glow)',
+                      borderRadius: '8px',
+                      padding: '8px',
+                      color: 'var(--primary-light)',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>🏖️</span> Smart Bunk Planner
+                  </button>
                 ) : (
-                  <div style={{ textAlign: 'center', py: '4px' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--primary-light)', fontWeight: '700' }}>✨ UNLOCK BUNK PREDICTIONS</div>
-                    <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Get TrackTaps Plus to plan your semester bunking.</div>
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/premium');
+                    }}
+                    style={{
+                      width: '100%',
+                      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
+                      border: '1px solid var(--primary-glow)',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      color: 'var(--text-main)',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px'
+                    }}
+                  >
+                    <div style={{ color: 'var(--primary-light)', fontWeight: '800', fontSize: '12px' }}>💎 Unlock Premium</div>
+                    <div style={{ opacity: 0.8, fontSize: '10px' }}>Calculate safe bunks instantly</div>
                   </div>
                 )}
               </div>

@@ -170,12 +170,17 @@ function Settings() {
         }
         @media (max-width: 768px) {
           .settings-view {
-            padding: 8px var(--mobile-side-padding) 120px var(--mobile-side-padding) !important;
-            gap: 20px !important;
+            padding: 8px 0 120px 0 !important;
+          }
+          .view-header {
+            padding: 24px 20px !important;
+            background: var(--bg-primary) !important;
+            border-bottom: 1px solid var(--border) !important;
+            margin-bottom: 0px !important;
           }
           .settings-grid {
             grid-template-columns: 1fr !important;
-            padding: 0 !important;
+            padding: 0 16px !important;
             gap: 16px !important;
           }
           .dashboard-card {

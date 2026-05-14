@@ -682,6 +682,9 @@ const useAppStore = create(
           // Update subject stats
           get().updateSubjectStats();
           
+          // Update semester stats (bunk counts)
+          get().updateSemesterStats();
+          
           // Update dashboard
           get().updateDashboardStats();
           
@@ -706,6 +709,7 @@ const useAppStore = create(
           set({ attendanceData: newData });
           
           get().updateSubjectStats();
+          get().updateSemesterStats();
           get().updateDashboardStats();
           
           const stateLabel = state === 'present' ? 'Present' : state === 'absent' ? 'Absent' : 'Off';
@@ -725,6 +729,7 @@ const useAppStore = create(
           set({ attendanceData: newData });
           
           get().updateSubjectStats();
+          get().updateSemesterStats();
           get().updateDashboardStats();
           
           const event = get().calendarEvents.find(e => e.id === eventId);

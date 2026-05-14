@@ -149,72 +149,87 @@ function Calendar() {
 
   const eventsForSelectedDate = selectedDate ? AttendanceEngine.getEventsForDate(selectedDate, calendarEvents) : [];
 
+  // 📝 DEBUG LOGGING FOR HISTORICAL ATTENDANCE (AS REQUESTED)
+  if (selectedDate) {
+    const semesterStart = semesterSettings?.startDate;
+    const semesterEnd = semesterSettings?.endDate;
+    const weekday = AttendanceEngine.getDayName(selectedDate);
+    const holidayStatus = semesterSettings?.holidays?.some(h => h.date === selectedDate);
+    
+    console.log("🔍 [HistoricalAttendanceDebug]", {
+      selectedDate,
+      semesterStart,
+      semesterEnd,
+      weekday,
+      holidayStatus,
+      eventCount: eventsForSelectedDate.length,
+      shouldShowClass: eventsForSelectedDate.length > 0
+    });
+  }
+
   return (
     <div className="calendar-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <style>{`
         @media (max-width: 768px) {
           .calendar-view {
-            padding: 4px 12px 100px 12px !important;
+            padding: 8px 0 120px 0 !important;
             gap: 16px !important;
           }
           .view-header {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 16px !important;
-          }
-          .view-header h2 {
-            font-size: 24px !important;
-          }
-          .view-header > div {
-            width: 100% !important;
-            justify-content: space-between !important;
+            padding: 24px 20px !important;
+            background: var(--bg-primary) !important;
+            border-bottom: 1px solid var(--border) !important;
+            margin-bottom: 0px !important;
           }
           .calendar-grid-container {
-            padding: 16px 10px !important;
+            padding: 16px 8px !important;
+            border-radius: 0 !important;
+            border-left: none !important;
+            border-right: none !important;
+            background: transparent !important;
           }
           .calendar-weekday-headers {
             gap: 4px !important;
             margin-bottom: 8px !important;
           }
           .calendar-weekday-headers > div {
-            padding: 8px 4px !important;
+            padding: 4px !important;
             font-size: 10px !important;
           }
           .calendar-days-grid {
-            gap: 6px !important;
+            gap: 4px !important;
           }
           .calendar-day-cell {
             padding: 8px 4px !important;
-            min-height: 70px !important;
+            min-height: 80px !important;
             border-radius: 12px !important;
           }
           .calendar-day-number {
-            font-size: 15px !important;
+            font-size: 16px !important;
           }
           .calendar-day-label {
             font-size: 8px !important;
+            line-height: 1.1 !important;
           }
           .calendar-day-count {
             font-size: 8px !important;
           }
           .multi-select-toolbar {
-             padding: 12px !important;
+             position: fixed !important;
+             bottom: 100px !important;
+             left: 16px !important;
+             right: 16px !important;
+             padding: 16px !important;
              flex-direction: column !important;
-             gap: 12px !important;
-          }
-          .multi-select-toolbar > div {
-             width: 100% !important;
-             justify-content: center !important;
+             gap: 16px !important;
+             background: rgba(15, 23, 42, 0.95) !important;
+             backdrop-filter: blur(20px) !important;
           }
           .batch-actions {
              display: grid !important;
              grid-template-columns: repeat(4, 1fr) !important;
-             gap: 6px !important;
+             gap: 8px !important;
              width: 100% !important;
-          }
-          .batch-actions button {
-             padding: 10px 4px !important;
-             font-size: 10px !important;
           }
         }
       `}</style>

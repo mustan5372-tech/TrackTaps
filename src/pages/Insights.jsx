@@ -34,7 +34,26 @@ function Insights() {
   };
 
   return (
-    <div className="insights-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '100px' }}>
+    <div className="insights-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '120px' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .insights-view {
+            padding: 8px 0 120px 0 !important;
+          }
+          .view-header {
+            padding: 24px 20px !important;
+            background: var(--bg-primary) !important;
+            border-bottom: 1px solid var(--border) !important;
+            margin-bottom: 0px !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 16px !important;
+          }
+          .dashboard-card {
+            margin: 0 16px !important;
+          }
+        }
+      `}</style>
       <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>Attendance Insights</h2>

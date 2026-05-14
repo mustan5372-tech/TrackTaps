@@ -67,6 +67,7 @@ const FounderCard = ({ name, role, description, initials, index }) => {
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       onMouseMove={handleMouseMove}
+      className="founder-card"
       style={{
         background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.1) 100%)',
         border: '1.5px solid var(--primary-glow)',
@@ -194,7 +195,7 @@ const FounderCard = ({ name, role, description, initials, index }) => {
       <motion.p 
         animate={isHovered ? { y: -3 } : { y: 0 }}
         style={{ 
-          color: '#cbd5e1', 
+          color: 'var(--text-dim)', 
           fontSize: '15px', 
           lineHeight: '1.7', 
           marginBottom: '24px',
@@ -259,6 +260,7 @@ const RoadmapPhase = ({ phase, items, index }) => {
       initial={{ opacity: 0, x: index % 2 === 0 ? -40 : 40, filter: 'blur(10px)' }}
       animate={isVisible ? { opacity: 1, x: 0, filter: 'blur(0px)' } : {}}
       transition={{ duration: 0.7, delay: index * 0.15 }}
+      className="roadmap-phase"
       style={{
         position: 'relative',
         paddingLeft: index % 2 === 0 ? '0' : '50px',
@@ -270,6 +272,7 @@ const RoadmapPhase = ({ phase, items, index }) => {
       {/* Animated Timeline connector with glow */}
       <motion.div
         animate={isHovered ? { opacity: 1 } : { opacity: 0.5 }}
+        className="roadmap-timeline"
         style={{
           position: 'absolute',
           left: '50%',
@@ -286,6 +289,7 @@ const RoadmapPhase = ({ phase, items, index }) => {
       <motion.div
         animate={{ scale: [1, 1.3, 1], opacity: [0.8, 1, 0.8] }}
         transition={{ duration: 2.5, repeat: Infinity }}
+        className="roadmap-dot"
         style={{
           position: 'absolute',
           left: '50%',
@@ -304,6 +308,7 @@ const RoadmapPhase = ({ phase, items, index }) => {
       <motion.div
         whileHover={{ scale: 1.03, y: -8 }}
         transition={{ duration: 0.3 }}
+        className="roadmap-phase-card"
         style={{
           background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.18) 0%, rgba(168, 85, 247, 0.08) 100%)',
           border: '1.5px solid rgba(139, 92, 246, 0.35)',
@@ -405,7 +410,7 @@ const RoadmapPhase = ({ phase, items, index }) => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  color: '#cbd5e1',
+                  color: 'var(--text-dim)',
                   fontSize: '15px',
                   fontWeight: '500'
                 }}
@@ -500,6 +505,56 @@ function About() {
         />
       </div>
 
+      <style>{`
+        @media (max-width: 768px) {
+          .about-container {
+            padding: 40px 0 120px 0 !important;
+          }
+          .about-hero-cinematic {
+            padding: 0 20px !important;
+            margin-bottom: 80px !important;
+          }
+          .about-hero-cinematic h1 {
+            font-size: 36px !important;
+          }
+          .about-section {
+            padding: 0 20px !important;
+            margin-bottom: 80px !important;
+          }
+          .about-section h2 {
+            font-size: 32px !important;
+            margin-bottom: 40px !important;
+          }
+          .features-grid {
+            grid-template-columns: 1fr !important;
+            gap: 20px !important;
+          }
+          .founders-grid {
+            grid-template-columns: 1fr !important;
+            gap: 20px !important;
+          }
+          .founder-card {
+             padding: 32px 24px !important;
+          }
+          .roadmap-phase {
+             padding: 0 !important;
+             margin-bottom: 40px !important;
+          }
+          .roadmap-phase::before {
+             display: none !important;
+          }
+          .roadmap-phase-card {
+             margin-bottom: 30px !important;
+             padding: 24px !important;
+          }
+          .roadmap-timeline {
+             left: 20px !important;
+          }
+          .roadmap-dot {
+             left: 20px !important;
+          }
+        }
+      `}</style>
       <div className="about-container" style={{ position: 'relative', zIndex: 1, padding: '60px 40px' }}>
         {/* HERO SECTION */}
         <motion.section
@@ -576,13 +631,13 @@ function About() {
             {/* Subtitle */}
             <BlurRevealText delay={0.4}>
               <p style={{
-                fontSize: '18px',
+                fontSize: 'clamp(16px, 4vw, 18px)',
                 color: 'var(--text-dim)',
                 lineHeight: '1.8',
                 maxWidth: '700px',
                 marginBottom: '40px'
               }}>
-                TrackTaps is redefining academic productivity through intelligent attendance tracking, AI insights, and next-generation student tools. Built for students who demand excellence.
+                Automatically sync Pod.ai attendance and calculate exactly how many classes you can bunk safely. TrackTaps is redefining academic productivity through intelligent insights and next-generation student tools.
               </p>
             </BlurRevealText>
 
@@ -632,6 +687,7 @@ function About() {
           initial={{ opacity: 0 }}
           animate={isVisible ? { opacity: 1 } : {}}
           transition={{ duration: 0.8 }}
+          className="about-section"
           style={{ marginBottom: '120px' }}
         >
           <BlurRevealText>
@@ -646,7 +702,7 @@ function About() {
             </h2>
           </BlurRevealText>
 
-          <div style={{
+          <div className="features-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
             gap: '32px'
@@ -709,7 +765,7 @@ function About() {
         </motion.section>
 
         {/* TEAM SECTION - FOUNDERS & CORE TEAM */}
-        <motion.section style={{ marginBottom: '140px' }}>
+        <motion.section className="about-section" style={{ marginBottom: '140px' }}>
           <BlurRevealText>
             <h2 style={{
               fontSize: '48px',
@@ -735,7 +791,7 @@ function About() {
             </p>
           </BlurRevealText>
 
-          <div style={{
+          <div className="founders-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
             gap: '40px',
@@ -771,6 +827,7 @@ function About() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
+          className="about-section"
           style={{
             marginBottom: '120px',
             textAlign: 'center',
@@ -805,7 +862,7 @@ function About() {
         </motion.section>
 
         {/* ROADMAP SECTION */}
-        <motion.section style={{ marginBottom: '120px' }}>
+        <motion.section className="about-section" style={{ marginBottom: '120px' }}>
           <BlurRevealText>
             <h2 style={{
               fontSize: '48px',

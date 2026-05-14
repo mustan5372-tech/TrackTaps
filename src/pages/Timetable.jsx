@@ -63,15 +63,35 @@ function Timetable() {
   );
 
   return (
-    <div className="timetable-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="timetable-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '120px' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .timetable-view {
+            padding: 8px 0 120px 0 !important;
+          }
+          .view-header {
+            padding: 24px 20px !important;
+            background: var(--bg-primary) !important;
+            border-bottom: 1px solid var(--border) !important;
+            margin-bottom: 0px !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 4px !important;
+          }
+          .timetable-grid-container {
+            margin: 0 16px !important;
+            padding: 16px 8px !important;
+          }
+        }
+      `}</style>
       {/* Header */}
-      <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>Weekly Schedule</h2>
-        <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Click any cell to add a subject</p>
+      <header className="view-header">
+        <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>Weekly Schedule</h2>
+        <p style={{ fontSize: '13px', color: 'var(--text-dim)', margin: 0 }}>Manage your class timings.</p>
       </header>
 
       {/* Timetable Grid */}
-      <div style={{
+      <div className="timetable-grid-container" style={{
         background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%)',
         border: '1px solid rgba(139, 92, 246, 0.15)',
         borderRadius: '20px',

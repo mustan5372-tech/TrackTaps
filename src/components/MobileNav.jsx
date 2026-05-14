@@ -2,17 +2,18 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 
+import { motion } from 'framer-motion';
+
 function MobileNav() {
   const location = useLocation();
   const { user, role } = useAppStore();
 
   const navItems = [
     { icon: '🏠', label: 'Home', path: '/' },
-    { icon: '🕒', label: 'Timetable', path: '/timetable' },
+    { icon: '🕒', label: 'Schedule', path: '/timetable' },
     { icon: '📅', label: 'Calendar', path: '/calendar' },
     { icon: '📚', label: 'Subjects', path: '/subjects' },
-    { icon: '📈', label: 'Insights', path: '/insights' },
-    { icon: '📜', label: 'History', path: '/history' },
+    { icon: '🏖️', label: 'Bunks', path: '/bunk-calculator' },
     { icon: '✨', label: 'About', path: '/about' },
     { icon: '⚙️', label: 'Settings', path: '/settings' },
   ];
@@ -21,7 +22,7 @@ function MobileNav() {
   const isOwner = user?.email === 'mustan5372@gmail.com' || user?.email === 'tracktaps@gmail.com' || role === 'ADMIN_OWNER';
 
   if (isOwner) {
-    navItems.splice(1, 0, { icon: '🔐', label: 'Admin Panel', path: '/admin' }); // Put admin near start for owners
+    navItems.splice(1, 0, { icon: '🔐', label: 'Admin', path: '/admin' });
   }
 
   return (
@@ -31,10 +32,32 @@ function MobileNav() {
           <Link
             key={item.path}
             to={item.path}
-            className={`mobile-nav-btn ${location.pathname === item.path ? 'active' : ''}`}
+            style={{ textDecoration: 'none', flex: 1, minWidth: 0 }}
           >
-            <span className="nav-icon">{item.icon}</span>
-            <span className="nav-label">{item.label}</span>
+            <motion.div
+              whileTap={{ scale: 0.9 }}
+              className={`mobile-nav-btn ${location.pathname === item.path ? 'active' : ''}`}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+              {location.pathname === item.path && (
+                <motion.div 
+                  layoutId="activeTab"
+                  className="active-indicator"
+                  style={{
+                    position: 'absolute',
+                    top: '4px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '32px',
+                    height: '3px',
+                    background: 'var(--primary-light)',
+                    borderRadius: '100px',
+                    boxShadow: '0 0 10px var(--primary-glow)'
+                  }}
+                />
+              )}
+            </motion.div>
           </Link>
         ))}
       </div>

@@ -13,6 +13,7 @@ import Pod from './pages/Pod';
 import Premium from './pages/Premium';
 import Admin from './pages/Admin';
 import AiSemesterImport from './pages/AiSemesterImport';
+import BunkCalculator from './pages/BunkCalculator';
 import useAppStore from './store/appStore';
 import { motion } from 'framer-motion';
 import GlobalToast from './components/GlobalToast';
@@ -82,6 +83,7 @@ function App() {
         <Route path="/premium" element={<AppShell><Premium /></AppShell>} />
         <Route path="/admin" element={<AppShell><Admin /></AppShell>} />
         <Route path="/ai-import" element={<AppShell><AiSemesterImport /></AppShell>} />
+        <Route path="/bunk-calculator" element={<AppShell><BunkCalculator /></AppShell>} />
       </Routes>
     </BrowserRouter>
   );

@@ -73,8 +73,20 @@ const DownloadAPK = () => {
           }}
         />
         
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
           <span style={{ fontSize: '24px', filter: 'drop-shadow(0 0 5px rgba(139, 92, 246, 0.5))' }}>🤖</span>
+          <span style={{ 
+            position: 'absolute', 
+            top: '-12px', 
+            right: '-12px', 
+            background: 'var(--primary)', 
+            color: 'white', 
+            fontSize: '8px', 
+            padding: '2px 6px', 
+            borderRadius: '100px',
+            fontWeight: '900',
+            boxShadow: '0 0 10px var(--primary-glow)'
+          }}>SOON</span>
           <span style={{ fontSize: '8px', fontWeight: '800', color: 'var(--primary-light)', marginTop: '-2px' }}>APK</span>
         </div>
       </motion.div>
@@ -171,29 +183,30 @@ const DownloadAPK = () => {
                   </div>
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.03, boxShadow: '0 0 25px rgba(139, 92, 246, 0.5)' }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={downloadFile}
+                <motion.div
                   style={{
+                    position: 'relative',
                     width: '100%',
-                    background: 'linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%)',
-                    color: '#fff',
-                    border: 'none',
                     padding: '18px',
                     borderRadius: '16px',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px dashed var(--primary-glow)',
+                    color: 'var(--text-dim)',
                     fontWeight: '800',
                     fontSize: '16px',
-                    cursor: 'pointer',
-                    boxShadow: '0 10px 25px -5px var(--primary-glow)',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '10px'
+                    gap: '4px',
+                    cursor: 'not-allowed'
                   }}
                 >
-                  <span style={{ fontSize: '20px' }}>📥</span> Download APK
-                </motion.button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '20px' }}>⏳</span> APK Coming Soon
+                  </div>
+                  <span style={{ fontSize: '10px', color: 'var(--primary-light)', fontWeight: '700', letterSpacing: '0.1em' }}>STABILIZING VERSION...</span>
+                </motion.div>
 
                 <button
                   onClick={() => setIsOpen(false)}

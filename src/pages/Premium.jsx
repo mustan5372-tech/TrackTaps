@@ -163,7 +163,7 @@ function Premium() {
       </header>
 
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px', marginBottom: '100px' }}>
+        <div className="plans-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px', marginBottom: '100px' }}>
           {PLANS.map((plan, i) => (
             <motion.div
               key={plan.id}
@@ -236,14 +236,14 @@ function Premium() {
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="dashboard-card" style={{ padding: '60px 48px', borderRadius: '40px', background: 'rgba(15, 23, 42, 0.4)' }}>
           <h3 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '800', marginBottom: '64px' }}>Feature Comparison</h3>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '24px', marginBottom: '24px' }}>
+          <div className="comparison-header" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '24px', marginBottom: '24px' }}>
             <div style={{ color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '13px' }}>Feature</div>
             <div style={{ textAlign: 'center', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '13px' }}>Free</div>
             <div style={{ textAlign: 'center', color: 'var(--primary-light)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '13px' }}>TrackTaps Plus</div>
           </div>
 
           {comparisonFeatures.map((f, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '24px', padding: '24px 0', borderBottom: i === comparisonFeatures.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', alignItems: 'center' }}>
+            <div key={i} className="comparison-row" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '24px', padding: '24px 0', borderBottom: i === comparisonFeatures.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)', alignItems: 'center' }}>
               <div style={{ display: 'flex', gap: '16px' }}>
                 <span style={{ fontSize: '24px' }}>{f.icon}</span>
                 <div>
@@ -269,9 +269,15 @@ function Premium() {
       <style>{`
         .premium-view { font-family: 'Outfit', sans-serif; }
         @media (max-width: 768px) {
-          .premium-view { padding: 20px 16px !important; }
-          h2 { font-size: 32px !important; }
-          .dashboard-card { padding: 32px 20px !important; }
+          .premium-view { padding: 40px 0 120px 0 !important; }
+          .premium-view > header { padding: 0 20px !important; margin-bottom: 40px !important; }
+          .premium-view h2 { font-size: 32px !important; }
+          .premium-view p { font-size: 15px !important; }
+          .plans-grid { padding: 0 16px !important; gap: 20px !important; grid-template-columns: 1fr !important; }
+          .dashboard-card { padding: 32px 20px !important; margin: 0 16px !important; border-radius: 32px !important; }
+          .feature-comparison-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+          .comparison-row { grid-template-columns: 1.5fr 1fr 1fr !important; gap: 12px !important; padding: 16px 0 !important; }
+          .comparison-header { grid-template-columns: 1.5fr 1fr 1fr !important; gap: 12px !important; }
         }
       `}</style>
     </div>

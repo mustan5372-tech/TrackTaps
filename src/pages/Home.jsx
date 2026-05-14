@@ -118,13 +118,14 @@ function Home() {
             lineHeight: '1.7',
             padding: '0 8px'
           }}>
-            Sync Pod.ai attendance, automate your timetable, and plan your semester with high-fidelity intelligence.
+            Automatically sync Pod.ai attendance and calculate exactly how many classes you can bunk safely.
           </p>
           
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}
           >
             <Link
               to="/about"
@@ -141,13 +142,91 @@ function Home() {
                 fontWeight: '700',
                 textDecoration: 'none',
                 boxShadow: '0 10px 30px rgba(139, 92, 246, 0.3)',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                width: '100%',
+                justifyContent: 'center',
+                maxWidth: '300px'
               }}
             >
               <span>Explore TrackTaps</span>
               <span>→</span>
             </Link>
           </motion.div>
+        </motion.div>
+
+        {/* MOBILE OPTIMIZED ABOUT SECTION */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          style={{ 
+            width: '100%', 
+            maxWidth: '800px', 
+            marginTop: '60px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+            padding: '0 10px'
+          }}
+        >
+          <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>
+              Why TrackTaps?
+            </h2>
+            <div style={{ width: '40px', height: '3px', background: 'var(--primary)', margin: '0 auto', borderRadius: '2px' }} />
+          </div>
+
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+            gap: '16px',
+            width: '100%'
+          }}>
+            {[
+              { icon: '🔄', title: 'Pod.ai Sync', desc: 'One-tap integration to pull your real-time attendance directly from Pod.ai.' },
+              { icon: '📉', title: 'Bunk Planner', desc: 'Know exactly how many classes you can skip while staying safe.' },
+              { icon: '🔮', title: 'Predictions', desc: 'AI-driven insights to predict your end-semester attendance trajectory.' },
+              { icon: '📅', title: 'Smart Timetable', desc: 'Automated schedule management that adapts to your university life.' }
+            ].map((feature, idx) => (
+              <div 
+                key={idx}
+                style={{
+                  background: 'rgba(30, 41, 59, 0.4)',
+                  border: '1px solid rgba(139, 92, 246, 0.2)',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  textAlign: 'left',
+                  backdropFilter: 'blur(10px)',
+                  display: 'flex',
+                  gap: '16px',
+                  alignItems: 'flex-start'
+                }}
+              >
+                <span style={{ fontSize: '24px' }}>{feature.icon}</span>
+                <div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '4px' }}>{feature.title}</h3>
+                  <p style={{ fontSize: '13px', color: 'var(--text-dim)', lineHeight: '1.5' }}>{feature.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ 
+            marginTop: '20px', 
+            padding: '24px', 
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
+            borderRadius: '20px',
+            border: '1px dashed var(--primary-glow)',
+            textAlign: 'center'
+          }}>
+            <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--primary-light)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '8px' }}>
+              Premium Experience
+            </span>
+            <p style={{ fontSize: '14px', color: 'var(--text-main)', lineHeight: '1.6', margin: '0 auto', maxWidth: '400px' }}>
+              Unlock advanced analytics, cloud sync, and exclusive theme customization with TrackTaps Premium.
+            </p>
+          </div>
         </motion.div>
       </div>
     );
@@ -178,132 +257,93 @@ function Home() {
       <style>{`
         @media (max-width: 768px) {
           .home-view {
-            padding: 8px var(--mobile-side-padding) 100px var(--mobile-side-padding) !important;
-            gap: var(--section-gap) !important;
+            padding: 8px 0 120px 0 !important;
+            gap: 20px !important;
           }
           .dashboard-hero {
             flex-direction: column !important;
-            padding: 32px 24px !important;
+            padding: 32px 20px !important;
             gap: 24px !important;
             text-align: left !important;
             align-items: flex-start !important;
             background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(15, 23, 42, 0.4) 100%) !important;
-            border-radius: var(--card-radius) !important;
-            border: 1px solid rgba(139, 92, 246, 0.15) !important;
+            border-radius: 0 0 32px 32px !important;
+            border: none !important;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2) !important;
+            margin-top: -8px !important;
           }
           .hero-welcome {
             width: 100% !important;
             align-items: flex-start !important;
           }
           #hero-greeting {
-            font-size: 28px !important;
-            margin-bottom: 6px !important;
-            letter-spacing: -0.03em !important;
+            font-size: 24px !important;
+            margin-bottom: 4px !important;
           }
           #hero-subtitle {
-            font-size: 15px !important;
-            max-width: 90% !important;
-            margin: 0 0 16px 0 !important;
-            opacity: 0.7;
-            line-height: 1.5 !important;
+            font-size: 14px !important;
+            opacity: 0.8;
+            margin-bottom: 12px !important;
           }
           .hero-overall-stats {
             width: 100% !important;
             display: flex !important;
             align-items: center !important;
             justify-content: space-between !important;
-            padding: 20px 24px !important;
-            text-align: left !important;
-            background: rgba(139, 92, 246, 0.12) !important;
-            border-radius: 18px !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+            padding: 16px 20px !important;
+            background: rgba(139, 92, 246, 0.1) !important;
+            border-radius: 16px !important;
           }
           #hero-overall-perc {
-            font-size: 42px !important;
-            line-height: 1 !important;
+            font-size: 36px !important;
           }
           .overall-label {
             margin-top: 0 !important;
-            font-size: 11px !important;
-            letter-spacing: 0.05em !important;
-            text-transform: uppercase !important;
-          }
-          #overall-trend {
-             margin-top: 6px !important;
-             justify-content: flex-start !important;
+            font-size: 10px !important;
           }
           .quick-stats-row {
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 12px !important;
+            padding: 0 16px !important;
           }
           .stat-pill {
-            padding: 20px 16px !important;
-            border-radius: 18px !important;
+            padding: 16px !important;
+            border-radius: 20px !important;
           }
           .stat-pill-value {
-            font-size: 26px !important;
-          }
-          .stat-pill-label {
-            font-size: 10px !important;
-            letter-spacing: 0.08em !important;
+            font-size: 24px !important;
           }
           .prediction-widgets-grid {
             grid-template-columns: 1fr !important;
             gap: 12px !important;
-          }
-          .prediction-card {
-            padding: 24px !important;
-            border-radius: 20px !important;
-          }
-          .pred-value {
-            font-size: 32px !important;
+            padding: 0 16px !important;
           }
           .dashboard-grid {
             grid-template-columns: 1fr !important;
-            gap: 20px !important;
-          }
-          .dashboard-card {
-            padding: 24px !important;
-            border-radius: 22px !important;
-          }
-          .attendance-overview-content {
-            gap: 24px !important;
-          }
-          .progress-ring-container {
-            width: 110px !important;
-            height: 110px !important;
-          }
-          .progress-ring-svg {
-            width: 110px !important;
-            height: 110px !important;
-          }
-          .progress-ring-svg circle {
-            cx: 55 !important;
-            cy: 55 !important;
-            r: 48 !important;
-          }
-          .progress-percentage-text {
-            font-size: 22px !important;
+            gap: 16px !important;
+            padding: 0 16px !important;
           }
           .shortcut-grid {
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 12px !important;
+            padding: 0 16px !important;
           }
-          .shortcut-card {
-            padding: 24px 16px !important;
-            border-radius: 18px !important;
-          }
-          .shortcut-card span:first-child {
-            font-size: 32px !important;
+          .ai-import-promo {
+            padding: 0 16px !important;
           }
           .ai-import-promo .dashboard-card {
-            padding: 32px 24px !important;
-            gap: 20px !important;
+            padding: 24px !important;
+            flex-direction: column !important;
+            text-align: center !important;
           }
           .ai-promo-icon {
-            font-size: 56px !important;
-            top: 24px !important;
-            right: 24px !important;
+            font-size: 48px !important;
+            position: static !important;
+            margin-bottom: 16px !important;
+          }
+          .primary-btn {
+            width: 100% !important;
+            justify-content: center !important;
           }
         }
       `}</style>
@@ -520,30 +560,42 @@ function Home() {
         )}
 
         <motion.div 
-          onClick={() => subscription?.status !== 'active' && navigate('/premium')}
+          onClick={() => navigate('/bunk-calculator')}
           variants={fadeInUp} 
           whileHover={cardHover.hover} 
           className="prediction-card" 
           style={{
-            background: subscription?.status === 'active' ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)' : 'rgba(255,255,255,0.02)',
-            border: subscription?.status === 'active' ? '1px solid rgba(245, 158, 11, 0.2)' : '1px dashed rgba(255,255,255,0.1)',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.4) 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.3)',
             borderRadius: '24px',
             padding: '28px',
             backdropFilter: 'blur(10px)',
-            cursor: subscription?.status === 'active' ? 'default' : 'pointer'
+            cursor: 'pointer',
+            position: 'relative',
+            overflow: 'hidden'
           }}
         >
+          {subscription?.status !== 'active' && (
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)', zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ background: 'var(--surface)', padding: '6px 14px', borderRadius: '100px', fontSize: '10px', fontWeight: '800', color: '#f59e0b', border: '1px solid #f59e0b', boxShadow: '0 0 20px rgba(245, 158, 11, 0.2)' }}>
+                PREMIUM
+              </div>
+            </div>
+          )}
           <div className="pred-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <span className="pred-icon" style={{ fontSize: '28px' }}>{subscription?.status === 'active' ? '🏖️' : '🔒'}</span>
-            <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: subscription?.status === 'active' ? 'var(--warning)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {subscription?.status === 'active' ? 'Bunk Planner' : 'Bunk Planner'}
+            <span className="pred-icon" style={{ fontSize: '28px' }}>🏖️</span>
+            <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--warning)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Bunk Calculator
             </span>
           </div>
-          <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: subscription?.status === 'active' ? 'var(--warning)' : 'var(--text-muted)', marginBottom: '8px' }}>
-            {subscription?.status === 'active' ? getTotalBunkable() : 'PLUS'}
+          <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: 'var(--warning)', marginBottom: '8px' }}>
+            {getTotalBunkable()} <span style={{ fontSize: '14px', fontWeight: '600' }}>Safe Bunks</span>
           </div>
           <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>
-            {subscription?.status === 'active' ? 'Total classes you can safely skip across all subjects this semester' : 'Plan your semester bunks with TrackTaps Plus'}
+            Plan your semester and skip classes safely.
+          </div>
+          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+             <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--warning)', textTransform: 'uppercase' }}>Open Calculator →</span>
           </div>
         </motion.div>
       </motion.div>

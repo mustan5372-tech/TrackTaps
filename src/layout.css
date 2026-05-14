@@ -1,4 +1,24 @@
-/* REACT LAYOUT FIXES - FUNCTIONAL ONLY (NO VISUAL CHANGES) */
+/* REACT LAYOUT FIXES - PREMIUM MOBILE-FIRST ADAPTIVE ENGINE */
+
+:root {
+    --primary: #8b5cf6;
+    --primary-light: #a78bfa;
+    --primary-glow: rgba(139, 92, 246, 0.3);
+    --bg-deep: #020617;
+    --bg-primary: #0f172a;
+    --surface: rgba(30, 41, 59, 0.5);
+    --surface-glass: rgba(15, 23, 42, 0.6);
+    --border: rgba(255, 255, 255, 0.08);
+    --text-main: #f8fafc;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --card-radius: 24px;
+    --section-gap: 32px;
+    --mobile-side-padding: 20px;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+}
 
 /* App Container - Clean Flex Layout */
 .app-container {
@@ -157,6 +177,21 @@
     color: #a78bfa;
 }
 
+/* Modern Glass Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 100px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.4);
+}
+
 /* Mobile Responsive Enhancements */
 @media (max-width: 768px) {
     :root {
@@ -263,16 +298,24 @@
     }
 
     .main-content {
-        padding: 24px var(--mobile-side-padding);
-        gap: var(--section-gap);
+        padding: 20px var(--mobile-side-padding) 40px var(--mobile-side-padding);
+        gap: 20px;
         width: 100%;
         box-sizing: border-box;
     }
 
     /* Native-like card proportions */
-    .subject-card, .shortcut-card, .insight-card, .history-card {
+    .subject-card, .shortcut-card, .insight-card, .history-card, .dashboard-card {
         border-radius: var(--card-radius) !important;
+        padding: 20px !important;
+        background: var(--surface-glass) !important;
+        border: 1px solid var(--border) !important;
+        backdrop-filter: blur(12px) !important;
     }
+
+    /* Mobile Typography Refinements */
+    h2 { font-size: 24px !important; letter-spacing: -0.02em !important; }
+    h3 { font-size: 18px !important; letter-spacing: -0.01em !important; }
 }
 
 /* Link Styling - Remove default underlines */
