@@ -202,6 +202,13 @@ const useAppStore = create(
           try {
             // Initialize persistence before setting up the listener
             await authService.init();
+            
+            // Check for redirect result (important for mobile APK login)
+            const redirectUser = await authService.handleRedirectResult();
+            if (redirectUser) {
+              console.log("📥 [AppStore] Captured redirect user:", redirectUser.email);
+              get().handleUserAuthenticated(redirectUser);
+            }
           } catch (err) {
             console.error("❌ [AppStore] Auth init failed:", err);
           }

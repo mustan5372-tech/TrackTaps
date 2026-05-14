@@ -143,6 +143,42 @@ function Subjects() {
 
   return (
     <div className="subjects-view">
+      <style>{`
+        @media (max-width: 768px) {
+          .subjects-view {
+            padding: 4px 12px 100px 12px !important;
+          }
+          .view-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 16px !important;
+          }
+          .view-header h2 {
+            font-size: 24px !important;
+          }
+          .view-header > div {
+            width: 100% !important;
+            align-items: stretch !important;
+          }
+          .view-header > div > div {
+            flex-direction: column !important;
+            gap: 10px !important;
+          }
+          .action-btn, .primary-btn {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 14px !important;
+          }
+          .subjects-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+          .subject-card {
+            padding: 16px !important;
+            border-radius: 20px !important;
+          }
+        }
+      `}</style>
       <header className="view-header">
         <h2>My Subjects</h2>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>

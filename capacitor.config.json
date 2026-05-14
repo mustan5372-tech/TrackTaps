@@ -5,7 +5,14 @@
   "bundledWebRuntime": false,
   "server": {
     "url": "https://www.tracktaps.online/",
-    "cleartext": true
+    "cleartext": true,
+    "allowNavigation": [
+      "accounts.google.com",
+      "*.google.com",
+      "tracktaps-a7966.firebaseapp.com",
+      "tracktaps-a7966.web.app",
+      "*.firebaseapp.com"
+    ]
   },
   "plugins": {
     "SplashScreen": {

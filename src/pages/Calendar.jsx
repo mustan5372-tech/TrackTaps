@@ -151,6 +151,73 @@ function Calendar() {
 
   return (
     <div className="calendar-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .calendar-view {
+            padding: 4px 12px 100px 12px !important;
+            gap: 16px !important;
+          }
+          .view-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 16px !important;
+          }
+          .view-header h2 {
+            font-size: 24px !important;
+          }
+          .view-header > div {
+            width: 100% !important;
+            justify-content: space-between !important;
+          }
+          .calendar-grid-container {
+            padding: 16px 10px !important;
+          }
+          .calendar-weekday-headers {
+            gap: 4px !important;
+            margin-bottom: 8px !important;
+          }
+          .calendar-weekday-headers > div {
+            padding: 8px 4px !important;
+            font-size: 10px !important;
+          }
+          .calendar-days-grid {
+            gap: 6px !important;
+          }
+          .calendar-day-cell {
+            padding: 8px 4px !important;
+            min-height: 70px !important;
+            border-radius: 12px !important;
+          }
+          .calendar-day-number {
+            font-size: 15px !important;
+          }
+          .calendar-day-label {
+            font-size: 8px !important;
+          }
+          .calendar-day-count {
+            font-size: 8px !important;
+          }
+          .multi-select-toolbar {
+             padding: 12px !important;
+             flex-direction: column !important;
+             gap: 12px !important;
+          }
+          .multi-select-toolbar > div {
+             width: 100% !important;
+             justify-content: center !important;
+          }
+          .batch-actions {
+             display: grid !important;
+             grid-template-columns: repeat(4, 1fr) !important;
+             gap: 6px !important;
+             width: 100% !important;
+          }
+          .batch-actions button {
+             padding: 10px 4px !important;
+             font-size: 10px !important;
+          }
+        }
+      `}</style>
       {/* Header */}
       <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>{monthYear}</h2>
@@ -246,6 +313,7 @@ function Calendar() {
         <motion.div 
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
+          className="multi-select-toolbar"
           style={{
             background: 'var(--primary-glow)',
             border: '1px solid var(--primary-glow)',
@@ -269,7 +337,7 @@ function Calendar() {
               Cancel
             </button>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="batch-actions" style={{ display: 'flex', gap: '8px' }}>
             <button onClick={() => handleBatchAction('present')} style={{ background: '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Present</button>
             <button onClick={() => handleBatchAction('absent')} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Absent</button>
             <button onClick={() => handleBatchAction('off')} style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Off</button>
@@ -279,14 +347,14 @@ function Calendar() {
       )}
 
       {/* Calendar Grid */}
-      <div style={{
+      <div className="calendar-grid-container" style={{
         background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%)',
         border: '1px solid rgba(139, 92, 246, 0.15)',
         borderRadius: '20px',
         padding: '24px'
       }}>
         {/* Weekday Headers */}
-        <div style={{
+        <div className="calendar-weekday-headers" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
           gap: '12px',
@@ -311,7 +379,7 @@ function Calendar() {
         </div>
 
         {/* Calendar Days */}
-        <div style={{
+        <div className="calendar-days-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
           gap: '12px'
@@ -325,6 +393,7 @@ function Calendar() {
             return (
               <motion.div
                 key={idx}
+                className="calendar-day-cell"
                 onMouseDown={() => {
                   const timer = setTimeout(() => handleDateLongPress(day), 500);
                   window.datePressTimer = timer;
@@ -367,7 +436,7 @@ function Calendar() {
                 )}
                 {day && (
                   <>
-                    <div style={{
+                    <div className="calendar-day-number" style={{
                       fontSize: '18px',
                       fontWeight: '800',
                       color: 'var(--text-main)',
@@ -376,7 +445,7 @@ function Calendar() {
                       {day}
                     </div>
                     {visualState && visualState.type !== 'empty' && (
-                      <div style={{
+                      <div className="calendar-day-label" style={{
                         fontSize: '11px',
                         color: visualState.color,
                         fontWeight: '600',
@@ -386,7 +455,7 @@ function Calendar() {
                       </div>
                     )}
                     {getEventsForDate(day).length > 0 && (
-                      <div style={{
+                      <div className="calendar-day-count" style={{
                         fontSize: '10px',
                         color: 'var(--text-dim)',
                         marginTop: '4px'

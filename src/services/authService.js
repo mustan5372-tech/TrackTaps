@@ -39,24 +39,40 @@ const authService = {
     try {
       if (!auth.app) throw new Error("Firebase not initialized");
 
-      // STOP using redirect for mobile - it breaks in WebViews
-      // Use signInWithPopup which is more stable for Capacitor/TWA 
-      // if configured correctly in Firebase Console
-      console.log("🔐 [Auth] Starting Google Auth (Popup Flow)...");
-      const result = await signInWithPopup(auth, googleProvider);
-      console.log("✅ [Auth] Login Success:", result.user.email);
-      return result.user;
+      const isMobile = isMobileApp();
+      console.log(`🔐 [Auth] Starting Google Auth (${isMobile ? 'Redirect' : 'Popup'} Flow)...`);
+      
+      if (isMobile) {
+        // Mobile flow: Redirect is much more reliable in WebViews
+        // Capacitor will stay in-app thanks to allowNavigation in config
+        const { signInWithRedirect } = await import("firebase/auth");
+        await signInWithRedirect(auth, googleProvider);
+        return null; // The page will redirect
+      } else {
+        // Desktop flow: Popup is better UX
+        const result = await signInWithPopup(auth, googleProvider);
+        console.log("✅ [Auth] Login Success:", result.user.email);
+        return result.user;
+      }
     } catch (error) {
       console.error("❌ [Auth] Login error:", error);
-      // Fallback for some WebViews that might block popups but allow redirects
-      // ONLY if user explicitly wants to try it as a last resort
       throw error;
     }
   },
 
   handleRedirectResult: async () => {
-    // Deprecated for now as we are moving away from redirect flow
-    return null;
+    try {
+      const { getRedirectResult } = await import("firebase/auth");
+      const result = await getRedirectResult(auth);
+      if (result) {
+        console.log("✅ [Auth] Redirect Login Success:", result.user.email);
+        return result.user;
+      }
+      return null;
+    } catch (error) {
+      console.error("❌ [Auth] Redirect result error:", error);
+      return null;
+    }
   },
 
   logout: async () => {
