@@ -178,122 +178,132 @@ function Home() {
       <style>{`
         @media (max-width: 768px) {
           .home-view {
-            padding: 4px 12px 100px 12px !important;
-            gap: 16px !important;
+            padding: 8px var(--mobile-side-padding) 100px var(--mobile-side-padding) !important;
+            gap: var(--section-gap) !important;
           }
           .dashboard-hero {
             flex-direction: column !important;
-            padding: 24px 20px !important;
-            gap: 20px !important;
+            padding: 32px 24px !important;
+            gap: 24px !important;
             text-align: left !important;
             align-items: flex-start !important;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(15, 23, 42, 0.4) 100%) !important;
-            border-radius: 20px !important;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(15, 23, 42, 0.4) 100%) !important;
+            border-radius: var(--card-radius) !important;
+            border: 1px solid rgba(139, 92, 246, 0.15) !important;
           }
           .hero-welcome {
             width: 100% !important;
             align-items: flex-start !important;
           }
           #hero-greeting {
-            font-size: 24px !important;
-            margin-bottom: 4px !important;
+            font-size: 28px !important;
+            margin-bottom: 6px !important;
+            letter-spacing: -0.03em !important;
           }
           #hero-subtitle {
-            font-size: 14px !important;
-            max-width: 100% !important;
-            margin: 0 0 12px 0 !important;
-            opacity: 0.8;
+            font-size: 15px !important;
+            max-width: 90% !important;
+            margin: 0 0 16px 0 !important;
+            opacity: 0.7;
+            line-height: 1.5 !important;
           }
           .hero-overall-stats {
             width: 100% !important;
             display: flex !important;
             align-items: center !important;
             justify-content: space-between !important;
-            padding: 16px 20px !important;
+            padding: 20px 24px !important;
             text-align: left !important;
-            background: rgba(139, 92, 246, 0.1) !important;
-            border-radius: 16px !important;
+            background: rgba(139, 92, 246, 0.12) !important;
+            border-radius: 18px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
           }
           #hero-overall-perc {
-            font-size: 36px !important;
+            font-size: 42px !important;
+            line-height: 1 !important;
           }
           .overall-label {
             margin-top: 0 !important;
             font-size: 11px !important;
+            letter-spacing: 0.05em !important;
+            text-transform: uppercase !important;
           }
           #overall-trend {
-             margin-top: 4px !important;
+             margin-top: 6px !important;
+             justify-content: flex-start !important;
           }
           .quick-stats-row {
             grid-template-columns: repeat(2, 1fr) !important;
-            gap: 10px !important;
+            gap: 12px !important;
           }
           .stat-pill {
-            padding: 16px 12px !important;
-            border-radius: 16px !important;
+            padding: 20px 16px !important;
+            border-radius: 18px !important;
           }
           .stat-pill-value {
-            font-size: 22px !important;
+            font-size: 26px !important;
           }
           .stat-pill-label {
             font-size: 10px !important;
+            letter-spacing: 0.08em !important;
           }
           .prediction-widgets-grid {
             grid-template-columns: 1fr !important;
-            gap: 10px !important;
+            gap: 12px !important;
           }
           .prediction-card {
-            padding: 20px !important;
+            padding: 24px !important;
             border-radius: 20px !important;
+          }
+          .pred-value {
+            font-size: 32px !important;
           }
           .dashboard-grid {
             grid-template-columns: 1fr !important;
-            gap: 16px !important;
-          }
-          .dashboard-card {
-            padding: 20px !important;
-            border-radius: 20px !important;
-          }
-          .attendance-overview-content {
             gap: 20px !important;
           }
+          .dashboard-card {
+            padding: 24px !important;
+            border-radius: 22px !important;
+          }
+          .attendance-overview-content {
+            gap: 24px !important;
+          }
           .progress-ring-container {
-            width: 100px !important;
-            height: 100px !important;
+            width: 110px !important;
+            height: 110px !important;
           }
           .progress-ring-svg {
-            width: 100px !important;
-            height: 100px !important;
+            width: 110px !important;
+            height: 110px !important;
           }
           .progress-ring-svg circle {
-            cx: 50 !important;
-            cy: 50 !important;
-            r: 44 !important;
+            cx: 55 !important;
+            cy: 55 !important;
+            r: 48 !important;
           }
           .progress-percentage-text {
-            font-size: 20px !important;
-          }
-          .mini-stat-value {
-            font-size: 18px !important;
+            font-size: 22px !important;
           }
           .shortcut-grid {
             grid-template-columns: repeat(2, 1fr) !important;
-            gap: 10px !important;
+            gap: 12px !important;
           }
           .shortcut-card {
-            padding: 20px 12px !important;
-            border-radius: 16px !important;
+            padding: 24px 16px !important;
+            border-radius: 18px !important;
+          }
+          .shortcut-card span:first-child {
+            font-size: 32px !important;
           }
           .ai-import-promo .dashboard-card {
-            padding: 24px 20px !important;
-            gap: 16px !important;
+            padding: 32px 24px !important;
+            gap: 20px !important;
           }
           .ai-promo-icon {
-            font-size: 48px !important;
-            position: absolute !important;
-            top: 20px !important;
-            right: 20px !important;
-            opacity: 0.3 !important;
+            font-size: 56px !important;
+            top: 24px !important;
+            right: 24px !important;
           }
         }
       `}</style>

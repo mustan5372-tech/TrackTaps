@@ -170,14 +170,33 @@ function Settings() {
         }
         @media (max-width: 768px) {
           .settings-view {
-            padding-bottom: 100px !important;
+            padding: 8px var(--mobile-side-padding) 120px var(--mobile-side-padding) !important;
+            gap: 20px !important;
           }
           .settings-grid {
             grid-template-columns: 1fr !important;
-            padding: 0 4px !important;
+            padding: 0 !important;
+            gap: 16px !important;
           }
-          .dashboard-card div[style*="gridTemplateColumns"] {
+          .dashboard-card {
+            padding: 20px !important;
+            border-radius: var(--card-radius) !important;
+          }
+          .criteria-grid {
             grid-template-columns: 1fr !important;
+            gap: 24px !important;
+          }
+          .theme-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+          }
+          .account-actions {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+          .timetable-settings-grid {
+             grid-template-columns: 1fr !important;
+             gap: 16px !important;
           }
         }
       `}</style>
@@ -258,7 +277,7 @@ function Settings() {
                   </button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="account-actions" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <button
                     onClick={() => {
                       if (subscription.status !== 'active') {
@@ -320,7 +339,7 @@ function Settings() {
           <div className="card-header">
             <span className="card-title">📊 Attendance Criteria</span>
           </div>
-          <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+          <div className="criteria-grid" style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
             <div>
               <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
                 Default Target: {settings.defaultCriteria}%
@@ -384,7 +403,7 @@ function Settings() {
               Personalize your TrackTaps experience with high-fidelity themes.
             </p>
 
-            <div style={{ 
+            <div className="theme-grid" style={{ 
               display: 'grid', 
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
               gap: '16px' 
@@ -554,7 +573,7 @@ function Settings() {
           <div className="card-header">
             <span className="card-title">🕒 Timetable Settings</span>
           </div>
-          <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+          <div className="timetable-settings-grid" style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
             <div>
               <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>Default Duration (min)</label>
               <input

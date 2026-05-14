@@ -19,76 +19,87 @@ function MobileHeader() {
   const isSyncing = podaiSyncStatus?.syncing;
 
   return (
-    <header className="mobile-header" style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 16px',
-      height: '64px',
-      position: 'relative'
-    }}>
+    <header className="mobile-header">
       {/* LEFT: Logo */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
-        <img src={logo} alt="TrackTaps" className="mobile-header-logo" style={{ height: '32px', width: 'auto' }} />
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+        <img 
+          src={logo} 
+          alt="TrackTaps" 
+          className="mobile-header-logo" 
+          style={{ 
+            height: '28px', 
+            width: 'auto',
+            filter: 'drop-shadow(0 0 10px rgba(139, 92, 246, 0.3))'
+          }} 
+        />
       </div>
       
       {/* CENTER: APK Button */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={downloadFile}
           style={{
-            background: 'rgba(139, 92, 246, 0.1)',
-            border: '1px solid rgba(139, 92, 246, 0.2)',
+            background: 'rgba(139, 92, 246, 0.12)',
+            border: '1px solid rgba(139, 92, 246, 0.25)',
             color: 'var(--primary-light)',
-            padding: '6px 14px',
+            padding: '7px 16px',
             borderRadius: '100px',
             fontSize: '11px',
             fontWeight: '800',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            backdropFilter: 'blur(10px)',
-            boxShadow: '0 0 15px rgba(139, 92, 246, 0.1)'
+            gap: '8px',
+            backdropFilter: 'blur(12px)',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+            letterSpacing: '0.02em'
           }}
         >
-          <span>🤖</span> APK
+          <span style={{ fontSize: '14px' }}>🤖</span> 
+          <span>APK</span>
         </motion.button>
       </div>
-
+ 
       {/* RIGHT: Login Button or Premium Status */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px' }}>
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         {user ? (
-          // If logged in, show premium status or nothing (to keep it clean as requested)
-          isPremium && (
+          // If logged in, show premium status
+          isPremium ? (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
-                background: isSyncing ? 'rgba(16, 185, 129, 0.1)' : 'rgba(139, 92, 246, 0.1)',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                border: '1px solid rgba(255,255,255,0.05)'
+                gap: '6px',
+                background: isSyncing ? 'rgba(16, 185, 129, 0.15)' : 'rgba(139, 92, 246, 0.15)',
+                padding: '6px 12px',
+                borderRadius: '100px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                boxShadow: isSyncing ? '0 0 10px rgba(16, 185, 129, 0.1)' : '0 0 10px rgba(139, 92, 246, 0.1)'
               }}
             >
               <motion.div
-                animate={isSyncing ? { scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] } : {}}
+                animate={isSyncing ? { scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] } : {}}
                 transition={{ duration: 1.5, repeat: Infinity }}
                 style={{
-                  width: '5px',
-                  height: '5px',
+                  width: '6px',
+                  height: '6px',
                   borderRadius: '50%',
-                  background: isSyncing ? '#10b981' : 'var(--primary)'
+                  background: isSyncing ? '#10b981' : 'var(--primary-light)',
+                  boxShadow: isSyncing ? '0 0 8px #10b981' : '0 0 8px var(--primary-light)'
                 }}
               />
-              <span style={{ fontSize: '8px', fontWeight: '800', color: isSyncing ? '#10b981' : 'var(--primary-light)' }}>
-                {isSyncing ? 'SYNC' : 'PLUS'}
+              <span style={{ 
+                fontSize: '10px', 
+                fontWeight: '900', 
+                color: isSyncing ? '#10b981' : 'var(--primary-light)',
+                letterSpacing: '0.05em'
+              }}>
+                {isSyncing ? 'SYNCING' : 'PLUS'}
               </span>
             </motion.div>
-          )
+          ) : null
         ) : (
           // If NOT logged in, show Login Button
           <motion.button
@@ -98,11 +109,12 @@ function MobileHeader() {
               background: 'linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%)',
               border: 'none',
               color: '#fff',
-              padding: '6px 14px',
+              padding: '8px 18px',
               borderRadius: '100px',
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: '800',
-              boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+              boxShadow: '0 8px 20px rgba(139, 92, 246, 0.3)',
+              letterSpacing: '0.02em'
             }}
           >
             Login
