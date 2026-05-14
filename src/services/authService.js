@@ -8,16 +8,27 @@ import {
 } from "firebase/auth";
 import { auth, googleProvider } from "./firebase";
 
-// Enhanced mobile environment detection
-const isMobileApp = () => {
-  const isCapacitor = window.location.origin.includes('localhost') || 
-                      window.location.protocol.includes('caps') ||
-                      window.location.protocol.includes('capacitor');
+// Enhanced native platform detection for Remote URL apps
+const isNativeAPK = () => {
+  const isCapacitorGlobal = !!window.Capacitor?.isNativePlatform();
+  const isCapacitorUA = navigator.userAgent.includes('Capacitor');
+  const isCapacitorProtocol = window.location.protocol === 'capacitor:';
   
-  const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isNative = isCapacitorGlobal || isCapacitorUA || isCapacitorProtocol;
   
-  console.log("🔍 [Auth] Env Detection:", { origin: window.location.origin, proto: window.location.protocol, isCapacitor, isMobileUA });
-  return isCapacitor || isMobileUA;
+  console.log("🔍 [Auth] Environment Detection:", {
+    isCapacitorGlobal,
+    isCapacitorUA,
+    isCapacitorProtocol,
+    isNative,
+    userAgent: navigator.userAgent
+  });
+  
+  return isNative;
+};
+
+const isMobileBrowser = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 };
 
 const authService = {
@@ -25,7 +36,7 @@ const authService = {
   init: async () => {
     try {
       console.log("🚀 [Auth] Initializing persistent storage...");
-      // Try IndexedDB first (most reliable for mobile), then fallback to LocalStorage
+      // IndexedDB is the gold standard for mobile/native persistence
       await setPersistence(auth, indexedDBLocalPersistence).catch(() => {
         return setPersistence(auth, browserLocalPersistence);
       });
@@ -39,53 +50,63 @@ const authService = {
     try {
       if (!auth.app) throw new Error("Firebase not initialized");
 
-      const isMobile = isMobileApp();
-      console.log(`🔐 [Auth] Starting Google Auth (${isMobile ? 'Native' : 'Web'} Flow)...`);
+      const isAPK = isNativeAPK();
+      const isMobileWeb = isMobileBrowser();
+      
+      console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : (isMobileWeb ? 'MOBILE WEB' : 'DESKTOP')}`);
       
       await authService.init();
 
-      if (isMobile) {
-        // NATIVE FLOW: No browser redirects, just a native account chooser popup
-        console.log("🚀 [Auth] Triggering Native Google Sign-In Popup...");
+      if (isAPK) {
+        // --- 1. NATIVE APK FLOW (Native Plugin) ---
+        console.log("🚀 [Auth] Using Capacitor Native Auth...");
         const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
-        
-        // This opens the native Android/iOS account picker
+        try { await GoogleAuth.initialize(); } catch (e) {}
+
         const nativeUser = await GoogleAuth.signIn();
-        
         if (nativeUser && nativeUser.authentication.idToken) {
-          console.log("✅ [Auth] Native Sign-In Success, linking with Firebase...");
           const { GoogleAuthProvider, signInWithCredential } = await import("firebase/auth");
-          
           const credential = GoogleAuthProvider.credential(nativeUser.authentication.idToken);
           const result = await signInWithCredential(auth, credential);
-          
-          console.log("🎉 [Auth] Firebase Native Auth Success:", result.user.email);
           return result.user;
         }
-        throw new Error("Native Google Sign-In failed to return an ID Token.");
+        throw new Error("Native Auth failed to return ID Token.");
+
+      } else if (isMobileWeb) {
+        // --- 2. MOBILE BROWSER FLOW (Redirect) ---
+        console.log("📱 [Auth] Using Firebase Redirect flow (to avoid popup blockers)...");
+        const { signInWithRedirect } = await import("firebase/auth");
+        // This will reload the page and redirect to Google
+        await signInWithRedirect(auth, googleProvider);
+        return null; // Page will redirect, execution stops here
+
       } else {
-        // WEB FLOW: Standard popup for desktop
+        // --- 3. DESKTOP BROWSER FLOW (Popup) ---
+        console.log("💻 [Auth] Using Firebase Popup flow...");
         const { signInWithPopup } = await import("firebase/auth");
         const result = await signInWithPopup(auth, googleProvider);
-        console.log("✅ [Auth] Web Login Success:", result.user.email);
+        console.log("✅ [Auth] Browser Login Success:", result.user.email);
         return result.user;
       }
     } catch (error) {
-      console.error("❌ [Auth] Login error:", error);
+      console.error("❌ [Auth] Google Login Failure:", error);
+      if (error.message?.includes('10') || error.message?.includes('DEVELOPER_ERROR')) {
+        alert("🔒 Auth Error: Please ensure your SHA-1 and Client ID are correctly configured in Firebase.");
+      }
       throw error;
     }
   },
 
   handleRedirectResult: async () => {
-    // Redirect flow is now DEPRECATED for mobile in favor of Native Popup
-    // We only keep this for web fallback scenarios if needed
+    // Only relevant for mobile browsers that used signInWithRedirect
+    if (isNativeAPK()) return null;
+    
     try {
-      if (isMobileApp()) return null; // Native flow doesn't use redirects
-      
+      console.log("🔄 [Auth] Checking for redirect result...");
       const { getRedirectResult } = await import("firebase/auth");
       const result = await getRedirectResult(auth);
       if (result) {
-        console.log("✅ [Auth] Redirect Login Success:", result.user.email);
+        console.log("✅ [Auth] Redirect Result Found:", result.user.email);
         return result.user;
       }
       return null;

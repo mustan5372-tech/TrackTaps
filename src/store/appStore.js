@@ -189,7 +189,7 @@ const useAppStore = create(
 
         initAuth: async () => {
           console.log("🛠️ [AppStore] initAuth started");
-          set({ isAuthLoading: true });
+          set({ isAuthLoading: true, isRestoringSession: true });
           
           const timeoutId = setTimeout(() => {
             const { isAuthLoading } = get();
@@ -197,11 +197,18 @@ const useAppStore = create(
               console.warn("⚠️ [AppStore] Auth initialization timed out.");
               set({ isAuthLoading: false, isRestoringSession: false });
             }
-          }, 10000); 
+          }, 15000); // Increased timeout for redirects
 
           try {
-            // Initialize persistence before setting up the listener
+            // 1. Initialize persistence
             await authService.init();
+            
+            // 2. Handle redirect results (Mobile Browser Flow)
+            const redirectUser = await authService.handleRedirectResult();
+            if (redirectUser) {
+              console.log("🎯 [AppStore] Logged in via Redirect:", redirectUser.email);
+              // handleUserAuthenticated will be called by the listener below
+            }
           } catch (err) {
             console.error("❌ [AppStore] Auth init failed:", err);
           }
@@ -211,7 +218,7 @@ const useAppStore = create(
           get().setTheme(localTheme);
 
           const unsubscribe = authService.onAuthChange((user) => {
-            console.log("👤 [AppStore] Auth change:", user ? user.email : 'No user');
+            console.log("👤 [AppStore] Auth state change:", user ? user.email : 'No user');
             clearTimeout(timeoutId);
 
             if (user) {
