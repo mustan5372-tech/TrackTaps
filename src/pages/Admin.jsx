@@ -60,12 +60,16 @@ function Admin() {
           expiry: sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString() : '-',
           rawExpiry: sub.expiryDate || null,
           amountPaid: sub.amountPaid || 0,
+          paymentSource: sub.paymentSource || (sub.amountPaid > 0 ? 'razorpay' : 'unknown'),
           banned: data.banned || false
         });
 
         if (sub.status === 'active' && !data.banned) {
           premiumCount++;
-          revenue += (sub.amountPaid || 0);
+          // REVENUE RULE: Only count successful Razorpay payments towards total revenue
+          if (sub.paymentSource === 'razorpay') {
+            revenue += (Number(sub.amountPaid) || 0);
+          }
         }
       });
 
@@ -118,6 +122,7 @@ function Admin() {
             expiryDate: expiryDate.toISOString(),
             paymentId: 'MANUAL_ADMIN_ASSIGNMENT',
             amountPaid: 0,
+            paymentSource: 'admin',
             assignedBy: user.email,
             lastAssigned: new Date().toISOString()
           },
@@ -246,14 +251,15 @@ function Admin() {
                 <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Plan</th>
                 <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Status</th>
                 <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Expiry</th>
+                <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Source</th>
                 <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading user data...</td></tr>
+                <tr><td colSpan="7" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading user data...</td></tr>
               ) : filteredUsers.length === 0 ? (
-                <tr><td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>No users found.</td></tr>
+                <tr><td colSpan="7" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>No users found.</td></tr>
               ) : filteredUsers.map((u, i) => (
                 <tr key={u.uid} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}>
                   <td style={{ padding: '16px' }}>
@@ -277,6 +283,15 @@ function Admin() {
                     <span style={{ color: u.status === 'Active' ? '#10b981' : 'var(--text-muted)', fontSize: '14px' }}>● {u.status}</span>
                   </td>
                   <td style={{ padding: '16px', fontSize: '14px', color: 'var(--text-dim)' }}>{u.expiry}</td>
+                  <td style={{ padding: '16px' }}>
+                    {u.paymentSource === 'razorpay' || u.amountPaid > 0 ? (
+                      <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontWeight: '700' }}>💰 PAID</span>
+                    ) : u.status === 'Active' ? (
+                      <span style={{ fontSize: '10px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', padding: '4px 8px', borderRadius: '4px', fontWeight: '700' }}>🛠️ ADMIN</span>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>-</span>
+                    )}
+                  </td>
                   <td style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {/* Premium Plan Management */}

@@ -75,6 +75,7 @@ export default async function handler(req, res) {
       expiryDate: expiryDate.toISOString(),
       paymentId: razorpay_payment_id,
       amountPaid: amount || 0,
+      paymentSource: 'razorpay',
       activatedAt: new Date().toISOString(),
       lastPaymentDate: new Date().toISOString()
     };
