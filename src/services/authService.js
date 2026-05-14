@@ -72,21 +72,24 @@ const authService = {
         }
         throw new Error("Native Auth failed to return ID Token.");
 
-      } else if (isMobileWeb) {
-        // --- 2. MOBILE BROWSER FLOW (Redirect) ---
-        console.log("📱 [Auth] Using Firebase Redirect flow (to avoid popup blockers)...");
-        const { signInWithRedirect } = await import("firebase/auth");
-        // This will reload the page and redirect to Google
-        await signInWithRedirect(auth, googleProvider);
-        return null; // Page will redirect, execution stops here
-
       } else {
-        // --- 3. DESKTOP BROWSER FLOW (Popup) ---
-        console.log("💻 [Auth] Using Firebase Popup flow...");
-        const { signInWithPopup } = await import("firebase/auth");
-        const result = await signInWithPopup(auth, googleProvider);
-        console.log("✅ [Auth] Browser Login Success:", result.user.email);
-        return result.user;
+        // --- 2. WEB FLOW (Popup with Redirect Fallback) ---
+        console.log("🌐 [Auth] Attempting Web Popup Login...");
+        const { signInWithPopup, signInWithRedirect } = await import("firebase/auth");
+        
+        try {
+          // Popup is generally more reliable for custom domains if not blocked
+          const result = await signInWithPopup(auth, googleProvider);
+          console.log("✅ [Auth] Popup Login Success:", result.user.email);
+          return result.user;
+        } catch (error) {
+          if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+            console.warn("⚠️ [Auth] Popup failed/blocked, falling back to Redirect...");
+            await signInWithRedirect(auth, googleProvider);
+            return null;
+          }
+          throw error;
+        }
       }
     } catch (error) {
       console.error("❌ [Auth] Google Login Failure:", error);

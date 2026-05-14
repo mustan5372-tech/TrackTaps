@@ -218,8 +218,10 @@ const useAppStore = create(
             // 3. Handle redirect results (Mobile Browser Flow)
             const redirectUser = await authService.handleRedirectResult();
             if (redirectUser) {
-              console.log("🎯 [AppStore] Manual handling of redirect user:", redirectUser.email);
+              console.log("🎯 [AppStore] Redirect User found, applying session...");
               get().handleUserAuthenticated(redirectUser);
+            } else {
+              console.log("ℹ️ [AppStore] No pending redirect session found.");
             }
           } catch (err) {
             console.error("❌ [AppStore] Auth init failed:", err);
