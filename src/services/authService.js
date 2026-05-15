@@ -45,8 +45,7 @@ const authService = {
       if (!auth.app) throw new Error("Firebase not initialized");
 
       const isAPK = isNativeAPK();
-      const isMobile = isMobileBrowser();
-      console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : isMobile ? 'MOBILE WEB' : 'DESKTOP'}`);
+      console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : 'WEB'}`);
       
       await authService.init();
 
@@ -63,20 +62,18 @@ const authService = {
         }
         throw new Error("Native Auth failed.");
 
-      } else if (isMobile) {
-        // --- 2. MOBILE WEB FLOW (Redirect to bypass popup blockers) ---
-        const { signInWithRedirect } = await import("firebase/auth");
-        console.log("🌐 [Auth] Using Redirect for Mobile Browser stability...");
-        return await signInWithRedirect(auth, googleProvider);
-        
       } else {
-        // --- 3. DESKTOP WEB FLOW (Standard Popup) ---
+        // --- 2. WEB FLOW (Standard Popup for both Desktop & Mobile) ---
         console.log("🌐 [Auth] Using standard Firebase Web Popup...");
         const result = await signInWithPopup(auth, googleProvider);
         return result.user;
       }
     } catch (error) {
       console.error("❌ [Auth] Google Login Failure:", error);
+      // Fallback for blocked popups on mobile
+      if (error.code === 'auth/popup-blocked') {
+        alert("🔒 Popup Blocked: Please enable popups for this site or try Email Login.");
+      }
       throw error;
     }
   },
