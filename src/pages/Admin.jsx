@@ -4,10 +4,11 @@ import useAppStore from '../store/appStore';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import syncService from '../services/syncService';
 
 function Admin() {
   const navigate = useNavigate();
-  const { user, role } = useAppStore();
+  const { user, role, isAuthLoading } = useAppStore();
   const isOwner = role === 'ADMIN_OWNER';
   const isCore = role === 'CORE_MEMBER';
   const canAccess = isOwner || isCore;
@@ -23,6 +24,15 @@ function Admin() {
   }, [user, role, navigate]);
 
   const [reports, setReports] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    premiumUsers: 0,
+    totalRevenue: 0,
+    activeSubscriptions: 0
+  });
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('users'); // 'users' or 'reports'
 
   const fetchReports = async () => {
@@ -172,6 +182,15 @@ function Admin() {
     u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     u.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (isAuthLoading || loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', color: 'var(--text-dim)' }}>
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} style={{ marginRight: '12px' }}>⌛</motion.div>
+        Initializing Admin Tools...
+      </div>
+    );
+  }
 
   if (!canAccess) return null;
 
