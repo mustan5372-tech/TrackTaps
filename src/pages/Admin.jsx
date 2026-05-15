@@ -69,8 +69,8 @@ function Admin() {
 
         userList.push({
           uid: doc.id,
-          name: data.displayName || 'Anonymous',
-          email: data.email || 'No email',
+          name: data.displayName || data.phoneNumber || 'Anonymous',
+          email: data.email || (data.phoneNumber ? `Phone: ${data.phoneNumber}` : 'No email'),
           role: data.role || (sub.status === 'active' ? 'PREMIUM' : 'USER'),
           plan: planName,
           status: data.banned ? 'Banned' : (sub.status === 'active' ? 'Active' : 'Inactive'),
