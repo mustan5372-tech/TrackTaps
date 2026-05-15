@@ -506,19 +506,94 @@ function About() {
       `}</style>
 
       <div className="about-container" style={{ position: 'relative', zIndex: 1, padding: '60px 40px' }}>
-        {/* HERO SECTION */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="about-hero-cinematic" style={{ marginBottom: '100px', textAlign: 'center' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid var(--primary-glow)', color: 'var(--primary-light)', padding: '8px 16px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', marginBottom: '24px' }}>
-            Premium Student Ecosystem
-          </div>
-          <h1 style={{ fontSize: 'clamp(32px, 8vw, 64px)', fontWeight: '900', color: 'var(--text-main)', lineHeight: '1.1', marginBottom: '24px' }}>
-            Academic Intelligence <br/> <span style={{ color: 'var(--primary-light)' }}>Redefined.</span>
+        {/* HERO SECTION - REFACTORED FOR STABLE CENTERING */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          style={{ 
+            marginBottom: '100px', 
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            position: 'relative'
+          }}
+        >
+          {/* Top Badge */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              background: 'rgba(139, 92, 246, 0.1)', 
+              border: '1px solid var(--primary-glow)', 
+              color: 'var(--primary-light)', 
+              padding: '8px 16px', 
+              borderRadius: '20px', 
+              fontSize: '11px', 
+              fontWeight: '700', 
+              textTransform: 'uppercase', 
+              marginBottom: '32px' 
+            }}
+          >
+            <span style={{ fontSize: '14px' }}>✨</span> Premium Student Ecosystem
+          </motion.div>
+
+          {/* Main Heading */}
+          <h1 style={{ 
+            fontSize: 'clamp(32px, 8vw, 64px)', 
+            fontWeight: '900', 
+            color: 'var(--text-main)', 
+            lineHeight: '1.1', 
+            marginBottom: '24px',
+            maxWidth: '900px'
+          }}>
+            Academic Intelligence <br/> 
+            <span style={{ 
+              background: 'linear-gradient(135deg, var(--primary-light) 0%, #d946ef 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              display: 'inline-block'
+            }}>
+              Redefined.
+            </span>
           </h1>
-          <p style={{ fontSize: '16px', color: 'var(--text-dim)', lineHeight: '1.6', maxWidth: '600px', margin: '0 auto 32px' }}>
+
+          {/* Description Paragraph */}
+          <p style={{ 
+            fontSize: '18px', 
+            color: 'var(--text-dim)', 
+            lineHeight: '1.7', 
+            maxWidth: '650px', 
+            marginBottom: '40px',
+            fontWeight: '400'
+          }}>
             TrackTaps is building the next generation of academic tools, starting with smart attendance tracking and AI-driven student insights.
           </p>
-          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: 'white', padding: '12px 28px', borderRadius: '12px', textDecoration: 'none', fontWeight: '700', fontSize: '15px', boxShadow: '0 10px 20px var(--primary-glow)' }}>
-            Explore Platform →
+
+          {/* Call to Action */}
+          <Link 
+            to="/" 
+            style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '12px', 
+              background: 'var(--primary)', 
+              color: 'white', 
+              padding: '16px 36px', 
+              borderRadius: '16px', 
+              textDecoration: 'none', 
+              fontWeight: '800', 
+              fontSize: '16px', 
+              boxShadow: '0 15px 30px var(--primary-glow)',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Explore Platform
+            <span style={{ fontSize: '18px' }}>→</span>
           </Link>
         </motion.section>
 
