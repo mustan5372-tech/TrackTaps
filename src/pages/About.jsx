@@ -628,6 +628,8 @@ function About() {
           </div>
         </motion.section>
 
+        </motion.section>
+
         {/* ROADMAP SECTION */}
         <motion.section className="about-section" style={{ marginBottom: '60px' }}>
           <h2 style={{ fontSize: '40px', fontWeight: '800', textAlign: 'center', marginBottom: '60px', color: 'var(--text-main)' }}>The Roadmap</h2>
@@ -637,6 +639,40 @@ function About() {
             ))}
           </div>
         </motion.section>
+
+        {/* Community Link */}
+        <section style={{ marginTop: '64px', textAlign: 'center', paddingBottom: '120px' }}>
+          <div style={{ 
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
+            border: '1px solid rgba(139, 92, 246, 0.2)',
+            borderRadius: '24px',
+            padding: '32px 24px',
+            maxWidth: '500px',
+            margin: '0 auto'
+          }}>
+            <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>
+              Join the <span style={{ color: 'var(--primary-light)' }}>Pulse</span>
+            </h3>
+            <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '24px', lineHeight: '1.6' }}>
+              See where you stand in the TrackTaps global community and stay motivated with your peers.
+            </p>
+            <button 
+              onClick={() => navigate('/community')}
+              style={{
+                background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%)',
+                border: 'none',
+                color: 'white',
+                padding: '12px 32px',
+                borderRadius: '12px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                boxShadow: '0 10px 20px var(--primary-glow)'
+              }}
+            >
+              Open Leaderboard 🚀
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   );

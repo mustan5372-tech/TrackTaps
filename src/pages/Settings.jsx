@@ -758,6 +758,74 @@ function Settings() {
           </div>
         </div>
 
+        {/* Community & Leaderboard */}
+        <div className="dashboard-card">
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="card-title">🏆 Community & Leaderboard</span>
+            <span style={{ 
+              fontSize: '10px', 
+              background: 'rgba(139, 92, 246, 0.2)', 
+              color: 'var(--primary-light)', 
+              padding: '4px 10px', 
+              borderRadius: '100px', 
+              fontWeight: '800' 
+            }}>BETA</span>
+          </div>
+          <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '13px' }}>
+              See how you rank against other students in the TrackTaps community.
+            </p>
+            <button
+              onClick={() => navigate('/community')}
+              style={{
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px solid var(--primary)',
+                background: 'rgba(139, 92, 246, 0.1)',
+                color: 'var(--primary-light)',
+                cursor: 'pointer',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              🚀 Open Leaderboard
+            </button>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              paddingTop: '12px',
+              borderTop: '1px solid rgba(255,255,255,0.05)'
+            }}>
+              <div>
+                <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--text-main)' }}>Incognito Mode</p>
+                <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-dim)' }}>Hide your rank from others</p>
+              </div>
+              <div style={{ 
+                width: '40px', 
+                height: '20px', 
+                background: 'rgba(255,255,255,0.05)', 
+                borderRadius: '100px',
+                position: 'relative',
+                cursor: 'pointer'
+              }}>
+                <div style={{ 
+                  position: 'absolute', 
+                  left: '2px', 
+                  top: '2px', 
+                  width: '16px', 
+                  height: '16px', 
+                  background: 'var(--text-dim)', 
+                  borderRadius: '50%' 
+                }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* About */}
         <div className="dashboard-card">
           <div className="card-header">

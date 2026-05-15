@@ -20,6 +20,8 @@ import GlobalToast from './components/GlobalToast';
 import AuthModal from './components/AuthModal';
 import logo from '../icon.png';
 
+import Community from './pages/Community';
+
 function App() {
   const { initAuth, isAuthLoading, isRestoringSession, isAuthModalOpen, setAuthModalOpen } = useAppStore();
   const [isStaging, setIsStaging] = React.useState(false);
@@ -101,6 +103,7 @@ function App() {
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
       <Routes>
         <Route path="/pod" element={<Pod />} />
+        <Route path="/community" element={<AppShell><Community /></AppShell>} />
         <Route path="/" element={<AppShell><Home /></AppShell>} />
         <Route path="/calendar" element={<AppShell><Calendar /></AppShell>} />
         <Route path="/timetable" element={<AppShell><Timetable /></AppShell>} />
