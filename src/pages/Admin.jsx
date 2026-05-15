@@ -403,27 +403,6 @@ function Admin() {
                             >
                               {u.status === 'Active' ? 'Change' : 'Assign'}
                             </button>
-                            {u.status === 'Active' && (
-                              <button 
-                                onClick={() => {
-                                  const select = document.getElementById(`plan-select-${u.uid}`);
-                                  const plan = planOptions.find(p => p.id === select.value);
-                                  handleAction('extend', u, plan);
-                                }}
-                                style={{ 
-                                  background: 'rgba(16, 185, 129, 0.1)', 
-                                  border: '1px solid rgba(16, 185, 129, 0.2)', 
-                                  color: '#10b981', 
-                                  padding: '6px 12px', 
-                                  borderRadius: '8px', 
-                                  fontSize: '11px', 
-                                  cursor: 'pointer', 
-                                  fontWeight: '800'
-                                }}
-                              >
-                                Extend
-                              </button>
-                            )}
                           </div>
                         </div>
                       )}
@@ -448,7 +427,8 @@ function Admin() {
                         ⚠️ Report
                       </button>
 
-                      {u.status === 'Active' && (
+                      {/* Remove Premium - OWNER ONLY */}
+                      {isOwner && u.status === 'Active' && (
                         <button 
                           onClick={() => handleAction('remove_premium', u)}
                           style={{ background: 'rgba(245, 158, 11, 0.1)', border: 'none', color: '#f59e0b', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
