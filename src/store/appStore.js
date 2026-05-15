@@ -1037,13 +1037,21 @@ const useAppStore = create(
         
         /**
          * Full sync - recalculate everything
+         * Wrapped in try-catch to prevent global app crashes if data is malformed
          */
         fullSync: () => {
-          get().syncTimetableToCalendar();
-          get().updateSubjectStats();
-          get().updateSemesterStats();
-          get().updateDashboardStats();
-          get().generateInsights();
+          try {
+            console.log("🔄 [AppStore] Performing Full Sync...");
+            get().syncTimetableToCalendar();
+            get().updateSubjectStats();
+            get().updateSemesterStats();
+            get().updateDashboardStats();
+            get().generateInsights();
+            console.log("✅ [AppStore] Full Sync Complete");
+          } catch (error) {
+            console.error("❌ [AppStore] Full Sync failed critically:", error);
+            // We don't throw here to prevent the UI from blanking out
+          }
         },
         
         /**

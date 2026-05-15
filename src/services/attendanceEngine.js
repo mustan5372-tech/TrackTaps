@@ -15,10 +15,10 @@ class AttendanceEngine {
     const events = [];
     const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
-    // CRITICAL: Ensure we have a valid start and end date from semester settings
-    // If missing, we default to today, but the UI should ensure these are set.
-    const semesterStartStr = semesterSettings.startDate;
-    const semesterEndStr = semesterSettings.endDate;
+    const semesterStartStr = semesterSettings?.startDate;
+    const semesterEndStr = semesterSettings?.endDate;
+    
+    if (!timetableData || typeof timetableData !== 'object') return [];
 
     if (!semesterStartStr) {
       console.warn("⚠️ [AttendanceEngine] semesterSettings.startDate is missing! Defaulting to today.");
@@ -122,7 +122,11 @@ class AttendanceEngine {
    * Calculate semester-wide metrics for a subject
    */
   static calculateSemesterSubjectMetrics(subjectName, semesterSettings, timetableData, calendarEvents, attendanceData, subjects = []) {
-    const subject = subjects.find(s => s.name === subjectName);
+    if (!subjectName || !Array.isArray(calendarEvents)) {
+      return { present: 0, total: 0, absent: 0, percentage: 0, bunkableNow: 0, mustAttend: 0 };
+    }
+
+    const subject = (subjects || []).find(s => s.name === subjectName);
     const stats = this.calculateSubjectStats(subjectName, calendarEvents, attendanceData, subjects);
     
     // Total planned classes in the entire semester for this subject
@@ -232,8 +236,11 @@ class AttendanceEngine {
    * Calculate attendance statistics for a subject
    */
   static calculateSubjectStats(subjectName, calendarEvents, attendanceData, subjects = []) {
+    if (!subjectName || !Array.isArray(calendarEvents)) {
+      return { subjectName: subjectName || 'Unknown', present: 0, absent: 0, off: 0, unmarked: 0, total: 0, percentage: 0, status: 'critical' };
+    }
     const subjectEvents = calendarEvents.filter(e => e.subjectName === subjectName);
-    const subject = subjects.find(s => s.name === subjectName);
+    const subject = (subjects || []).find(s => s.name === subjectName);
 
     // Baseline stats - ensure numeric and handle potential string formats from Pod.ai
     const parseValue = (val) => {
@@ -492,11 +499,13 @@ class AttendanceEngine {
     const stats = this.calculateOverallStats(subjects, calendarEvents, attendanceData);
     const insights = [];
 
-    stats.subjectStats.forEach(stat => {
-      if (stat.status === 'critical') {
+    (stats.subjectStats || []).forEach(stat => {
+      if (stat && stat.status === 'critical') {
         const target = 75;
-        const needed = Math.ceil((target * stat.total - 100 * stat.present) / (100 - target));
-        const finalNeeded = Math.max(0, stat.total === 0 ? 1 : needed);
+        const total = stat.total || 0;
+        const present = stat.present || 0;
+        const needed = Math.ceil((target * total - 100 * present) / (100 - target));
+        const finalNeeded = Math.max(0, total === 0 ? 1 : (isNaN(needed) ? 0 : needed));
         insights.push({
           type: 'critical',
           subject: stat.subjectName,
