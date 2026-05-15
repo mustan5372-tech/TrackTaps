@@ -114,7 +114,7 @@ const FounderCard = React.memo(({ member, index, onSelect }) => {
           width: '90px',
           height: '90px',
           margin: '0 auto 24px',
-          background: 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
+          background: member.image ? 'none' : 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
@@ -126,10 +126,18 @@ const FounderCard = React.memo(({ member, index, onSelect }) => {
             ? '0 0 40px rgba(139, 92, 246, 0.6)' 
             : '0 0 20px rgba(139, 92, 246, 0.3)',
           position: 'relative',
-          zIndex: 2
+          zIndex: 2,
+          overflow: 'hidden',
+          border: '2px solid var(--primary-glow)'
         }}
       >
-        {member.initials}
+        {member.image ? (
+          <img 
+            src={member.image} 
+            alt={member.name} 
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+          />
+        ) : member.initials}
       </motion.div>
 
       {/* Role Badge */}
@@ -234,7 +242,7 @@ const ProfileModal = ({ member, onClose }) => {
             width: '120px',
             height: '120px',
             margin: '0 auto 24px',
-            background: 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
+            background: member.image ? 'none' : 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -242,9 +250,17 @@ const ProfileModal = ({ member, onClose }) => {
             fontSize: '48px',
             fontWeight: '800',
             color: 'white',
-            boxShadow: '0 0 40px rgba(139, 92, 246, 0.4)'
+            boxShadow: '0 0 40px rgba(139, 92, 246, 0.4)',
+            overflow: 'hidden',
+            border: '3px solid var(--primary-glow)'
           }}>
-            {member.initials}
+            {member.image ? (
+              <img 
+                src={member.image} 
+                alt={member.name} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
+            ) : member.initials}
           </div>
           <h2 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>{member.name}</h2>
           <div style={{ color: 'var(--primary-light)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '14px' }}>{member.role}</div>
@@ -393,6 +409,7 @@ function About() {
       quote: "We didn't just want another attendance tracker. We wanted to build a smarter academic ecosystem for students.",
       github: "https://github.com/mustan5372-tech",
       email: "tracktaps@gmail.com",
+      image: "/mustansir.jpg",
       projects: ["TrackTaps Plus", "AI Engine", "Native Mobile Bridge"]
     },
     {
