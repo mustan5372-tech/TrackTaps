@@ -112,36 +112,32 @@ const authService = {
 
   setupRecaptcha: async (containerId) => {
     try {
-      // Clear existing verifier if it exists to avoid multiple instances/conflicts
+      // 1. Rigorous Cleanup
       if (window.recaptchaVerifier) {
         try {
           window.recaptchaVerifier.clear();
-          const container = document.getElementById(containerId);
-          if (container) container.innerHTML = ''; // Clean up container DOM
-        } catch (e) {
-          console.warn("⚠️ [Auth] Error clearing old reCAPTCHA:", e);
-        }
+          window.recaptchaVerifier = null;
+        } catch (e) {}
       }
       
-      console.log("🛠️ [Auth] Initializing Invisible reCAPTCHA on:", containerId);
+      const container = document.getElementById(containerId);
+      if (container) container.innerHTML = ''; 
+
+      console.log("🛠️ [Auth] Re-initializing reCAPTCHA on:", containerId);
       
+      // 2. Initialize with specific settings for mobile stability
       window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
         'size': 'invisible',
-        'callback': (response) => {
-          console.log("✅ [Auth] reCAPTCHA verified successfully");
-        },
-        'expired-callback': () => {
-          console.warn("⚠️ [Auth] reCAPTCHA expired. User must retry.");
+        'callback': () => {
+          console.log("✅ [Auth] reCAPTCHA solved");
         }
       });
       
-      // Explicitly render
-      const widgetId = await window.recaptchaVerifier.render();
-      console.log("🎨 [Auth] reCAPTCHA Widget Rendered:", widgetId);
+      await window.recaptchaVerifier.render();
       return window.recaptchaVerifier;
     } catch (error) {
-      console.error("❌ [Auth] reCAPTCHA Initialization Failure:", error);
-      throw new Error(`Security check failed: ${error.message || 'Please refresh and try again.'}`);
+      console.error("❌ [Auth] reCAPTCHA Init Error:", error);
+      throw new Error("Security check failed. Please refresh the page and try again.");
     }
   },
 
