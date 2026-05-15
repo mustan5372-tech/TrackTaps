@@ -45,27 +45,32 @@ const authService = {
       if (!auth.app) throw new Error("Firebase not initialized");
 
       const isAPK = isNativeAPK();
-      console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : 'WEB'}`);
+      const isMobile = isMobileBrowser();
+      console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : isMobile ? 'MOBILE WEB' : 'DESKTOP'}`);
       
       await authService.init();
 
       if (isAPK) {
-        // --- 1. NATIVE APK FLOW (Native Plugin) ---
-        console.log("🚀 [Auth] Using Capacitor Native Auth plugin...");
+        // --- 1. NATIVE APK FLOW ---
         const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
         try { await GoogleAuth.initialize(); } catch (e) {}
-
         const nativeUser = await GoogleAuth.signIn();
+        
         if (nativeUser && nativeUser.authentication.idToken) {
           const { GoogleAuthProvider, signInWithCredential } = await import("firebase/auth");
           const credential = GoogleAuthProvider.credential(nativeUser.authentication.idToken);
-          const result = await signInWithCredential(auth, credential);
-          return result.user;
+          return (await signInWithCredential(auth, credential)).user;
         }
-        throw new Error("Native Auth failed to return ID Token.");
+        throw new Error("Native Auth failed.");
 
+      } else if (isMobile) {
+        // --- 2. MOBILE WEB FLOW (Redirect to bypass popup blockers) ---
+        const { signInWithRedirect } = await import("firebase/auth");
+        console.log("🌐 [Auth] Using Redirect for Mobile Browser stability...");
+        return await signInWithRedirect(auth, googleProvider);
+        
       } else {
-        // --- 2. WEB FLOW (Original Stable Version) ---
+        // --- 3. DESKTOP WEB FLOW (Standard Popup) ---
         console.log("🌐 [Auth] Using standard Firebase Web Popup...");
         const result = await signInWithPopup(auth, googleProvider);
         return result.user;

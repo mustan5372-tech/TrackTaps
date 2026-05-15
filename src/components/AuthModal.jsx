@@ -110,9 +110,11 @@ function AuthModal({ isOpen, onClose }) {
       let friendlyMessage = err.message || 'Failed to send OTP';
       
       if (err.code === 'auth/too-many-requests') {
-        friendlyMessage = 'Too many attempts. Please try again later.';
+        friendlyMessage = 'Too many attempts. Please try again later or use Google Login.';
       } else if (err.code === 'auth/invalid-phone-number') {
         friendlyMessage = 'The phone number format is invalid.';
+      } else if (err.code === 'auth/network-request-failed') {
+        friendlyMessage = 'Network error. Please check your internet connection.';
       }
       
       setError(friendlyMessage);
@@ -259,11 +261,18 @@ function AuthModal({ isOpen, onClose }) {
           borderRadius: '24px',
           width: '100%',
           maxWidth: '400px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           padding: '32px',
           position: 'relative',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+          scrollbarWidth: 'none'
         }}
       >
+        <style>{`
+          .auth-modal::-webkit-scrollbar { display: none; }
+          @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        `}</style>
         <div id="recaptcha-container"></div>
 
         {view !== 'profile' && (
