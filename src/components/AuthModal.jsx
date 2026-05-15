@@ -131,18 +131,25 @@ function AuthModal({ isOpen, onClose }) {
     try {
       const user = await authService.verifyOTP(confirmationResult, otp);
       
-      // Check if user is already complete
-      // We check Firestore as well because phone auth doesn't set email/name in the auth profile initially
+      console.log("✅ [AuthModal] OTP Verified. Checking profile completeness...");
+      
+      // Check if user is already complete in Firestore
       const cloudData = await syncService.fetchFromCloud(user.uid);
       
-      if (!user.displayName && !cloudData?.displayName) {
+      // A user is "complete" if they have both name and email in Firestore OR Firebase Auth
+      const hasName = user.displayName || cloudData?.displayName;
+      const hasEmail = user.email || cloudData?.email;
+
+      if (!hasName || !hasEmail) {
         setView('profile');
       } else {
+        // All good, finalize
         handleUserAuthenticated(user);
         onClose();
       }
     } catch (err) {
-      setError(err.message || 'Invalid OTP');
+      console.error("❌ [AuthModal] OTP Verification Error:", err);
+      setError(err.message || 'Invalid OTP. Please check the code and try again.');
     } finally {
       setLoading(false);
     }
@@ -152,26 +159,52 @@ function AuthModal({ isOpen, onClose }) {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
     try {
       const user = authService.getCurrentUser();
-      if (!user) throw new Error("Authentication failed. Please try again.");
+      if (!user) throw new Error("Authentication session lost. Please try logging in again.");
 
-      // 1. Update Firebase Auth display name
+      // Validation
+      if (fullName.trim().length < 2) throw new Error("Please enter your full name.");
+      if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) throw new Error("Please enter a valid email address.");
+
+      console.log("📦 [AuthModal] Saving profile details...");
+
+      // 1. Update Firebase Auth display name (for client-side auth state)
       await authService.updateUserProfile(user, { displayName: fullName });
 
-      // 2. Prepare user object with email (for identification in app state)
-      const updatedUser = {
-        ...user,
+      // 2. Prepare comprehensive user object for Firestore (Admin Visibility)
+      const profileData = {
+        uid: user.uid,
         displayName: fullName,
-        email: email || user.email // user.email might be null for phone auth
+        email: email,
+        phoneNumber: user.phoneNumber || `+91${phoneNumber}`,
+        authProvider: 'phone',
+        premium: false,
+        plan: 'FREE',
+        createdAt: new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+        metadata: {
+          browser: navigator.userAgent,
+          platform: window.Capacitor?.isNativePlatform() ? 'apk' : 'web'
+        }
       };
 
-      // 3. Complete authentication in store
-      await handleUserAuthenticated(updatedUser);
+      // 3. Persist to Firestore (Crucial for Admin Panel identification)
+      await syncService.saveToCloud(user.uid, profileData);
+
+      // 4. Update App State
+      await handleUserAuthenticated({
+        ...user,
+        displayName: fullName,
+        email: email
+      });
       
+      console.log("✅ [AuthModal] Profile completion successful!");
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to save profile');
+      console.error("❌ [AuthModal] Profile Completion Error:", err);
+      setError(err.message || 'Failed to save profile. Please check your details.');
     } finally {
       setLoading(false);
     }
@@ -241,25 +274,36 @@ function AuthModal({ isOpen, onClose }) {
               <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px', textAlign: 'center' }}>Welcome Back</h2>
               <p style={{ fontSize: '14px', color: 'var(--text-dim)', textAlign: 'center', marginBottom: '24px' }}>Choose your preferred login method.</p>
               
-              {/* Google Login Recommendation */}
+              {/* Subtle Google Login Recommendation */}
               <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.15 }}
+                onClick={handleGoogleLogin}
                 style={{ 
-                  background: 'rgba(139, 92, 246, 0.1)', 
-                  border: '1px solid rgba(139, 92, 246, 0.2)', 
-                  borderRadius: '12px', 
-                  padding: '12px 16px', 
-                  marginBottom: '20px',
+                  background: 'rgba(139, 92, 246, 0.05)', 
+                  border: '1px solid rgba(139, 92, 246, 0.15)', 
+                  borderRadius: '16px', 
+                  padding: '14px 18px', 
+                  marginBottom: '24px',
                   display: 'flex',
-                  gap: '12px',
-                  alignItems: 'center'
+                  gap: '14px',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}
               >
-                <span style={{ fontSize: '20px' }}>💡</span>
-                <p style={{ fontSize: '12px', color: 'var(--text-main)', margin: 0, lineHeight: '1.4', fontWeight: '500' }}>
-                  Google Login is <span style={{ color: 'var(--primary-light)', fontWeight: '700' }}>highly recommended</span> for the fastest and smoothest experience.
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)',
+                  transform: 'translateX(-100%)',
+                  animation: 'shimmer 3s infinite'
+                }} />
+                <span style={{ fontSize: '24px' }}>✨</span>
+                <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: 0, lineHeight: '1.5', fontWeight: '500' }}>
+                  <span style={{ color: 'var(--text-main)', fontWeight: '700' }}>Fastest Access:</span> Google Login is recommended for a seamless one-tap experience.
                 </p>
               </motion.div>
 
@@ -391,6 +435,7 @@ function AuthModal({ isOpen, onClose }) {
                 label="6-Digit OTP" 
                 type="text" 
                 inputMode="numeric"
+                autoComplete="one-time-code"
                 maxLength="6" 
                 placeholder="000000"
                 value={otp} 
@@ -414,28 +459,63 @@ function AuthModal({ isOpen, onClose }) {
           )}
 
           {view === 'profile' && (
-            <motion.form key="profile" onSubmit={handleProfileCompletion} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
-              <h3 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>Complete Your Profile</h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '24px' }}>Please provide your details to continue.</p>
+            <motion.form 
+              key="profile" 
+              onSubmit={handleProfileCompletion} 
+              initial={{ opacity: 0, x: 10 }} 
+              animate={{ opacity: 1, x: 0 }} 
+              exit={{ opacity: 0, x: -10 }}
+            >
+              <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>Complete Your Profile</h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '28px', lineHeight: '1.5' }}>
+                Almost there! We just need a few details to set up your account properly.
+              </p>
               
-              <Input label="Full Name" type="text" placeholder="John Doe" value={fullName} onChange={setFullName} required />
-              <Input label="Email Address" type="email" placeholder="john@example.com" value={email} onChange={setEmail} required />
+              <Input 
+                label="Full Name" 
+                type="text" 
+                placeholder="Enter your name" 
+                value={fullName} 
+                onChange={setFullName} 
+                required 
+                autoFocus
+              />
+              
+              <Input 
+                label="Email Address" 
+                type="email" 
+                placeholder="email@example.com" 
+                value={email} 
+                onChange={setEmail} 
+                required 
+              />
               
               <div style={{ 
-                background: 'rgba(255, 193, 7, 0.1)', 
-                border: '1px solid rgba(255, 193, 7, 0.2)', 
-                borderRadius: '10px', 
-                padding: '10px', 
-                marginBottom: '20px' 
+                background: 'rgba(139, 92, 246, 0.1)', 
+                border: '1px solid rgba(139, 92, 246, 0.2)', 
+                borderRadius: '12px', 
+                padding: '12px 16px', 
+                marginBottom: '24px' 
               }}>
-                <p style={{ fontSize: '11px', color: '#ffc107', margin: 0, lineHeight: '1.4' }}>
-                  <strong>Note:</strong> Email is required for account recovery and managing your premium subscription.
-                </p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <span style={{ fontSize: '16px' }}>🔒</span>
+                  <p style={{ fontSize: '11px', color: 'var(--text-dim)', margin: 0, lineHeight: '1.5' }}>
+                    Your email will be used for <span style={{ color: 'var(--primary-light)', fontWeight: '600' }}>account recovery</span> and managing your premium subscription safely.
+                  </p>
+                </div>
               </div>
 
-              {error && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '16px' }}>{error}</p>}
+              {error && (
+                <motion.p 
+                  initial={{ opacity: 0, height: 0 }} 
+                  animate={{ opacity: 1, height: 'auto' }} 
+                  style={{ color: '#ef4444', fontSize: '12px', marginBottom: '16px', fontWeight: '500' }}
+                >
+                  ⚠️ {error}
+                </motion.p>
+              )}
               
-              <SubmitButton label="Continue" loading={loading} />
+              <SubmitButton label="Initialize Account" loading={loading} />
             </motion.form>
           )}
         </AnimatePresence>

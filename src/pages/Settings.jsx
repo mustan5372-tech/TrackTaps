@@ -269,18 +269,78 @@ function Settings() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '12px' }}>
-                  <img src={user.photoURL} alt={user.displayName} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '2px solid var(--primary)' }} />
-                  <div style={{ flex: 1 }}>
-                    <p style={{ color: 'var(--text-main)', fontWeight: '700', margin: 0 }}>{user.displayName}</p>
-                    <p style={{ color: 'var(--text-dim)', fontSize: '12px', margin: 0 }}>{user.email}</p>
+                {/* User Identity Details Card */}
+                <div style={{ 
+                  background: 'rgba(255, 255, 255, 0.03)', 
+                  border: '1px solid rgba(255, 255, 255, 0.05)', 
+                  padding: '24px', 
+                  borderRadius: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+                    <div style={{ position: 'relative' }}>
+                      <img 
+                        src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=random`} 
+                        alt={user.displayName} 
+                        style={{ width: '60px', height: '60px', borderRadius: '50%', border: '2px solid var(--primary)' }} 
+                      />
+                      <div style={{ 
+                        position: 'absolute', 
+                        bottom: 0, 
+                        right: 0, 
+                        background: 'var(--primary)', 
+                        width: '18px', 
+                        height: '18px', 
+                        borderRadius: '50%', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        fontSize: '10px',
+                        border: '2px solid #0f172a'
+                      }}>
+                        {user.providerData?.[0]?.providerId === 'google.com' ? 'G' : '📱'}
+                      </div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ color: 'var(--text-main)', fontWeight: '800', fontSize: '18px', margin: 0 }}>{user.displayName || 'TrackTaps User'}</p>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '12px', margin: 0 }}>ID: {user.uid.substring(0, 12)}...</p>
+                    </div>
+                    <button
+                      onClick={logout}
+                      style={{ 
+                        background: 'rgba(239, 68, 68, 0.1)', 
+                        border: '1px solid rgba(239, 68, 68, 0.2)', 
+                        color: '#ef4444', 
+                        padding: '8px 16px', 
+                        borderRadius: '10px', 
+                        fontSize: '12px', 
+                        fontWeight: '700',
+                        cursor: 'pointer' 
+                      }}
+                    >
+                      Logout
+                    </button>
                   </div>
-                  <button
-                    onClick={logout}
-                    style={{ background: 'transparent', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}
-                  >
-                    Logout
-                  </button>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Email Address</label>
+                      <p style={{ fontSize: '13px', color: 'var(--text-main)', margin: 0, fontWeight: '500' }}>{user.email || 'Not provided'}</p>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Phone Number</label>
+                      <p style={{ fontSize: '13px', color: 'var(--text-main)', margin: 0, fontWeight: '500' }}>{user.phoneNumber || 'Not linked'}</p>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Login Method</label>
+                      <p style={{ fontSize: '13px', color: 'var(--primary-light)', margin: 0, fontWeight: '700' }}>
+                        {user.providerData?.[0]?.providerId === 'google.com' ? 'Google Account' : 
+                         user.providerData?.[0]?.providerId === 'phone' ? 'Mobile OTP' : 'Email & Password'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="account-actions" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>

@@ -108,40 +108,59 @@ const authService = {
     }
   },
 
-  // --- Phone Authentication ---
   setupRecaptcha: async (containerId) => {
     try {
+      // Clear existing verifier if it exists to avoid multiple instances/conflicts
       if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
+        try {
+          window.recaptchaVerifier.clear();
+          const container = document.getElementById(containerId);
+          if (container) container.innerHTML = ''; // Clean up container DOM
+        } catch (e) {
+          console.warn("⚠️ [Auth] Error clearing old reCAPTCHA:", e);
+        }
       }
       
-      console.log("🛠️ [Auth] Setting up Recaptcha on:", containerId);
+      console.log("🛠️ [Auth] Initializing Invisible reCAPTCHA on:", containerId);
       
       window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
         'size': 'invisible',
         'callback': (response) => {
-          console.log("✅ [Auth] Recaptcha verified");
+          console.log("✅ [Auth] reCAPTCHA verified successfully");
         },
         'expired-callback': () => {
-          console.warn("⚠️ [Auth] Recaptcha expired");
+          console.warn("⚠️ [Auth] reCAPTCHA expired. User must retry.");
         }
       });
       
-      // Explicitly render to ensure it's ready
-      await window.recaptchaVerifier.render();
+      // Explicitly render
+      const widgetId = await window.recaptchaVerifier.render();
+      console.log("🎨 [Auth] reCAPTCHA Widget Rendered:", widgetId);
       return window.recaptchaVerifier;
     } catch (error) {
-      console.error("❌ [Auth] Recaptcha setup failed:", error);
-      throw error;
+      console.error("❌ [Auth] reCAPTCHA Initialization Failure:", error);
+      throw new Error(`Security check failed: ${error.message || 'Please refresh and try again.'}`);
     }
   },
 
   sendOTP: async (phoneNumber, verifier) => {
     try {
+      console.log(`📡 [Auth] Requesting OTP for: ${phoneNumber}`);
       const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier);
+      console.log("📧 [Auth] OTP sent successfully!");
       return confirmationResult;
     } catch (error) {
-      console.error("❌ [Auth] Send OTP Failure:", error);
+      console.error("❌ [Auth] Firebase OTP Send Failure:", error);
+      
+      // Handle common Firebase phone auth errors
+      if (error.code === 'auth/captcha-check-failed') {
+        throw new Error("Security check failed. Please refresh the page.");
+      } else if (error.code === 'auth/invalid-phone-number') {
+        throw new Error("The phone number provided is invalid.");
+      } else if (error.code === 'auth/too-many-requests') {
+        throw new Error("Too many attempts today. Please try again in 24 hours or use Google Login.");
+      }
+      
       throw error;
     }
   },
