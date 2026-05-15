@@ -5,9 +5,9 @@ import useAppStore from '../store/appStore';
 import ContactUs from '../components/ContactUs';
 
 const fadeInUp = {
-  initial: { opacity: 0, y: 30, filter: 'blur(10px)' },
+  initial: { opacity: 0, y: 20, filter: 'blur(4px)' },
   animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
-  transition: { duration: 0.8, ease: [0.19, 1, 0.22, 1] }
+  transition: { duration: 0.6, ease: [0.19, 1, 0.22, 1] }
 };
 
 const staggerContainer = {
@@ -19,7 +19,7 @@ const staggerContainer = {
 };
 
 const cardHover = {
-  hover: { 
+  hover: window.innerWidth < 768 ? {} : { 
     y: -8,
     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px var(--primary-glow)',
     borderColor: 'var(--primary-light)',
@@ -379,34 +379,38 @@ function Home() {
         }
       `}</style>
 
-      {/* Premium Background Effects */}
+      {/* Premium Background Effects (Optimized) */}
       <div className="home-bg-effects" style={{ position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none', overflow: 'hidden' }}>
         <motion.div 
-          animate={{ x: [0, 100, 0], y: [0, 50, 0], scale: [1, 1.2, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
           style={{
             position: 'absolute',
             top: '10%',
             left: '5%',
-            width: '500px',
-            height: '500px',
+            width: '40vw',
+            height: '40vw',
             background: 'radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)',
             borderRadius: '50%',
-            filter: 'blur(80px)'
+            filter: 'blur(40px)',
+            opacity: 0.4,
+            willChange: 'transform'
           }}
         />
         <motion.div 
-          animate={{ x: [0, -80, 0], y: [0, 100, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          animate={{ x: [0, -40, 0], y: [0, 50, 0] }}
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
           style={{
             position: 'absolute',
             bottom: '5%',
             right: '5%',
-            width: '600px',
-            height: '600px',
+            width: '50vw',
+            height: '50vw',
             background: 'radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)',
             borderRadius: '50%',
-            filter: 'blur(100px)'
+            filter: 'blur(60px)',
+            opacity: 0.3,
+            willChange: 'transform'
           }}
         />
       </div>
@@ -424,8 +428,9 @@ function Home() {
           justifyContent: 'space-between',
           alignItems: 'center',
           gap: '40px',
-          backdropFilter: 'blur(10px)',
-          boxShadow: 'var(--shadow-md)'
+          backdropFilter: window.innerWidth < 768 ? 'none' : 'blur(8px)',
+          boxShadow: 'var(--shadow-md)',
+          willChange: 'transform, opacity'
         }}
       >
         <div className="hero-welcome">

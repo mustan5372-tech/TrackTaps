@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import authService from '../services/authService';
 import useAppStore from '../store/appStore';
+import syncService from '../services/syncService';
 
 function AuthModal({ isOpen, onClose }) {
   const [view, setView] = useState('select'); // select, login, signup, reset, phone, otp
@@ -90,23 +91,31 @@ function AuthModal({ isOpen, onClose }) {
     setLoading(true);
     setError('');
     try {
-      // Basic sanitization: remove spaces, dashes, etc.
-      const sanitizedPhone = phoneNumber.replace(/\s+/g, '');
-      if (!sanitizedPhone.startsWith('+')) {
-        throw new Error('Phone number must start with + and include country code (e.g., +91...)');
+      // Auto-format for Indian users: Ensure it's exactly 10 digits
+      const cleaned = phoneNumber.replace(/\D/g, '');
+      if (cleaned.length !== 10) {
+        throw new Error('Please enter a valid 10-digit mobile number.');
       }
+      
+      const formattedPhone = `+91${cleaned}`;
 
-      console.log("🚀 [Auth] Initiating OTP for:", sanitizedPhone);
+      console.log("🚀 [Auth] Initiating OTP for:", formattedPhone);
       const verifier = await authService.setupRecaptcha('recaptcha-container');
-      const result = await authService.sendOTP(sanitizedPhone, verifier);
+      const result = await authService.sendOTP(formattedPhone, verifier);
       setConfirmationResult(result);
       setView('otp');
       setTimer(60);
     } catch (err) {
       console.error("❌ [AuthModal] Send OTP Error:", err);
-      setError(err.code === 'auth/internal-error' 
-        ? 'Internal Error: Please check if your phone number is valid and country code is correct.' 
-        : (err.message || 'Failed to send OTP'));
+      let friendlyMessage = err.message || 'Failed to send OTP';
+      
+      if (err.code === 'auth/too-many-requests') {
+        friendlyMessage = 'Too many attempts. Please try again later.';
+      } else if (err.code === 'auth/invalid-phone-number') {
+        friendlyMessage = 'The phone number format is invalid.';
+      }
+      
+      setError(friendlyMessage);
       if (window.recaptchaVerifier) {
         try { window.recaptchaVerifier.clear(); } catch(e) {}
       }
@@ -121,10 +130,48 @@ function AuthModal({ isOpen, onClose }) {
     setError('');
     try {
       const user = await authService.verifyOTP(confirmationResult, otp);
-      handleUserAuthenticated(user);
-      onClose();
+      
+      // Check if user is already complete
+      // We check Firestore as well because phone auth doesn't set email/name in the auth profile initially
+      const cloudData = await syncService.fetchFromCloud(user.uid);
+      
+      if (!user.displayName && !cloudData?.displayName) {
+        setView('profile');
+      } else {
+        handleUserAuthenticated(user);
+        onClose();
+      }
     } catch (err) {
       setError(err.message || 'Invalid OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProfileCompletion = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const user = authService.getCurrentUser();
+      if (!user) throw new Error("Authentication failed. Please try again.");
+
+      // 1. Update Firebase Auth display name
+      await authService.updateUserProfile(user, { displayName: fullName });
+
+      // 2. Prepare user object with email (for identification in app state)
+      const updatedUser = {
+        ...user,
+        displayName: fullName,
+        email: email || user.email // user.email might be null for phone auth
+      };
+
+      // 3. Complete authentication in store
+      await handleUserAuthenticated(updatedUser);
+      
+      onClose();
+    } catch (err) {
+      setError(err.message || 'Failed to save profile');
     } finally {
       setLoading(false);
     }
@@ -138,7 +185,7 @@ function AuthModal({ isOpen, onClose }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="auth-overlay"
-      onClick={onClose}
+      onClick={view === 'profile' ? null : onClose}
       style={{
         position: 'fixed',
         inset: 0,
@@ -170,28 +217,52 @@ function AuthModal({ isOpen, onClose }) {
       >
         <div id="recaptcha-container"></div>
 
-        <button 
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            background: 'rgba(255,255,255,0.05)',
-            border: 'none',
-            color: 'var(--text-dim)',
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            cursor: 'pointer'
-          }}
-        >✕</button>
+        {view !== 'profile' && (
+          <button 
+            onClick={onClose}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              background: 'rgba(255,255,255,0.05)',
+              border: 'none',
+              color: 'var(--text-dim)',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              cursor: 'pointer'
+            }}
+          >✕</button>
+        )}
 
         <AnimatePresence mode="wait">
           {view === 'select' && (
             <motion.div key="select" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
               <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px', textAlign: 'center' }}>Welcome Back</h2>
-              <p style={{ fontSize: '14px', color: 'var(--text-dim)', textAlign: 'center', marginBottom: '32px' }}>Choose your preferred login method.</p>
+              <p style={{ fontSize: '14px', color: 'var(--text-dim)', textAlign: 'center', marginBottom: '24px' }}>Choose your preferred login method.</p>
               
+              {/* Google Login Recommendation */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                style={{ 
+                  background: 'rgba(139, 92, 246, 0.1)', 
+                  border: '1px solid rgba(139, 92, 246, 0.2)', 
+                  borderRadius: '12px', 
+                  padding: '12px 16px', 
+                  marginBottom: '20px',
+                  display: 'flex',
+                  gap: '12px',
+                  alignItems: 'center'
+                }}
+              >
+                <span style={{ fontSize: '20px' }}>💡</span>
+                <p style={{ fontSize: '12px', color: 'var(--text-main)', margin: 0, lineHeight: '1.4', fontWeight: '500' }}>
+                  Google Login is <span style={{ color: 'var(--primary-light)', fontWeight: '700' }}>highly recommended</span> for the fastest and smoothest experience.
+                </p>
+              </motion.div>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <AuthButton 
                   icon="🌐" 
@@ -200,19 +271,19 @@ function AuthModal({ isOpen, onClose }) {
                   loading={loading}
                 />
                 <AuthButton 
-                  icon="📧" 
-                  label="Continue with Email" 
-                  onClick={() => setView('login')} 
+                  icon="📱" 
+                  label="Login with Mobile OTP" 
+                  onClick={() => setView('phone')} 
                 />
                 <AuthButton 
-                  icon="📱" 
-                  label="Continue with Mobile" 
-                  onClick={() => setView('phone')} 
+                  icon="📧" 
+                  label="Email & Password" 
+                  onClick={() => setView('login')} 
                 />
               </div>
 
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '24px' }}>
-                By continuing, you agree to our Terms of Service.
+                By continuing, you agree to our <span style={{ color: 'var(--primary-light)' }}>Terms of Service</span>.
               </p>
             </motion.div>
           )}
@@ -273,9 +344,35 @@ function AuthModal({ isOpen, onClose }) {
           {view === 'phone' && (
             <motion.form key="phone" onSubmit={handleSendOTP} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
               <h3 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>Mobile Login</h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '24px' }}>Enter your phone number with country code.</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '24px' }}>Enter your 10-digit mobile number.</p>
               
-              <Input label="Phone Number" type="tel" placeholder="+91 00000 00000" value={phoneNumber} onChange={setPhoneNumber} required />
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                <div style={{ 
+                  flex: '0 0 65px', 
+                  background: 'rgba(255,255,255,0.05)', 
+                  border: '1px solid rgba(255,255,255,0.1)', 
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--text-dim)',
+                  fontSize: '15px',
+                  fontWeight: '600'
+                }}>
+                  🇮🇳 +91
+                </div>
+                <div style={{ flex: 1 }}>
+                  <Input 
+                    label="Number" 
+                    type="tel" 
+                    placeholder="9876543210" 
+                    value={phoneNumber} 
+                    onChange={(val) => setPhoneNumber(val.replace(/\D/g, '').slice(0, 10))} 
+                    required 
+                    autoFocus
+                  />
+                </div>
+              </div>
               
               {error && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '16px' }}>{error}</p>}
               
@@ -288,9 +385,19 @@ function AuthModal({ isOpen, onClose }) {
           {view === 'otp' && (
             <motion.form key="otp" onSubmit={handleVerifyOTP} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
               <h3 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>Verify OTP</h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '24px' }}>Code sent to {phoneNumber}</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '24px' }}>Code sent to <span style={{ color: 'var(--primary-light)', fontWeight: '600' }}>+91 {phoneNumber}</span></p>
               
-              <Input label="6-Digit Code" type="text" maxLength="6" value={otp} onChange={setOtp} required />
+              <Input 
+                label="6-Digit OTP" 
+                type="text" 
+                inputMode="numeric"
+                maxLength="6" 
+                placeholder="000000"
+                value={otp} 
+                onChange={(val) => setOtp(val.replace(/\D/g, '').slice(0, 6))} 
+                required 
+                autoFocus
+              />
               
               {error && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '16px' }}>{error}</p>}
               
@@ -303,6 +410,32 @@ function AuthModal({ isOpen, onClose }) {
                   <button type="button" onClick={handleSendOTP} style={textBtnStyle}>Resend Code</button>
                 )}
               </div>
+            </motion.form>
+          )}
+
+          {view === 'profile' && (
+            <motion.form key="profile" onSubmit={handleProfileCompletion} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>Complete Your Profile</h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '24px' }}>Please provide your details to continue.</p>
+              
+              <Input label="Full Name" type="text" placeholder="John Doe" value={fullName} onChange={setFullName} required />
+              <Input label="Email Address" type="email" placeholder="john@example.com" value={email} onChange={setEmail} required />
+              
+              <div style={{ 
+                background: 'rgba(255, 193, 7, 0.1)', 
+                border: '1px solid rgba(255, 193, 7, 0.2)', 
+                borderRadius: '10px', 
+                padding: '10px', 
+                marginBottom: '20px' 
+              }}>
+                <p style={{ fontSize: '11px', color: '#ffc107', margin: 0, lineHeight: '1.4' }}>
+                  <strong>Note:</strong> Email is required for account recovery and managing your premium subscription.
+                </p>
+              </div>
+
+              {error && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '16px' }}>{error}</p>}
+              
+              <SubmitButton label="Continue" loading={loading} />
             </motion.form>
           )}
         </AnimatePresence>

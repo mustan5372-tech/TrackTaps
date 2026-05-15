@@ -123,7 +123,7 @@ function BunkCalculator() {
         >
           <span style={{ fontSize: '12px', fontWeight: '900', color: 'var(--primary-light)', letterSpacing: '0.05em' }}>AI ENGINE</span>
         </motion.div>
-      </header>er>
+      </header>
 
       <div className="calculator-card">
         <div style={{ marginBottom: '32px' }}>

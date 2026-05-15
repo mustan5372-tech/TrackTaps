@@ -184,6 +184,16 @@ const authService = {
     }
   },
 
+  updateUserProfile: async (user, profileData) => {
+    try {
+      await updateProfile(user, profileData);
+      return true;
+    } catch (error) {
+      console.error("❌ [Auth] Update Profile Failure:", error);
+      throw error;
+    }
+  },
+
   onAuthChange: (callback) => {
     return onAuthStateChanged(auth, callback);
   },
