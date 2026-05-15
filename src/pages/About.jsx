@@ -45,7 +45,7 @@ const BlurRevealText = ({ children, delay = 0 }) => {
 };
 
 // Premium Founders & Core Team Card Component
-const FounderCard = ({ name, role, description, initials, index }) => {
+const FounderCard = ({ name, role, description, initials, index, github, email }) => {
   const [ref, isVisible] = useScrollReveal();
   const [isHovered, setIsHovered] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -207,43 +207,98 @@ const FounderCard = ({ name, role, description, initials, index }) => {
       </motion.p>
 
       {/* Social Icons with hover effects */}
-      <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
-        <motion.div
-          whileHover={{ scale: 1.3, rotate: 10 }}
-          style={{
-            width: '40px',
-            height: '40px',
-            background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.15) 100%)',
-            border: '1px solid var(--primary-glow)',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            fontSize: '18px',
-            transition: 'all 0.3s'
-          }}
-        >
-          🔗
-        </motion.div>
-        <motion.div
-          whileHover={{ scale: 1.3, rotate: -10 }}
-          style={{
-            width: '40px',
-            height: '40px',
-            background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.15) 100%)',
-            border: '1px solid var(--primary-glow)',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            fontSize: '18px',
-            transition: 'all 0.3s'
-          }}
-        >
-          💼
-        </motion.div>
+      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', position: 'relative', zIndex: 1, flexWrap: 'wrap' }}>
+        {github ? (
+          <motion.a
+            href={github}
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(139, 92, 246, 0.1)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              padding: '10px 18px',
+              borderRadius: '14px',
+              color: 'var(--text-main)',
+              textDecoration: 'none',
+              fontSize: '13px',
+              fontWeight: '600',
+              transition: 'all 0.3s',
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            GitHub
+          </motion.a>
+        ) : (
+          <motion.div
+            whileHover={{ scale: 1.2, rotate: 10 }}
+            style={{
+              width: '44px',
+              height: '44px',
+              background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.1) 100%)',
+              border: '1px solid var(--primary-glow)',
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '18px',
+              transition: 'all 0.3s'
+            }}
+          >
+            🔗
+          </motion.div>
+        )}
+
+        {email ? (
+          <motion.a
+            href={`mailto:${email}`}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(139, 92, 246, 0.1)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              padding: '10px 18px',
+              borderRadius: '14px',
+              color: 'var(--text-main)',
+              textDecoration: 'none',
+              fontSize: '13px',
+              fontWeight: '600',
+              transition: 'all 0.3s',
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            Email
+          </motion.a>
+        ) : (
+          <motion.div
+            whileHover={{ scale: 1.2, rotate: -10 }}
+            style={{
+              width: '44px',
+              height: '44px',
+              background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.1) 100%)',
+              border: '1px solid var(--primary-glow)',
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '18px',
+              transition: 'all 0.3s'
+            }}
+          >
+            💼
+          </motion.div>
+        )}
       </div>
     </motion.div>
   );
@@ -803,6 +858,8 @@ function About() {
               role="Lead Developer"
               initials="MS"
               description="AU EV student at Medicaps University building the future of intelligent academic productivity systems through TrackTaps."
+              github="https://github.com/mustan5372-tech"
+              email="tracktaps@gmail.com"
               index={0}
             />
             <FounderCard
