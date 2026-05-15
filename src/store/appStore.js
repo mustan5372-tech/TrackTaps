@@ -190,47 +190,31 @@ const useAppStore = create(
           }
         },
 
-        initAuth: async () => {
-          console.log("🛠️ [AppStore] initAuth started");
-          set({ isAuthLoading: true, isRestoringSession: true });
+        initAuth: () => {
+          set({ isAuthLoading: true });
           
-          const timeoutId = setTimeout(() => {
-            const { isAuthLoading } = get();
-            if (isAuthLoading) {
-              console.warn("⚠️ [AppStore] Auth initialization timed out.");
-              set({ isAuthLoading: false, isRestoringSession: false });
-            }
-          }, 15000);
-
-          // 1. Set up the listener FIRST to catch any state changes
-          const unsubscribe = authService.onAuthChange((user) => {
-            console.log("👤 [AppStore] Auth state change:", user ? user.email : 'No user');
-            clearTimeout(timeoutId);
-
+          // 🛡️ Handle Redirect Result (Critical for Mobile/APK stability)
+          authService.handleRedirectResult().then(user => {
             if (user) {
+              console.log("✅ [AuthStore] Caught Redirect User:", user.email);
               get().handleUserAuthenticated(user);
+            }
+          }).catch(err => {
+            console.error("❌ [AuthStore] Redirect Result Error:", err);
+          });
+
+          // Set up the listener
+          const unsubscribe = authService.onAuthChange(async (user) => {
+            if (user) {
+              console.log("👤 [AuthStore] Auth change: Logged In", user.email);
+              await get().handleUserAuthenticated(user);
             } else {
-              set({ user: null, isAuthLoading: false, isRestoringSession: false, role: 'USER' });
+              console.log("👤 [AuthStore] Auth change: Logged Out");
+              set({ user: null, role: 'USER', isAuthLoading: false, isRestoringSession: false });
             }
           });
 
-          try {
-            // 2. Initialize persistence
-            await authService.init();
-            
-            // 3. Handle redirect results (Mobile Browser Flow)
-            const redirectUser = await authService.handleRedirectResult();
-            if (redirectUser) {
-              console.log("🎯 [AppStore] Redirect User found, applying session...");
-              get().handleUserAuthenticated(redirectUser);
-            } else {
-              console.log("ℹ️ [AppStore] No pending redirect session found.");
-            }
-          } catch (err) {
-            console.error("❌ [AppStore] Auth init failed:", err);
-          }
-
-          // Load local theme
+          // Theme initialization
           const localTheme = localStorage.getItem('tracktaps_theme') || 'default';
           get().setTheme(localTheme);
 
