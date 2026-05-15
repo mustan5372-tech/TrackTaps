@@ -190,26 +190,30 @@ const useAppStore = create(
           }
         },
 
-        initAuth: () => {
+        initAuth: async () => {
           set({ isAuthLoading: true });
           
-          // 🛡️ Handle Redirect Result (Critical for Mobile/APK stability)
-          authService.handleRedirectResult().then(user => {
-            if (user) {
-              console.log("✅ [AuthStore] Caught Redirect User:", user.email);
-              get().handleUserAuthenticated(user);
+          try {
+            // 1. Initialize Persistence (Critical for session recovery after redirect)
+            await authService.init();
+            
+            // 2. Handle Redirect Result (Catch users returning from Google)
+            const redirectUser = await authService.handleRedirectResult();
+            if (redirectUser) {
+              console.log("🎯 [AuthStore] Caught Redirect User:", redirectUser.email);
+              await get().handleUserAuthenticated(redirectUser);
             }
-          }).catch(err => {
-            console.error("❌ [AuthStore] Redirect Result Error:", err);
-          });
+          } catch (err) {
+            console.error("❌ [AuthStore] Initial Redirect/Persistence check failed:", err);
+          }
 
-          // Set up the listener
+          // 3. Set up the ongoing listener
           const unsubscribe = authService.onAuthChange(async (user) => {
             if (user) {
-              console.log("👤 [AuthStore] Auth change: Logged In", user.email);
+              console.log("👤 [AuthStore] Active Session Found:", user.email);
               await get().handleUserAuthenticated(user);
             } else {
-              console.log("👤 [AuthStore] Auth change: Logged Out");
+              console.log("👤 [AuthStore] No Active Session");
               set({ user: null, role: 'USER', isAuthLoading: false, isRestoringSession: false });
             }
           });
