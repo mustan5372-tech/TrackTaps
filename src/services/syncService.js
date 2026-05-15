@@ -40,9 +40,60 @@ const syncService = {
   },
 
   /**
-   * Merge local and cloud data using timestamps
-   * This ensures we don't overwrite newer data
+   * Fetch user data from Firestore by email
+   * @param {string} email 
    */
+  fetchByEmail: async (email) => {
+    try {
+      const { collection, query, where, getDocs, limit } = await import("firebase/firestore");
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", email.toLowerCase()), limit(1));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        return querySnapshot.docs[0].data();
+      }
+      return null;
+    } catch (error) {
+      console.error("Cloud fetch by email error:", error);
+      return null;
+    }
+  },
+
+  /**
+   * Submit a user report for moderation
+   */
+  reportUser: async (reportData) => {
+    try {
+      const { collection, addDoc, serverTimestamp } = await import("firebase/firestore");
+      const reportsRef = collection(db, "reports");
+      await addDoc(reportsRef, {
+        ...reportData,
+        status: 'pending',
+        createdAt: serverTimestamp()
+      });
+      return true;
+    } catch (error) {
+      console.error("Failed to submit report:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Fetch all moderation reports
+   */
+  fetchReports: async () => {
+    try {
+      const { collection, getDocs, query, orderBy } = await import("firebase/firestore");
+      const reportsRef = collection(db, "reports");
+      const q = query(reportsRef, orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error("Failed to fetch reports:", error);
+      return [];
+    }
+  },
   mergeData: (localData, cloudData) => {
     if (!cloudData) return localData;
     

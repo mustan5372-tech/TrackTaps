@@ -141,7 +141,17 @@ export default function Pod() {
       const res = await fetch('/api/pod/classrooms', {
         headers: { 'Authorization': `Token ${token}` }
       });
-      const data = await res.json();
+      
+      const text = await res.text();
+      if (!text) throw new Error('Pod.ai API returned an empty response. Check your connection.');
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('[Pod] JSON Parse Error. Raw response:', text);
+        throw new Error('Server returned invalid data format. Please try again later.');
+      }
       
       if (!res.ok) {
         if (res.status === 401) {
@@ -179,7 +189,19 @@ export default function Pod() {
             }
           });
           
-          const data = await res.json();
+          const text = await res.text();
+          if (!text) {
+            attendanceResults[classroom.token] = { total: 0, attended: 0, avgAttendance: 0, missed: 0 };
+            continue;
+          }
+
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            attendanceResults[classroom.token] = { total: 0, attended: 0, avgAttendance: 0, missed: 0 };
+            continue;
+          }
           
           if (!res.ok) {
             attendanceResults[classroom.token] = { total: 0, attended: 0, avgAttendance: 0, missed: 0 };
@@ -249,7 +271,18 @@ export default function Pod() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-      const data = await res.json();
+      
+      const text = await res.text();
+      if (!text) throw new Error('Server returned an empty response. Verify the backend is running on port 3001.');
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('[Pod Login] Parse error:', text);
+        throw new Error('API Login Error: Received invalid response from server.');
+      }
+
       if (!res.ok) throw new Error(data.error || 'Invalid credentials or server busy.');
       
       localStorage.setItem('pod_auth_token', data.auth_token);

@@ -251,13 +251,29 @@ class AttendanceEngine {
     let tracktapsAbsent = 0;
     let off = 0;
     let unmarked = 0;
+    const lastSyncDate = subject?.lastSyncDate || null;
 
     subjectEvents.forEach(event => {
       const state = this.getAttendanceState(event.id, attendanceData);
-      if (state === 'present') tracktapsPresent++;
-      else if (state === 'absent') tracktapsAbsent++;
-      else if (state === 'off') off++;
-      else unmarked++;
+      
+      // DATE BARRIER: Only count manual marks if they are AFTER the last sync
+      // If no lastSyncDate exists (local user), we count everything.
+      const isPostSync = !lastSyncDate || event.date > lastSyncDate;
+
+      // DEBUG LOG: Verification of the Date Barrier logic
+      if (state && !isPostSync) {
+        console.log(`🛡️ [AttendanceEngine] Filtering old mark: ${event.subjectName} on ${event.date} (Synced up to ${lastSyncDate})`);
+      }
+
+      if (state === 'present') {
+        if (isPostSync) tracktapsPresent++;
+      } else if (state === 'absent') {
+        if (isPostSync) tracktapsAbsent++;
+      } else if (state === 'off') {
+        off++;
+      } else {
+        unmarked++;
+      }
     });
 
     present += tracktapsPresent;

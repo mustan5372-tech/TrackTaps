@@ -162,49 +162,65 @@ function AuthModal({ isOpen, onClose }) {
     
     try {
       const user = authService.getCurrentUser();
-      if (!user) throw new Error("Authentication session lost. Please try logging in again.");
+      if (!user) throw new Error("Auth session expired. Please login again.");
 
-      // Validation
-      if (fullName.trim().length < 2) throw new Error("Please enter your full name.");
-      if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) throw new Error("Please enter a valid email address.");
+      // 1. Validation
+      const trimmedName = fullName.trim();
+      const trimmedEmail = email.trim().toLowerCase();
+      if (trimmedName.length < 2) throw new Error("Full Name is required.");
+      if (!trimmedEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) throw new Error("Invalid Email format.");
 
-      console.log("📦 [AuthModal] Saving profile details...");
-
-      // 1. Update Firebase Auth display name (for client-side auth state)
-      await authService.updateUserProfile(user, { displayName: fullName });
-
-      // 2. Prepare comprehensive user object for Firestore (Admin Visibility)
-      const profileData = {
-        uid: user.uid,
-        displayName: fullName,
-        email: email,
+      console.log("🔍 [AuthModal] Checking for existing accounts with this email...");
+      
+      // 2. Intelligent Account Linking/Merging Check
+      // We look for any existing user document with this email
+      const existingUser = await syncService.fetchByEmail(trimmedEmail);
+      
+      let mergedData = {
+        displayName: trimmedName,
+        email: trimmedEmail,
         phoneNumber: user.phoneNumber || `+91${phoneNumber}`,
         authProvider: 'phone',
-        premium: false,
-        plan: 'FREE',
-        createdAt: new Date().toISOString(),
-        lastLoginAt: new Date().toISOString(),
-        metadata: {
-          browser: navigator.userAgent,
-          platform: window.Capacitor?.isNativePlatform() ? 'apk' : 'web'
-        }
+        lastLoginAt: new Date().toISOString()
       };
 
-      // 3. Persist to Firestore (Crucial for Admin Panel identification)
-      await syncService.saveToCloud(user.uid, profileData);
+      if (existingUser) {
+        console.log("🤝 [AuthModal] Found existing account! Merging data...");
+        // Preserve their old attendance, premium status, etc.
+        mergedData = {
+          ...existingUser, // Keeps subjects, attendance, premium, etc.
+          ...mergedData,   // Overwrites with new identity info
+          uid: user.uid,   // Map the old data to the NEW Phone UID
+          authProvider: 'phone-merged'
+        };
+      } else {
+        // New user initialization
+        mergedData = {
+          ...mergedData,
+          uid: user.uid,
+          premium: false,
+          plan: 'FREE',
+          createdAt: new Date().toISOString()
+        };
+      }
 
-      // 4. Update App State
+      // 3. Update Firebase Auth Profile (Client-side identity)
+      await authService.updateUserProfile(user, { displayName: trimmedName });
+
+      // 4. Persist to Cloud (Ensures Admin visibility & Data persistence)
+      await syncService.saveToCloud(user.uid, mergedData);
+
+      // 5. Initialize App State
       await handleUserAuthenticated({
         ...user,
-        displayName: fullName,
-        email: email
+        displayName: trimmedName,
+        email: trimmedEmail
       });
       
-      console.log("✅ [AuthModal] Profile completion successful!");
       onClose();
     } catch (err) {
-      console.error("❌ [AuthModal] Profile Completion Error:", err);
-      setError(err.message || 'Failed to save profile. Please check your details.');
+      console.error("❌ [AuthModal] Completion Error:", err);
+      setError(err.message || 'Failed to complete profile.');
     } finally {
       setLoading(false);
     }

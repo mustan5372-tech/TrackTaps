@@ -21,10 +21,10 @@ function Sidebar() {
     { icon: '⚙️', label: 'Settings', path: '/settings' },
   ];
 
-  // STRICT SECURITY: Only specific email gets Admin Panel access
-  const isOwner = user?.email === 'mustan5372@gmail.com' || role === 'ADMIN_OWNER';
+  // ROLE-BASED ACCESS: Show Admin Panel for Owner and Core Members
+  const isAuthorized = role === 'ADMIN_OWNER' || role === 'CORE_MEMBER' || user?.email === 'mustan5372@gmail.com';
   
-  if (isOwner) {
+  if (isAuthorized) {
     // Insert Admin Panel before Settings for easy access
     const settingsIndex = navItems.findIndex(item => item.path === '/settings');
     if (settingsIndex !== -1) {

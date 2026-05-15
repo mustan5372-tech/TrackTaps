@@ -38,7 +38,8 @@ class PodAiService {
           initialPresent: attended,
           initialTotal: total,
           initialMissed: missed,
-          // Store last sync percentage
+          // Store last sync info to prevent double-counting deltas
+          lastSyncDate: new Date().toISOString().split('T')[0],
           podaiPercentage: avgAtt
         };
       } else {
@@ -57,6 +58,7 @@ class PodAiService {
           initialTotal: total,
           initialMissed: missed,
           podaiPercentage: avgAtt,
+          lastSyncDate: new Date().toISOString().split('T')[0],
           criteria: 75,
           color: this.getRandomColor(),
           createdAt: new Date().toISOString()

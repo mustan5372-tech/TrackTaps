@@ -238,9 +238,6 @@ const useAppStore = create(
         },
 
         handleUserAuthenticated: async (user) => {
-          // STRICT SECURITY: Only specific email gets Admin Owner role
-          const isOwner = user.email === 'mustan5372@gmail.com';
-          
           try {
             // Optimized parallel fetch for premium status
             const cloudData = await syncService.fetchFromCloud(user.uid);
@@ -251,10 +248,15 @@ const useAppStore = create(
               return;
             }
 
+            // ROLE IDENTIFICATION
+            const isOwner = user.email === 'mustan5372@gmail.com';
+            const isCoreMember = user.email === 'purandarydv23@gmail.com';
+
             const cloudSub = cloudData?.subscription || { plan: 'free', status: 'inactive' };
             
-            // STRICT SECURITY: If not owner, status must be verified from cloud
+            // STRICT SECURITY: Determine subscription and role
             let updatedSub = { ...get().subscription };
+            let updatedRole = 'USER';
             
             if (isOwner) {
               updatedSub = {
@@ -264,11 +266,20 @@ const useAppStore = create(
                 status: 'active',
                 expiryDate: '2099-12-31'
               };
+              updatedRole = 'ADMIN_OWNER';
+            } else if (isCoreMember) {
+              updatedSub = {
+                ...updatedSub,
+                plan: 'plus',
+                planType: 'lifetime',
+                status: 'active',
+                expiryDate: '2099-12-31'
+              };
+              updatedRole = 'CORE_MEMBER';
             } else if (cloudSub && cloudSub.status === 'active') {
-              // Only trust cloud for active status
               updatedSub = { ...updatedSub, ...cloudSub };
+              updatedRole = 'PREMIUM';
             } else {
-              // Ensure strictly FREE for everyone else
               updatedSub = { 
                 ...updatedSub, 
                 plan: 'free', 
@@ -281,12 +292,13 @@ const useAppStore = create(
                   hasGlow: false
                 }
               };
+              updatedRole = 'USER';
             }
 
             set({ 
               user, 
               isAuthLoading: false,
-              role: isOwner ? 'ADMIN_OWNER' : (updatedSub.status === 'active' ? 'PREMIUM' : 'USER'),
+              role: updatedRole,
               subscription: updatedSub
             });
 
@@ -821,17 +833,28 @@ const useAppStore = create(
 
         /**
          * Automatic background sync for premium users
+         * Enforces a 6-hour cooldown to prevent API spam
          */
-        performAutoPodaiSync: async () => {
+        performAutoPodaiSync: async (force = false) => {
           const { subscription, podaiSyncStatus } = get();
           const token = localStorage.getItem('pod_auth_token');
           
-          // Only sync if premium and connected
+          // 1. Basic checks
           if (subscription.status !== 'active' || !token || podaiSyncStatus.syncing) {
             return;
           }
 
-          console.log("🔄 [AppStore] Starting Premium Auto-Sync...");
+          // 2. Interval Check (6 Hours = 21,600,000 ms)
+          const SIX_HOURS = 6 * 60 * 60 * 1000;
+          const now = Date.now();
+          const lastSyncTime = podaiSyncStatus.lastSync ? new Date(podaiSyncStatus.lastSync).getTime() : 0;
+          
+          if (!force && (now - lastSyncTime < SIX_HOURS)) {
+            console.log("⏱️ [AppStore] Skipping auto-sync (Cooldown active). Next sync in", Math.round((SIX_HOURS - (now - lastSyncTime)) / 60000), "mins.");
+            return;
+          }
+
+          console.log("🔄 [AppStore] Starting Safe Premium Auto-Sync...");
           set({ podaiSyncStatus: { ...podaiSyncStatus, syncing: true, error: null } });
 
           try {
@@ -839,8 +862,19 @@ const useAppStore = create(
             const classRes = await fetch('/api/pod/classrooms', {
               headers: { 'Authorization': `Token ${token}` }
             });
-            if (!classRes.ok) throw new Error("Connection failed");
-            const classData = await classRes.json();
+            
+            const classText = await classRes.text();
+            if (!classRes.ok || !classText) {
+              throw new Error(`Connection failed (${classRes.status}). Ensure backend is on port 3001.`);
+            }
+
+            let classData;
+            try {
+              classData = JSON.parse(classText);
+            } catch (e) {
+              throw new Error("Invalid response format from classrooms API.");
+            }
+            
             const classrooms = classData.classrooms || [];
 
             if (classrooms.length === 0) {
@@ -855,14 +889,18 @@ const useAppStore = create(
                 const attRes = await fetch(`/api/pod/attendance?classroom=${classroom.token}`, {
                   headers: { 'Authorization': `Token ${token}` }
                 });
+                
                 if (attRes.ok) {
-                  const attData = await attRes.json();
-                  attendanceResults[classroom.token] = {
-                    total: attData.total || 0,
-                    attended: attData.attended || 0,
-                    avgAttendance: attData.averagePercent || 0,
-                    missed: attData.missed || 0
-                  };
+                  const attText = await attRes.text();
+                  if (attText) {
+                    const attData = JSON.parse(attText);
+                    attendanceResults[classroom.token] = {
+                      total: attData.total || 0,
+                      attended: attData.attended || 0,
+                      avgAttendance: attData.averagePercent || 0,
+                      missed: attData.missed || 0
+                    };
+                  }
                 }
               } catch (e) {
                 console.warn(`Failed to sync classroom ${classroom.token}`);

@@ -18,10 +18,10 @@ function MobileNav() {
     { icon: '⚙️', label: 'Settings', path: '/settings' },
   ];
 
-  // Explicit check for mustan5372@gmail.com
-  const isOwner = user?.email === 'mustan5372@gmail.com' || user?.email === 'tracktaps@gmail.com' || role === 'ADMIN_OWNER';
-
-  if (isOwner) {
+  // ROLE-BASED ACCESS: Show Admin for Owner and Core Members
+  const isAuthorized = role === 'ADMIN_OWNER' || role === 'CORE_MEMBER' || user?.email === 'mustan5372@gmail.com';
+  
+  if (isAuthorized) {
     navItems.splice(1, 0, { icon: '🔐', label: 'Admin', path: '/admin' });
   }
 
