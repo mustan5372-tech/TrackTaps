@@ -35,10 +35,10 @@ const BlurRevealText = React.memo(({ children, delay = 0 }) => {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, filter: 'blur(8px)', y: 20 }}
-      animate={isVisible ? { opacity: 1, filter: 'blur(0px)', y: 0 } : {}}
+      initial={{ opacity: 0, filter: window.innerWidth < 768 ? 'none' : 'blur(8px)', y: 20 }}
+      animate={isVisible ? { opacity: 1, filter: window.innerWidth < 768 ? 'none' : 'blur(0px)', y: 0 } : {}}
       transition={{ duration: 0.6, delay, ease: "easeOut" }}
-      style={{ willChange: 'transform, filter, opacity' }}
+      style={{ willChange: 'transform, opacity' }}
     >
       {children}
     </motion.div>
@@ -376,8 +376,10 @@ const RoadmapPhase = React.memo(({ phase, items, index }) => {
           borderRadius: '20px',
           padding: '24px',
           marginBottom: '40px',
-          backdropFilter: window.innerWidth < 768 ? 'none' : 'blur(8px)',
-          cursor: 'default'
+          backdropFilter: 'blur(var(--glass-blur))',
+          WebkitBackdropFilter: 'blur(var(--glass-blur))',
+          cursor: 'default',
+          willChange: 'transform'
         }}
       >
         <h4 style={{ color: 'var(--primary-light)', fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '12px' }}>{phase}</h4>

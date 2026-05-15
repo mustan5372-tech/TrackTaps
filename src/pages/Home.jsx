@@ -5,8 +5,8 @@ import useAppStore from '../store/appStore';
 import ContactUs from '../components/ContactUs';
 
 const fadeInUp = {
-  initial: { opacity: 0, y: 20, filter: 'blur(4px)' },
-  animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
+  initial: { opacity: 0, y: 20, filter: window.innerWidth < 768 ? 'none' : 'blur(4px)' },
+  animate: { opacity: 1, y: 0, filter: window.innerWidth < 768 ? 'none' : 'blur(0px)' },
   transition: { duration: 0.6, ease: [0.19, 1, 0.22, 1] }
 };
 
@@ -107,7 +107,8 @@ function Home() {
             background: 'linear-gradient(135deg, var(--text-main) 0%, var(--primary-light) 100%)', 
             WebkitBackgroundClip: 'text', 
             WebkitTextFillColor: 'transparent',
-            wordBreak: 'break-word'
+            wordBreak: 'break-word',
+            willChange: 'transform, opacity'
           }}>
             The Ultimate <br/> Semester Planner
           </h1>

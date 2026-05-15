@@ -22,8 +22,14 @@ import logo from '../icon.png';
 
 function App() {
   const { initAuth, isAuthLoading, isRestoringSession, isAuthModalOpen, setAuthModalOpen } = useAppStore();
+  const [isStaging, setIsStaging] = React.useState(false);
 
   useEffect(() => {
+    // Detect environment for Staging Badge
+    const hostname = window.location.hostname;
+    const isProd = hostname === 'tracktaps.online' || hostname === 'www.tracktaps.online';
+    setIsStaging(!isProd && hostname !== '');
+
     // Initialize Auth (which also initializes theme from appStore)
     const unsubscribePromise = initAuth();
     return () => {
@@ -70,6 +76,27 @@ function App() {
 
   return (
     <BrowserRouter>
+      {isStaging && (
+        <div style={{
+          position: 'fixed',
+          bottom: '80px',
+          right: '20px',
+          background: 'rgba(245, 158, 11, 0.9)',
+          color: '#000',
+          padding: '4px 10px',
+          borderRadius: '8px',
+          fontSize: '10px',
+          fontWeight: '900',
+          zIndex: 99999,
+          pointerEvents: 'none',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          border: '1px solid rgba(0,0,0,0.1)'
+        }}>
+          Staging Build
+        </div>
+      )}
       <GlobalToast />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
       <Routes>
