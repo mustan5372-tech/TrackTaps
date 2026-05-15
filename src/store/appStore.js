@@ -1094,7 +1094,7 @@ const useAppStore = create(
       }),
       {
         name: 'tracktaps-store',
-        version: 1,
+        version: 2,
         // Persist specific parts of state
         partialize: (state) => ({
           subjects: state.subjects,
