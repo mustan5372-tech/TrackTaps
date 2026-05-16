@@ -257,33 +257,64 @@ function Home() {
           willChange: 'transform, opacity'
         }}
       >
-        <div className="hero-welcome">
+        <div className="hero-welcome" style={{ flex: 1 }}>
           <motion.h2 
             initial={{ opacity: 0, x: -20, filter: 'blur(8px)' }}
             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1, delay: 0.2 }}
             id="hero-greeting" 
-            style={{ fontSize: '36px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px', letterSpacing: '-0.02em' }}
+            style={{ fontSize: '32px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px', letterSpacing: '-0.02em' }}
           >
-            Good Afternoon,
+            Hi, {user?.displayName?.split(' ')[0] || 'Scholar'}
           </motion.h2>
-          <motion.p 
-            initial={{ opacity: 0, x: -20, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 1, delay: 0.4 }}
-            id="hero-subtitle" 
-            style={{ fontSize: '18px', color: 'var(--text-dim)', marginBottom: '16px' }}
-          >
-            Ready to crush your goals today?
-          </motion.p>
+          
+          {/* DAILY PULSE - RETENTION ENGINE */}
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            id="hero-date" 
-            style={{ fontSize: '14px', color: 'var(--primary-light)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '12px',
+              marginTop: '16px'
+            }}
           >
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+             {/* Streak Badge */}
+             {dashboardStats.attendanceStreak >= 1 && (
+               <div style={{ 
+                 display: 'inline-flex', 
+                 alignItems: 'center', 
+                 gap: '8px', 
+                 background: 'rgba(245, 158, 11, 0.1)', 
+                 padding: '6px 12px', 
+                 borderRadius: '100px',
+                 border: '1px solid rgba(245, 158, 11, 0.2)',
+                 width: 'fit-content'
+               }}>
+                 <span style={{ fontSize: '14px' }}>🔥</span>
+                 <span style={{ fontSize: '12px', fontWeight: '800', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                   {dashboardStats.attendanceStreak} Day Consistency
+                 </span>
+               </div>
+             )}
+
+             {/* Dynamic Insight */}
+             <div style={{ 
+               fontSize: '15px', 
+               color: 'var(--text-main)', 
+               fontWeight: '600',
+               lineHeight: 1.4,
+               maxWidth: '300px'
+             }}>
+               {dashboardStats.dailyImpact?.criticalSubject ? (
+                 <span style={{ color: 'var(--danger)' }}>🚨 Critical: Missing {dashboardStats.dailyImpact.criticalSubject} today will drop your stats!</span>
+               ) : dashboardStats.dailyImpact?.totalSafeBunks > 0 ? (
+                 <span>🛡️ You have <span style={{ color: 'var(--success)' }}>{dashboardStats.dailyImpact.totalSafeBunks} Safe Bunks</span> available today.</span>
+               ) : (
+                 <span style={{ color: 'var(--text-dim)' }}>✨ Focus on maintaining your consistency today!</span>
+               )}
+             </div>
           </motion.div>
         </div>
         <motion.div 
@@ -293,22 +324,21 @@ function Home() {
             background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.1) 100%)',
             border: '1px solid var(--primary-glow)',
             borderRadius: '20px',
-            padding: '32px',
+            padding: '24px 32px',
             textAlign: 'center',
-            minWidth: '220px',
+            minWidth: '200px',
             boxShadow: '0 0 30px var(--primary-glow)'
           }}
         >
-          <span className="overall-percentage" id="hero-overall-perc" style={{ fontSize: '56px', fontWeight: '800', color: 'var(--primary-light)', display: 'block', lineHeight: 1 }}>{dashboardStats.overallPercentage}%</span>
-          <span className="overall-label" style={{ fontSize: '14px', color: 'var(--text-dim)', display: 'block', marginTop: '12px', fontWeight: '600' }}>Attendance Score</span>
-          <motion.div 
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            id="overall-trend" 
-            style={{ marginTop: '12px', fontSize: '12px', color: 'var(--success)', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
-          >
-            <span>↑</span> 2.4% from last week
-          </motion.div>
+          <span className="overall-percentage" id="hero-overall-perc" style={{ fontSize: '48px', fontWeight: '800', color: 'var(--primary-light)', display: 'block', lineHeight: 1 }}>{dashboardStats.overallPercentage}%</span>
+          <span className="overall-label" style={{ fontSize: '12px', color: 'var(--text-dim)', display: 'block', marginTop: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Attendance Score</span>
+          
+          {/* Mini Bunk Indicator */}
+          <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '10px', color: 'var(--success)', fontWeight: '800', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+              {getTotalBunkable()} SAFE BUNKS
+            </span>
+          </div>
         </motion.div>
       </motion.section>
 

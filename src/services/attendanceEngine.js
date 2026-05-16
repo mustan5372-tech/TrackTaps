@@ -493,7 +493,67 @@ class AttendanceEngine {
   }
 
   /**
-   * Get insights based on attendance
+   * Calculate attendance streaks
+   * Counts consecutive days where at least one class was marked 'present'
+   */
+  static calculateAttendanceStreak(attendanceData) {
+    if (!attendanceData || Object.keys(attendanceData).length === 0) return 0;
+
+    const dates = Object.keys(attendanceData)
+      .map(id => id.split('-').slice(0, 3).join('-'))
+      .filter((v, i, a) => a.indexOf(v) === i) // Unique dates
+      .sort((a, b) => b.localeCompare(a)); // Newest first
+
+    let streak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Check if the user marked anything today or yesterday
+    const newestDate = this.parseDate(dates[0]);
+    const diffDays = Math.floor((today - newestDate) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays > 1) return 0; // Streak broken
+
+    for (let i = 0; i < dates.length - 1; i++) {
+      const current = this.parseDate(dates[i]);
+      const next = this.parseDate(dates[i+1]);
+      const diff = Math.floor((current - next) / (1000 * 60 * 60 * 24));
+      
+      if (diff === 1) streak++;
+      else break;
+    }
+
+    return streak + 1;
+  }
+
+  /**
+   * Get impact of today's attendance on safety windows
+   */
+  static getDailyAttendanceImpact(subjects, calendarEvents, attendanceData) {
+    const today = this.formatDate(new Date());
+    const todayClasses = this.getEventsForDate(today, calendarEvents);
+    
+    if (todayClasses.length === 0) return null;
+
+    const subjectsInvolved = [...new Set(todayClasses.map(c => c.subjectName))];
+    const impact = subjectsInvolved.map(subName => {
+      const metrics = this.calculateSemesterSubjectMetrics(subName, {}, {}, calendarEvents, attendanceData, subjects);
+      return {
+        subject: subName,
+        safeBunks: metrics.bunkableNow,
+        willDropIfAbsent: metrics.prediction.ifMissNext1 < metrics.target
+      };
+    });
+
+    return {
+      classesCount: todayClasses.length,
+      criticalSubject: impact.find(i => i.willDropIfAbsent)?.subject || null,
+      totalSafeBunks: impact.reduce((sum, i) => sum + i.safeBunks, 0)
+    };
+  }
+
+  /**
+   * Get insights based on attendance - OVERHAULED FOR RETENTION
    */
   static generateInsights(subjects = [], calendarEvents = [], attendanceData = {}) {
     if (!Array.isArray(subjects) || !Array.isArray(calendarEvents)) return [];
@@ -501,6 +561,42 @@ class AttendanceEngine {
     const stats = this.calculateOverallStats(subjects, calendarEvents, attendanceData);
     const insights = [];
 
+    // 1. STREAK INSIGHT (Engagement)
+    const streak = this.calculateAttendanceStreak(attendanceData);
+    if (streak >= 3) {
+      insights.push({
+        type: 'streak',
+        title: `${streak}-Day Streak! 🔥`,
+        icon: '🔥',
+        message: `You've been consistent for ${streak} days. Keep the momentum going!`,
+        priority: 'high'
+      });
+    }
+
+    // 2. DAILY IMPACT INSIGHT (Daily Reopen Reason)
+    const dailyImpact = this.getDailyAttendanceImpact(subjects, calendarEvents, attendanceData);
+    if (dailyImpact) {
+      if (dailyImpact.criticalSubject) {
+        insights.push({
+          type: 'warning',
+          title: 'Critical Day 🚨',
+          icon: '🚨',
+          subject: dailyImpact.criticalSubject,
+          message: `Missing ${dailyImpact.criticalSubject} today will drop you below your target!`,
+          priority: 'high'
+        });
+      } else if (dailyImpact.totalSafeBunks > 3) {
+        insights.push({
+          type: 'safe',
+          title: 'Relax Today 🏖️',
+          icon: '🏖️',
+          message: `You have ${dailyImpact.totalSafeBunks} safe bunks today. You're in total control.`,
+          priority: 'medium'
+        });
+      }
+    }
+
+    // 3. CRITICAL SUBJECTS (Actionable)
     (stats.subjectStats || []).forEach(stat => {
       if (stat && stat.status === 'critical') {
         const target = 75;
@@ -508,35 +604,26 @@ class AttendanceEngine {
         const present = stat.present || 0;
         const needed = Math.ceil((target * total - 100 * present) / (100 - target));
         const finalNeeded = Math.max(0, total === 0 ? 1 : (isNaN(needed) ? 0 : needed));
+        
         insights.push({
           type: 'critical',
           subject: stat.subjectName || 'Unknown',
-          title: 'Critical Attention',
-          icon: '🚨',
-          message: `${stat.subjectName || 'Subject'} is at ${stat.percentage}%. Attend ${finalNeeded} more to reach 75%.`,
+          title: 'Risk Alert ⚠',
+          icon: '⚠',
+          message: `${stat.subjectName} needs ${finalNeeded} more classes to hit 75%.`,
           priority: 'high'
         });
       }
     });
 
-    const safeCount = (stats.subjectStats || []).filter(s => s && s.status === 'safe').length;
-    if (safeCount > 0) {
+    // 4. OVERALL MOTIVATION
+    if (stats.overallPercentage >= 85) {
       insights.push({
         type: 'safe',
-        title: 'Safety Zone',
-        icon: '🛡️',
-        message: `${safeCount} subject(s) are above threshold. Great job!`,
-        priority: 'low'
-      });
-    }
-
-    if (stats.overallPercentage < 65) {
-      insights.push({
-        type: 'warning',
-        title: 'Efficiency Warning',
-        icon: '⚠️',
-        message: `Overall attendance is ${stats.overallPercentage}%. Focus on next week.`,
-        priority: 'high'
+        title: 'Academic Elite 💎',
+        icon: '💎',
+        message: `Your ${stats.overallPercentage}% attendance puts you in the top 10% of students.`,
+        priority: 'medium'
       });
     }
 

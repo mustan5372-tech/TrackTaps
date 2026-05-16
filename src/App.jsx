@@ -35,6 +35,26 @@ function App() {
 
     // Initialize Auth
     const unsubscribePromise = initAuth();
+    
+    // RETENTION PHASE 6: Smart Local Notifications
+    setTimeout(() => {
+      const state = useAppStore.getState();
+      if (state.user && !state.isAuthLoading) {
+        // 1. Sync Reminder
+        const lastSync = state.lastCloudSync ? new Date(state.lastCloudSync) : null;
+        const hoursSinceSync = lastSync ? (new Date() - lastSync) / (1000 * 60 * 60) : 999;
+        
+        if (hoursSinceSync > 24) {
+          state.showToast("☁️ Backup Reminder: You haven't synced your data in 24h.", "info");
+        }
+
+        // 2. Risk Alert
+        if (state.dashboardStats.criticalSubjects > 0) {
+          state.showToast(`🚨 Attention: ${state.dashboardStats.criticalSubjects} subject(s) need immediate attention.`, "warning");
+        }
+      }
+    }, 4000); // Trigger 4s after launch to avoid clash
+
     return () => {
       unsubscribePromise.then(unsubscribe => {
         if (typeof unsubscribe === 'function') {
@@ -42,7 +62,7 @@ function App() {
         }
       });
     };
-  }, []);
+  }, [initAuth]);
 
   if (isAuthLoading) {
     return (

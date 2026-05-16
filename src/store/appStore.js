@@ -382,6 +382,7 @@ const useAppStore = create(
                 subscription,
                 overallAttendance: stats.overallPercentage,
                 totalClasses: stats.totalClasses,
+                attendanceStreak: get().dashboardStats.attendanceStreak, // RETENTION: Track consistency milestones
                 activityScore: activityScore,
                 lastSyncDate: new Date().toISOString()
               };
@@ -700,19 +701,14 @@ const useAppStore = create(
         
         markAttendance: (eventId, state) => {
           const newData = AttendanceEngine.markAttendance(eventId, state, get().attendanceData);
-          
           set({ attendanceData: newData });
           
-          // Update subject stats
+          // Update stats
           get().updateSubjectStats();
-          
-          // Update semester stats (bunk counts)
           get().updateSemesterStats();
-          
-          // Update dashboard
           get().updateDashboardStats();
           
-          // Add history entry
+          // Add detailed history entry
           const event = get().calendarEvents.find(e => e.id === eventId);
           if (event) {
             const stateLabel = state === 'present' ? '✓ Present' : state === 'absent' ? '✗ Absent' : '◯ Off';
@@ -723,8 +719,23 @@ const useAppStore = create(
             });
           }
           
-          // Auto-sync
+          // Cloud Sync
           get().pushToCloud();
+
+          // RETENTION: Streak Celebration
+          if (state === 'present') {
+            const currentStreak = get().dashboardStats.attendanceStreak;
+            if (currentStreak > 0) {
+              const messages = [
+                `That's a ${currentStreak}-day win! 🔥`,
+                `Consistency King! 👑`,
+                `The streak continues... ⚡`,
+                `Academic Elite mode active! 💎`
+              ];
+              const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+              get().showToast(randomMsg, 'success');
+            }
+          }
         },
         
         markAllForDate: (dateStr, state) => {
@@ -777,6 +788,8 @@ const useAppStore = create(
           missed: 0,
           total: 0,
           streak: 0,
+          attendanceStreak: 0,
+          dailyImpact: null,
           todaySchedule: []
         },
         
@@ -784,7 +797,9 @@ const useAppStore = create(
           const { subjects, calendarEvents, attendanceData } = get();
           
           const stats = calculateAttendanceStats(subjects, calendarEvents, attendanceData);
-          
+          const attendanceStreak = AttendanceEngine.calculateAttendanceStreak(attendanceData);
+          const dailyImpact = AttendanceEngine.getDailyAttendanceImpact(subjects, calendarEvents, attendanceData);
+
           // Get today's schedule
           const today = AttendanceEngine.formatDate(new Date());
           const todayEvents = AttendanceEngine.getEventsForDate(today, calendarEvents);
@@ -812,7 +827,9 @@ const useAppStore = create(
               present: stats.totalPresent,
               missed: stats.totalClasses - stats.totalPresent,
               total: stats.totalClasses,
-              streak: 0, // TODO: Calculate real streak
+              streak: attendanceStreak, // Syncing with legacy streak field
+              attendanceStreak,
+              dailyImpact,
               todaySchedule
             }
           });

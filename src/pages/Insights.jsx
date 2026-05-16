@@ -111,6 +111,47 @@ function Insights() {
         </div>
       </div>
 
+      {/* ACADEMIC SAFETY CHECK - RETENTION PHASE 3 */}
+      <div className="dashboard-card" style={{ padding: '24px', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+        <h3 style={{ color: 'var(--danger)', marginBottom: '16px', fontSize: '16px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          🚨 Academic Safety Check
+        </h3>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {subjects.filter(s => {
+            const stats = semesterStats[s.id];
+            return stats && (stats.prediction.ifMissNext1 < stats.target || stats.prediction.ifMissNext2 < stats.target);
+          }).length === 0 ? (
+            <p style={{ color: 'var(--text-dim)', fontSize: '13px' }}>✅ All subjects have a safe buffer for at least 2 more bunks.</p>
+          ) : subjects.map(subject => {
+            const stats = semesterStats[subject.id];
+            if (!stats) return null;
+            
+            const dropRisk1 = stats.prediction.ifMissNext1 < stats.target;
+            const dropRisk2 = stats.prediction.ifMissNext2 < stats.target;
+            
+            if (!dropRisk1 && !dropRisk2) return null;
+
+            return (
+              <div key={subject.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>{subject.name}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--danger)', fontWeight: '600', marginTop: '4px' }}>
+                    {dropRisk1 ? '⚠️ RISK: Drop if next class missed' : '⚠️ RISK: Drop if 2 classes missed'}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '18px', fontWeight: '800', color: stats.percentage >= stats.target ? 'var(--warning)' : 'var(--danger)' }}>
+                    {stats.percentage}%
+                  </div>
+                  <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '600' }}>CURRENT</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Semester Countdown */}
       <div className="dashboard-card" style={{ padding: '24px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

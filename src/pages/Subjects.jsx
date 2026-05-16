@@ -131,11 +131,47 @@ const SubjectCard = React.memo(({
         )}
       </div>
 
+      {/* RECOVERY ROADMAP - PREMIUM PHASE 5 */}
+      {isPremium && percentage < subject.criteria && (
+        <div style={{
+          marginTop: '4px',
+          padding: '12px',
+          background: 'rgba(16, 185, 129, 0.05)',
+          borderRadius: '12px',
+          border: '1px dashed var(--success)',
+        }}>
+          <div style={{ fontSize: '10px', color: 'var(--success)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
+            Recovery Roadmap 📈
+          </div>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end', height: '40px' }}>
+            {[1, 2, 3, 4, 5].map(i => {
+              const projected = Math.min(100, Math.round(((present + i) / (total + i)) * 100));
+              return (
+                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ 
+                    width: '100%', 
+                    height: `${(projected / 100) * 30}px`, 
+                    background: 'var(--success)', 
+                    opacity: 0.3 + (i * 0.14),
+                    borderRadius: '2px'
+                  }} />
+                  <span style={{ fontSize: '8px', color: 'var(--text-dim)', fontWeight: '700' }}>{projected}%</span>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '8px', textAlign: 'center' }}>
+            Attend next 5 classes to reach <b>{Math.round(((present + 5) / (total + 5)) * 100)}%</b>
+          </div>
+        </div>
+      )}
+
       <div style={{
         height: '4px',
         background: 'var(--surface-glass)',
         borderRadius: '2px',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        marginTop: '8px'
       }}>
         <div style={{
           height: '100%',

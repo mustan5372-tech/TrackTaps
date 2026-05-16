@@ -168,7 +168,25 @@ function Community() {
                   </div>
 
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '800', fontSize: '16px', color: 'var(--text-main)' }}>{item.name}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ fontWeight: '800', fontSize: '16px', color: 'var(--text-main)' }}>{item.name}</div>
+                      {item.attendanceStreak > 1 && (
+                        <div style={{ 
+                          fontSize: '10px', 
+                          background: 'rgba(245, 158, 11, 0.15)', 
+                          color: '#f59e0b', 
+                          padding: '2px 8px', 
+                          borderRadius: '100px', 
+                          fontWeight: '900',
+                          border: '1px solid rgba(245, 158, 11, 0.3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          🔥 {item.attendanceStreak}
+                        </div>
+                      )}
+                    </div>
                     <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>
                       {item.totalClasses || 0} classes tracked
                     </div>
