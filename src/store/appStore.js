@@ -328,7 +328,21 @@ const useAppStore = create(
               subscription: updatedSub
             });
 
-            // Only pull data automatically if local state is empty
+            // 🔍 ALWAYS SYNC REFERRAL IDENTITY (PRODUCTION CRITICAL)
+            if (cloudData && cloudData.referralData) {
+              console.log("💎 [Referral] Syncing permanent identity from cloud...");
+              set(state => ({
+                referralData: {
+                  ...state.referralData,
+                  ...cloudData.referralData
+                }
+              }));
+            }
+
+            // BULLETPROOF REFERRAL INITIALIZATION (ENSURES PERMANENCE)
+            await get().ensureReferralData();
+
+            // Only pull other data automatically if local state is empty
             const { subjects } = get();
             if (subjects.length === 0 && cloudData && (cloudData.subjects || cloudData.timetable)) {
               set({
@@ -337,21 +351,16 @@ const useAppStore = create(
                 calendarEvents: cloudData.calendarEvents || [],
                 attendanceData: cloudData.attendanceData || {},
                 history: cloudData.history || [],
-                lastCloudSync: cloudData.lastSynced || new Date().toISOString(),
-                referralData: {
-                  ...get().referralData,
-                  ...(cloudData.referralData || {})
-                }
+                lastCloudSync: cloudData.lastSynced || new Date().toISOString()
               });
 
-              // BULLETPROOF REFERRAL INITIALIZATION
-              await get().ensureReferralData();
-
               get().fullSync();
+            }
 
-              // GROWTH PHASE: Track Referral if new user
-              const inviteCode = sessionStorage.getItem('tracktaps_invited_by');
-              if (!cloudData && inviteCode) {
+            // GROWTH PHASE: Track Referral if new user
+            const inviteCode = sessionStorage.getItem('tracktaps_invited_by');
+            const isNewUser = !cloudData || Object.keys(cloudData).length === 0;
+            if (isNewUser && inviteCode) {
                 import('../services/referralService').then(m => {
                   const referralService = m.default;
                   referralService.trackNewReferral(user.uid, inviteCode).then(inviterUid => {
@@ -1050,18 +1059,38 @@ const useAppStore = create(
         },
         
         /**
-         * 💎 GROWTH PHASE: Ensure user has a valid referral identity
+         * 💎 GROWTH PHASE: Ensure user has a valid referral identity (PERMANENT)
          */
         ensureReferralData: async () => {
           const { user, referralData, pushToCloud } = get();
           if (!user) return;
 
-          // If ID or Code is missing, generate and persist
-          if (!referralData?.referralId || !referralData?.referralCode) {
-            console.log("🛠️ [Referral] Bulletproofing identity: Generating missing fields...");
+          // 🛡️ PERMANENCE GUARD: If we already have it in the store, stop.
+          if (referralData?.referralId && referralData?.referralCode) {
+            return;
+          }
+
+          console.log("🛠️ [Referral] Checking cloud for permanent identity...");
+          
+          try {
+            const userRef = doc(db, 'users', user.uid);
+            const userSnap = await getDoc(userRef);
+            const cloudData = userSnap.exists() ? userSnap.data() : {};
+            const cloudReferral = cloudData.referralData || {};
+
+            // 🛡️ CLOUD-FIRST: If cloud has it, sync it and STOP. Never regenerate.
+            if (cloudReferral.referralId && cloudReferral.referralCode) {
+              console.log("💎 [Referral] Identity recovered from cloud:", cloudReferral.referralId);
+              set({ referralData: cloudReferral });
+              return;
+            }
+
+            // 🆕 GENERATION: Only if truly missing from both store AND cloud
+            console.log("✨ [Referral] Generating new permanent identity...");
             
             const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let code = referralData?.referralCode || referralData?.code;
+            // Use legacy code as seed if available to maintain stability for old users
+            let code = cloudReferral.referralCode || cloudReferral.code;
             
             if (!code) {
               code = '';
@@ -1071,23 +1100,26 @@ const useAppStore = create(
             }
             
             const referralId = `TT-${code}`;
-            
-            set(state => ({
-              referralData: {
-                ...state.referralData,
-                referralId: referralId,
-                referralCode: code,
-                analytics: state.referralData?.analytics || {
-                  totalInvitesShared: 0,
-                  totalSignups: 0,
-                  activeUsers: 0,
-                  validReferrals: 0
-                }
+            const newReferralData = {
+              ...referralData,
+              ...cloudReferral,
+              referralId: referralId,
+              referralCode: code,
+              analytics: cloudReferral.analytics || {
+                totalInvitesShared: 0,
+                totalSignups: 0,
+                activeUsers: 0,
+                validReferrals: 0
               }
-            }));
-
-            console.log(`💎 [Referral] Identity Created: ${referralId}`);
-            await pushToCloud();
+            };
+            
+            set({ referralData: newReferralData });
+            console.log(`💎 [Referral] New Identity Locked: ${referralId}`);
+            
+            // Push to cloud immediately to ensure it's saved forever
+            await setDoc(userRef, { referralData: newReferralData }, { merge: true });
+          } catch (error) {
+            console.error("❌ [Referral] Identity lock failed:", error);
           }
         },
 
