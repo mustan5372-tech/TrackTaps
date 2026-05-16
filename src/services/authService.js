@@ -55,6 +55,11 @@ const authService = {
   loginWithGoogle: async () => {
     const isAPK = isNativeAPK();
     console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : 'WEB'}`);
+    
+    // DIAGNOSTIC ALERT: We need to see if the app knows it is an APK
+    if (isAPK) {
+      alert("📱 APK Mode Detected - Locking login inside app...");
+    }
 
     try {
       if (!auth.app) throw new Error("Firebase not initialized");
@@ -94,13 +99,7 @@ const authService = {
         return result.user;
 
       } else {
-        // --- 2. WEB FLOW ---
-        if (isMobileBrowser()) {
-          console.log("📱 [Auth] Mobile Browser detected, using Redirect flow to prevent popup blocks...");
-          await signInWithRedirect(auth, googleProvider);
-          return null; // Redirecting...
-        }
-
+        // --- 2. WEB FLOW (Browser Only) ---
         console.log("🌐 [Auth] Using standard Firebase Web Popup...");
         const result = await signInWithPopup(auth, googleProvider);
         return result.user;
