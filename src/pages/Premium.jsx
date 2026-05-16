@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,11 +38,109 @@ const PLANS = [
   }
 ];
 
+const SuccessModal = ({ isOpen, onClose, planName }) => {
+  if (!isOpen) return null;
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.85)',
+        backdropFilter: 'blur(10px)',
+        padding: '20px'
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        style={{
+          width: '100%',
+          maxWidth: '450px',
+          background: 'rgba(30, 41, 59, 0.95)',
+          borderRadius: '32px',
+          border: '1px solid rgba(255,255,255,0.1)',
+          padding: '40px 32px',
+          textAlign: 'center',
+          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
+        }}
+      >
+        <div style={{ fontSize: '64px', marginBottom: '24px' }}>🎉</div>
+        <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '12px', color: 'white' }}>Premium Activated Successfully!</h2>
+        <p style={{ color: 'var(--text-dim)', fontSize: '16px', lineHeight: '1.6', marginBottom: '32px' }}>
+          Welcome to <span style={{ color: 'var(--primary-light)', fontWeight: '700' }}>TrackTaps Plus</span>. 
+          Your {planName} plan is now active. Enjoy unlimited access to all premium features!
+        </p>
+
+        <div style={{ 
+          background: 'rgba(139, 92, 246, 0.1)', 
+          borderRadius: '20px', 
+          padding: '24px',
+          marginBottom: '32px',
+          border: '1px dashed rgba(139, 92, 246, 0.3)'
+        }}>
+          <h4 style={{ color: 'var(--primary-light)', marginBottom: '8px', fontSize: '15px' }}>💬 Official Community</h4>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>Join other premium students in our private WhatsApp community.</p>
+          <a 
+            href="https://chat.whatsapp.com/FnqY8vehe4wLrRgK6MKVly" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 24px',
+              background: '#25D366',
+              color: 'white',
+              borderRadius: '12px',
+              textDecoration: 'none',
+              fontWeight: '700',
+              fontSize: '14px',
+              transition: 'transform 0.2s'
+            }}
+            onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <i className="fab fa-whatsapp" style={{ fontSize: '18px' }}></i>
+            Join TrackTaps Community
+          </a>
+        </div>
+
+        <button
+          onClick={onClose}
+          style={{
+            width: '100%',
+            padding: '16px',
+            borderRadius: '16px',
+            background: 'var(--primary-light)',
+            color: 'white',
+            border: 'none',
+            fontWeight: '800',
+            cursor: 'pointer',
+            fontSize: '16px'
+          }}
+        >
+          Go to Dashboard
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 function Premium() {
   const navigate = useNavigate();
   const { user, subscription, setSubscription, setAuthModalOpen } = useAppStore();
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [activatedPlan, setActivatedPlan] = useState('');
 
   const handleUpgrade = async (plan) => {
     if (!user) {
@@ -54,6 +152,8 @@ function Premium() {
     setSelectedPlan(plan.id);
 
     try {
+      console.log(`🎁 [Checkout] Starting payment for: ${plan.name} (₹${plan.price})`);
+      
       const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,10 +169,13 @@ function Premium() {
         currency: orderData.currency,
         name: "TrackTaps Plus",
         description: `${plan.name} Subscription`,
-        image: "/assets/logo.png",
+        image: "https://tracktaps.com/logo.png",
         order_id: orderData.id,
         handler: async function (response) {
           try {
+            console.log("💎 [Payment] Success! Verifying on backend...");
+            setLoading(true);
+            
             const verifyResponse = await fetch('/api/verify-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -89,18 +192,25 @@ function Premium() {
             const verifyData = await verifyResponse.json();
 
             if (verifyData.success) {
+              console.log("✅ [Payment] Verified! Activating Premium...");
+              
+              // 1. Update Global State Instantly
               setSubscription(verifyData.subscription);
-
-              alert(`✨ Welcome to TrackTaps Plus! Your ${plan.name} plan is now active.`);
-              navigate('/');
+              
+              // 2. Prepare Success Modal
+              setActivatedPlan(plan.name);
+              setShowSuccess(true);
+              
+              setLoading(false);
             } else {
-              alert('❌ Payment verification failed. Please contact support.');
+              alert(`❌ Verification Failed: ${verifyData.message}`);
+              setLoading(false);
             }
           } catch (err) {
             console.error('Verification error:', err);
-            alert('❌ An error occurred during verification.');
-          } finally {
+            alert('❌ An error occurred during verification. Please contact support.');
             setLoading(false);
+          } finally {
             setSelectedPlan(null);
           }
         },
@@ -118,7 +228,7 @@ function Premium() {
       rzp.open();
     } catch (error) {
       console.error('Payment initialization error:', error);
-      alert('❌ Failed to initialize payment. Please try again.');
+      alert('❌ Failed to initialize payment. Please check your connection.');
       setLoading(false);
       setSelectedPlan(null);
     }
@@ -143,6 +253,16 @@ function Premium() {
       color: 'var(--text-main)',
       paddingBottom: '120px'
     }}>
+      <AnimatePresence>
+        {showSuccess && (
+          <SuccessModal 
+            isOpen={showSuccess} 
+            onClose={() => navigate('/')} 
+            planName={activatedPlan} 
+          />
+        )}
+      </AnimatePresence>
+
       {/* Animated Background Blobs */}
       <div style={{ position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none' }}>
         <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 10, repeat: Infinity }} style={{ position: 'absolute', top: '10%', left: '10%', width: '400px', height: '400px', background: 'var(--primary-glow)', borderRadius: '50%', filter: 'blur(100px)' }} />
@@ -256,7 +376,7 @@ function Premium() {
                 </div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ display: 'inline-flex', padding: '8px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                <div style={{ display: 'inline-flex', padding: '8px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1', color: '#10b981' }}>
                   <i className="fas fa-check"></i>
                 </div>
               </div>
@@ -284,3 +404,4 @@ function Premium() {
 }
 
 export default Premium;
+

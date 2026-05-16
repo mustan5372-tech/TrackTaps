@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import admin from 'firebase-admin';
+import Razorpay from 'razorpay';
 import { sendPremiumWelcomeEmail } from './services/emailService.js';
 
 // Initialize Firebase Admin
@@ -19,16 +20,15 @@ if (!admin.apps.length) {
 
 const db = admin.apps.length ? admin.firestore() : null;
 
-const PLAN_DURATIONS = {
-  'monthly': 30,
-  'half_yearly': 180,
-  'yearly': 365
-};
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
-const PLAN_NAMES = {
-  'monthly': 'Starter (Monthly)',
-  'half_yearly': 'Super Saver (6-Month)',
-  'yearly': 'Mega Saver (Yearly)'
+const PLAN_CONFIG = {
+  'monthly': { days: 30, amount: 2, label: 'monthly' },
+  'half_yearly': { days: 180, amount: 5, label: 'half_yearly' },
+  'yearly': { days: 365, amount: 9, label: 'yearly' }
 };
 
 export default async function handler(req, res) {
@@ -42,30 +42,71 @@ export default async function handler(req, res) {
     razorpay_signature,
     uid,
     planId,
-    amount
+    amount // Provided by client, but we will verify with order
   } = req.body;
+
+  console.log(`💳 [PaymentVerification] Started for UID: ${uid}, Plan: ${planId}, Order: ${razorpay_order_id}`);
 
   const secret = process.env.RAZORPAY_KEY_SECRET;
 
   if (!secret) {
+    console.error('❌ [PaymentVerification] Razorpay secret missing in environment');
     return res.status(500).json({ message: 'Razorpay secret not configured' });
   }
 
   try {
-    // 1. Verify Signature
+    // 1. DUPLICATE CHECK: Ensure payment hasn't been processed yet
+    if (db) {
+      const paymentDoc = await db.collection('payments').doc(razorpay_payment_id).get();
+      if (paymentDoc.exists) {
+        console.warn(`⚠️ [PaymentVerification] Duplicate payment attempt: ${razorpay_payment_id}`);
+        return res.status(400).json({ 
+          message: 'This payment has already been processed and activated.',
+          success: false 
+        });
+      }
+    }
+
+    // 2. VERIFY SIGNATURE
     const hmac = crypto.createHmac('sha256', secret);
     hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
     const generated_signature = hmac.digest('hex');
 
     if (generated_signature !== razorpay_signature) {
+      console.error('❌ [PaymentVerification] Signature mismatch!');
       return res.status(400).json({ 
         message: 'Invalid signature. Payment could not be verified.',
         success: false 
       });
     }
 
-    // 2. Calculate Subscription Details
-    const durationDays = PLAN_DURATIONS[planId] || 30;
+    // 3. SECURE PLAN VALIDATION: Fetch order from Razorpay to verify amount and notes
+    console.log(`🔍 [PaymentVerification] Verifying order ${razorpay_order_id} with Razorpay API...`);
+    const order = await razorpay.orders.fetch(razorpay_order_id);
+    
+    if (!order) {
+      throw new Error('Order not found on Razorpay');
+    }
+
+    // Map order notes or amount to plan
+    const expectedPlan = PLAN_CONFIG[planId];
+    if (!expectedPlan) {
+      throw new Error(`Invalid planId: ${planId}`);
+    }
+
+    const expectedAmountPaise = expectedPlan.amount * 100;
+    if (order.amount !== expectedAmountPaise) {
+      console.error(`❌ [PaymentVerification] Amount mismatch! Expected ${expectedAmountPaise}, got ${order.amount}`);
+      return res.status(400).json({ 
+        message: 'Payment amount does not match the selected plan.',
+        success: false 
+      });
+    }
+
+    console.log(`✅ [PaymentVerification] Payment verified for ${expectedPlan.label} plan (₹${expectedPlan.amount})`);
+
+    // 4. CALCULATE EXPIRY
+    const durationDays = expectedPlan.days;
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + durationDays);
 
@@ -75,64 +116,80 @@ export default async function handler(req, res) {
       status: 'active',
       expiryDate: expiryDate.toISOString(),
       paymentId: razorpay_payment_id,
-      amountPaid: amount || 0,
+      orderId: razorpay_order_id,
+      amountPaid: order.amount / 100,
       paymentSource: 'razorpay',
       activatedAt: new Date().toISOString(),
       lastPaymentDate: new Date().toISOString()
     };
 
-    // 3. Update Firestore (Instant Activation)
+    // 5. UPDATE FIRESTORE (Production Critical)
     if (db && uid) {
-      console.log(`🚀 [Backend] Activating Premium for user: ${uid}`);
-      await db.collection('users').doc(uid).set({
+      console.log(`🚀 [PaymentVerification] Activating Premium for user: ${uid}`);
+      
+      const batch = db.batch();
+      
+      // Update User Document with specific requested fields + compatibility sub object
+      const userRef = db.collection('users').doc(uid);
+      batch.set(userRef, {
+        premium: true,
+        premiumPlan: planId,
+        premiumActivatedAt: subscriptionData.activatedAt,
+        premiumExpiresAt: subscriptionData.expiryDate,
+        paymentId: razorpay_payment_id,
+        orderId: razorpay_order_id,
+        role: 'PREMIUM',
         subscription: subscriptionData,
-        role: 'PREMIUM', // Promote to Premium role
         updatedAt: new Date().toISOString()
       }, { merge: true });
-      
-      console.log(`✅ [Backend] Premium Activated successfully for ${uid}`);
 
-      // --- Email Notification Logic ---
+      // Record Payment to prevent duplicates
+      const paymentRef = db.collection('payments').doc(razorpay_payment_id);
+      batch.set(paymentRef, {
+        uid,
+        orderId: razorpay_order_id,
+        paymentId: razorpay_payment_id,
+        amount: subscriptionData.amountPaid,
+        planId: planId,
+        timestamp: new Date().toISOString(),
+        status: 'verified'
+      });
+
+      await batch.commit();
+      
+      console.log(`✅ [PaymentVerification] Premium Activated successfully for ${uid}. Expires: ${subscriptionData.expiryDate}`);
+
+      // --- Async Notifications ---
       try {
-        const userDoc = await db.collection('users').doc(uid).get();
+        const userDoc = await userRef.get();
         const userData = userDoc.data();
         const email = userData?.email;
         const userName = userData?.displayName || 'User';
 
         if (email) {
-          // Send Welcome Email asynchronously
           sendPremiumWelcomeEmail(email, userName, subscriptionData).catch(err => {
-            console.error('❌ [Backend] Async Welcome Email failed:', err);
+            console.error('❌ [PaymentVerification] Welcome Email failed:', err);
           });
-        } else {
-          console.warn(`⚠️ [Backend] No email found for user ${uid}, skipping Welcome Email.`);
         }
       } catch (notifyErr) {
-        console.error('❌ [Backend] Error preparing Welcome Email:', notifyErr);
+        console.error('❌ [PaymentVerification] Notification prep error:', notifyErr);
       }
-      // ------------------------------------
-
     } else {
-      console.warn('⚠️ [Backend] Firestore update skipped: db or uid missing');
-      if (!db) {
-        return res.status(500).json({ 
-          message: 'Server error: Database connection failed. Please contact admin.',
-          success: false 
-        });
-      }
+      throw new Error('Database or UID missing during activation');
     }
 
     res.status(200).json({ 
-      message: 'Payment verified and Premium activated!',
+      message: 'Premium activated successfully!',
       success: true,
       subscription: subscriptionData
     });
 
   } catch (error) {
-    console.error('Verification/Activation Error:', error);
+    console.error('❌ [PaymentVerification] Critical Error:', error);
     res.status(500).json({ 
       message: 'Error during activation: ' + error.message, 
       success: false 
     });
   }
 }
+
