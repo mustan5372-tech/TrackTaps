@@ -47,77 +47,38 @@ function Community() {
   return (
     <div className="community-view" style={{ padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--text-main)' }}>
       {/* Header Section */}
-      <header style={{ marginBottom: '32px', textAlign: 'center' }}>
+      <header style={{ marginBottom: '48px', textAlign: 'center' }}>
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           style={{ 
             display: 'inline-block', 
-            padding: '8px 16px', 
-            background: 'var(--primary-glow)', 
+            padding: '8px 20px', 
+            background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(139, 92, 246, 0.1) 100%)', 
             borderRadius: '100px',
             color: 'var(--primary-light)',
-            fontSize: '12px',
-            fontWeight: '800',
+            fontSize: '11px',
+            fontWeight: '900',
             textTransform: 'uppercase',
-            letterSpacing: '1px',
-            marginBottom: '16px'
+            letterSpacing: '1.5px',
+            marginBottom: '16px',
+            border: '1px solid var(--primary-glow)'
           }}
         >
-          🏆 Global Leaderboard
+          🏆 Champions Board
         </motion.div>
-        <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '8px', letterSpacing: '-1px' }}>
-          TrackTaps <span style={{ color: 'var(--primary-light)' }}>Community</span>
+        <h1 style={{ fontSize: 'clamp(28px, 6vw, 40px)', fontWeight: '950', marginBottom: '12px', letterSpacing: '-1.5px', lineHeight: 1 }}>
+          The <span style={{ color: 'var(--primary-light)' }}>Top 3</span> Elite
         </h1>
-        <p style={{ color: 'var(--text-dim)', fontSize: '15px' }}>
-          Recognizing the most consistent students across the platform.
+        <p style={{ color: 'var(--text-dim)', fontSize: '15px', maxWidth: '450px', margin: '0 auto', lineHeight: 1.5 }}>
+          Recognizing the most disciplined and consistent students in the TrackTaps ecosystem.
         </p>
       </header>
 
-      {/* Premium CTA for Free Users */}
-      {!isPremium && (
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ 
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(109, 40, 217, 0.2) 100%)',
-            border: '1px solid var(--primary-glow)',
-            borderRadius: '20px',
-            padding: '24px',
-            marginBottom: '32px',
-            textAlign: 'center',
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-        >
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '8px' }}>Want your name featured here? 👑</h3>
-            <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '16px' }}>
-              The leaderboard exclusively features our **Premium Plus** members who maintain high attendance.
-            </p>
-            <button 
-              onClick={() => navigate('/premium')}
-              style={{ 
-                background: 'var(--primary)', 
-                color: 'white', 
-                border: 'none', 
-                padding: '10px 24px', 
-                borderRadius: '12px', 
-                fontWeight: '700', 
-                cursor: 'pointer',
-                boxShadow: '0 4px 15px var(--primary-glow)'
-              }}
-            >
-              Upgrade to Premium
-            </button>
-          </div>
-        </motion.div>
-      )}
-
       {/* Leaderboard Section */}
-      <div className="leaderboard-container" style={{ position: 'relative', minHeight: '400px' }}>
+      <div className="leaderboard-container" style={{ position: 'relative', minHeight: '300px' }}>
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', color: 'var(--text-dim)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', color: 'var(--text-dim)' }}>
             <motion.div 
               animate={{ rotate: 360 }} 
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -125,158 +86,159 @@ function Community() {
             >
               ⌛
             </motion.div>
-            <p>Loading consistent students...</p>
+            <p style={{ fontSize: '14px', fontWeight: '600' }}>Calculating rankings...</p>
           </div>
         ) : error ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '24px', border: '1px dashed #ef4444' }}>
-            <div style={{ fontSize: '40px', marginBottom: '16px' }}>😕</div>
-            <h3 style={{ color: '#ef4444', marginBottom: '8px' }}>Oops! Something went wrong</h3>
-            <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>{error}</p>
-            <button 
-              onClick={loadLeaderboard}
-              style={{ marginTop: '20px', background: 'transparent', border: '1px solid var(--text-dim)', color: 'var(--text-main)', padding: '8px 16px', borderRadius: '10px', cursor: 'pointer' }}
-            >
-              Try Again
-            </button>
+          <div style={{ textAlign: 'center', padding: '40px 20px', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '24px', border: '1px dashed #ef4444' }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Leaderboard is currently offline.</p>
           </div>
         ) : (
           <motion.div 
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            style={{ display: 'grid', gap: '12px' }}
+            style={{ display: 'grid', gap: '16px' }}
           >
             {leaderboard.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-dim)' }}>
-                <p>No consistent students found yet. Be the first!</p>
+                <p>Waiting for the first champions to sync...</p>
               </div>
-            ) : leaderboard.map((item, index) => (
+            ) : leaderboard.slice(0, 3).map((item, index) => (
               <motion.div
                 key={item.uid}
                 variants={itemVariants}
-                className="leaderboard-card"
                 style={{ 
-                  background: 'var(--surface-glass)',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                  borderRadius: '18px',
-                  padding: '16px 20px',
+                  background: index === 0 ? 'linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, var(--surface-glass) 100%)' : 'var(--surface-glass)',
+                  border: index === 0 ? '1px solid #fbbf24' : '1px solid rgba(255,255,255,0.05)',
+                  borderRadius: '24px',
+                  padding: '20px 24px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '16px',
+                  gap: '20px',
                   position: 'relative',
                   overflow: 'hidden',
-                  boxShadow: index === 0 ? '0 8px 30px rgba(139, 92, 246, 0.15)' : 'none'
+                  boxShadow: index === 0 ? '0 10px 40px rgba(251, 191, 36, 0.15)' : 'none'
                 }}
               >
-                {/* Rank Number */}
+                {/* Elite Rank Badge */}
                 <div style={{ 
-                  width: '40px', 
-                  height: '40px',
-                  borderRadius: '12px',
+                  width: '48px', 
+                  height: '48px',
+                  borderRadius: '16px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '18px', 
+                  fontSize: '20px', 
                   fontWeight: '900', 
                   background: index === 0 ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' : 
-                             index === 1 ? 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)' : 
-                             index === 2 ? 'linear-gradient(135deg, #b45309 0%, #78350f 100%)' : 
-                             'rgba(255,255,255,0.05)',
-                  color: index < 3 ? '#000' : 'var(--text-muted)',
-                  textAlign: 'center',
-                  boxShadow: index === 0 ? '0 4px 15px rgba(251, 191, 36, 0.4)' : 'none'
+                             index === 1 ? 'linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%)' : 
+                             'linear-gradient(135deg, #d97706 0%, #92400e 100%)',
+                  color: '#000',
+                  boxShadow: index === 0 ? '0 0 20px rgba(251, 191, 36, 0.5)' : 'none',
+                  flexShrink: 0
                 }}>
-                  {index + 1}
+                  {index === 0 ? '1' : index === 1 ? '2' : '3'}
                 </div>
 
-                {/* Avatar / Initials */}
+                {/* Profile Photo */}
                 <div style={{ 
-                  width: '52px', 
-                  height: '52px', 
-                  borderRadius: '16px', 
-                  background: 'var(--primary-glow)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '22px',
-                  fontWeight: '800',
-                  color: 'var(--primary-light)',
-                  flexShrink: 0,
+                  width: '56px', 
+                  height: '56px', 
+                  borderRadius: '18px', 
+                  background: 'var(--surface-glass)',
+                  padding: '2px',
                   border: index === 0 ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.1)',
-                  padding: '2px'
+                  flexShrink: 0
                 }}>
                   {item.photoURL ? (
-                    <img src={item.photoURL} alt={item.name} style={{ width: '100%', height: '100%', borderRadius: '12px', objectFit: 'cover' }} />
+                    <img src={item.photoURL} alt={item.name} style={{ width: '100%', height: '100%', borderRadius: '16px', objectFit: 'cover' }} />
                   ) : (
-                    <div style={{ width: '100%', height: '100%', borderRadius: '12px', background: 'var(--primary-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {item.name.charAt(0).toUpperCase()}
+                    <div style={{ width: '100%', height: '100%', borderRadius: '16px', background: 'var(--primary-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '900', color: 'var(--primary-light)' }}>
+                      {item.name.charAt(0)}
                     </div>
                   )}
                 </div>
 
-                {/* Info */}
+                {/* User Info */}
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontWeight: '800', fontSize: '17px', letterSpacing: '-0.3px' }}>{item.name}</span>
-                    <motion.span 
-                      animate={{ opacity: [0.6, 1, 0.6] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      style={{ 
-                        fontSize: '9px', 
-                        background: 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)', 
-                        color: 'white', 
-                        padding: '2px 8px', 
-                        borderRadius: '6px',
-                        fontWeight: '900',
-                        textTransform: 'uppercase'
-                      }}
-                    >
-                      PLUS
-                    </motion.span>
+                    <span style={{ fontWeight: '800', fontSize: '18px', letterSpacing: '-0.5px' }}>{item.name}</span>
+                    {index === 0 && <span style={{ fontSize: '14px' }}>👑</span>}
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px', fontWeight: '500' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px', fontWeight: '600' }}>
                     ⚡ {item.totalClasses} classes tracked
                   </div>
                 </div>
 
-                {/* Stats */}
+                {/* Attendance Score */}
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ 
-                    fontSize: '22px', 
+                    fontSize: '24px', 
                     fontWeight: '950', 
-                    color: item.attendance >= 75 ? '#10b981' : item.attendance >= 65 ? '#f59e0b' : '#ef4444',
+                    color: item.attendance >= 75 ? '#10b981' : '#f59e0b',
                     lineHeight: 1
                   }}>
                     {item.attendance}%
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginTop: '4px' }}>
-                    Efficiency
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginTop: '6px', letterSpacing: '0.5px' }}>
+                    Consistency
                   </div>
                 </div>
-
-                {/* Special Treatment for Top 1 */}
-                {index === 0 && (
-                  <div style={{ 
-                    position: 'absolute', 
-                    top: '-10px', 
-                    right: '-10px', 
-                    background: '#fbbf24', 
-                    color: '#000', 
-                    padding: '15px 15px 5px 15px', 
-                    transform: 'rotate(45deg)',
-                    fontSize: '12px'
-                  }}>
-                    👑
-                  </div>
-                )}
               </motion.div>
             ))}
           </motion.div>
         )}
       </div>
 
-      <footer style={{ marginTop: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>
-        <p>Leaderboard updates automatically when students sync their attendance.</p>
+      {/* PREMIUM CONVERSION CTA */}
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        style={{ 
+          marginTop: '60px',
+          padding: '40px 24px',
+          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(15, 23, 42, 0.4) 100%)',
+          border: '1px solid var(--primary-glow)',
+          borderRadius: '32px',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <div style={{ fontSize: '40px', marginBottom: '20px' }}>⚡</div>
+          <h3 style={{ fontSize: '22px', fontWeight: '900', marginBottom: '12px' }}>Think you can dominate the leaderboard?</h3>
+          <p style={{ color: 'var(--text-dim)', fontSize: '15px', marginBottom: '32px', maxWidth: '500px', margin: '0 auto 32px', lineHeight: 1.6 }}>
+            Unlock TrackTaps Premium to have your consistency featured on the global stage and compete with the best.
+          </p>
+          <button 
+            onClick={() => navigate('/premium')}
+            style={{ 
+              background: 'var(--primary)', 
+              color: 'white', 
+              border: 'none', 
+              padding: '16px 32px', 
+              borderRadius: '16px', 
+              fontWeight: '800', 
+              fontSize: '16px',
+              cursor: 'pointer',
+              boxShadow: '0 10px 25px var(--primary-glow)',
+              transition: 'transform 0.2s ease'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            Upgrade to Premium →
+          </button>
+        </div>
+        
+        {/* Decorative Glow */}
+        <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'var(--primary-glow)', filter: 'blur(100px)', opacity: 0.3 }}></div>
+      </motion.section>
+
+      <footer style={{ marginTop: '60px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '11px', opacity: 0.6 }}>
+        <p>© 2026 TrackTaps Community • Rankings updated in real-time</p>
       </footer>
     </div>
   );
