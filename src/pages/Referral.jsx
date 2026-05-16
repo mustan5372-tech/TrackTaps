@@ -10,8 +10,10 @@ function Referral() {
   const ensureReferralData = useAppStore(state => state.ensureReferralData);
   
   useEffect(() => {
-    ensureReferralData();
-  }, [ensureReferralData]);
+    if (user) {
+      ensureReferralData();
+    }
+  }, [ensureReferralData, user]);
 
   const validReferrals = referralData?.totalValidReferrals || 0;
   const analytics = referralData?.analytics || { totalSignups: 0, activeUsers: 0 };

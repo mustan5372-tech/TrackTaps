@@ -37,8 +37,8 @@ function AuthModal({ isOpen, onClose }) {
     setLoading(true);
     setError('');
     try {
-      const user = await authService.loginWithEmail(email, password);
-      handleUserAuthenticated(user);
+      await authService.loginWithEmail(email, password);
+      // Handled by store observer
       onClose();
     } catch (err) {
       setError(err.message || 'Login failed');
@@ -67,7 +67,7 @@ function AuthModal({ isOpen, onClose }) {
         role: 'USER'
       });
 
-      handleUserAuthenticated(user);
+      // Handled by store observer
       onClose();
     } catch (err) {
       setError(err.message || 'Signup failed');

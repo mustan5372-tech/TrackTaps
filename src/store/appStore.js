@@ -1065,34 +1065,39 @@ const useAppStore = create(
          * 💎 GROWTH PHASE: Ensure user has a valid referral identity (PERMANENT)
          */
         ensureReferralData: async () => {
-          const { user, referralData, pushToCloud } = get();
+          const { user, referralData } = get();
           if (!user) return;
 
+          // 🛡️ RECURSION & CLASH GUARD: Prevent multiple calls from running at once
+          if (window._isEnsuringReferral) return;
+          
           // 🛡️ PERMANENCE GUARD: If we already have it in the store, stop.
           if (referralData?.referralId && referralData?.referralCode) {
             return;
           }
 
-          console.log("🛠️ [Referral] Checking cloud for permanent identity...");
+          window._isEnsuringReferral = true;
+          console.log("🛠️ [Referral] Initializing permanent identity...");
           
           try {
             const userRef = doc(db, 'users', user.uid);
+            
+            // 1. FAST PATH: Check cloud first (already exists?)
             const userSnap = await getDoc(userRef);
             const cloudData = userSnap.exists() ? userSnap.data() : {};
             const cloudReferral = cloudData.referralData || {};
 
-            // 🛡️ CLOUD-FIRST: If cloud has it, sync it and STOP. Never regenerate.
             if (cloudReferral.referralId && cloudReferral.referralCode) {
               console.log("💎 [Referral] Identity recovered from cloud:", cloudReferral.referralId);
               set({ referralData: cloudReferral });
+              window._isEnsuringReferral = false;
               return;
             }
 
-            // 🆕 GENERATION: Only if truly missing from both store AND cloud
+            // 2. INSTANT GENERATION: Generate and set state IMMEDIATELY
             console.log("✨ [Referral] Generating new permanent identity...");
             
             const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            // Use legacy code as seed if available to maintain stability for old users
             let code = cloudReferral.referralCode || cloudReferral.code;
             
             if (!code) {
@@ -1116,13 +1121,19 @@ const useAppStore = create(
               }
             };
             
+            // SET STATE IMMEDIATELY (Instant UI update)
             set({ referralData: newReferralData });
-            console.log(`💎 [Referral] New Identity Locked: ${referralId}`);
+            console.log(`💎 [Referral] New Identity Applied: ${referralId}`);
             
-            // Push to cloud immediately to ensure it's saved forever
-            await setDoc(userRef, { referralData: newReferralData }, { merge: true });
+            // 3. BACKGROUND SYNC: Save to cloud without blocking the UI
+            setDoc(userRef, { referralData: newReferralData }, { merge: true })
+              .then(() => console.log("✅ [Referral] Identity synced to cloud"))
+              .catch(e => console.error("❌ [Referral] Cloud sync failed:", e));
+
           } catch (error) {
-            console.error("❌ [Referral] Identity lock failed:", error);
+            console.error("❌ [Referral] Identity process failed:", error);
+          } finally {
+            window._isEnsuringReferral = false;
           }
         },
 
