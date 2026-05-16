@@ -230,6 +230,48 @@ function BunkCalculator() {
                 </div>
               </div>
 
+              {/* Safety Window Insight - NEW HERO FEATURE */}
+              {selectedStats.bunkableNow > 0 && (
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  style={{ 
+                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(15, 23, 42, 0.4) 100%)', 
+                    borderRadius: '24px', 
+                    padding: '24px', 
+                    border: '1px solid var(--primary-glow)', 
+                    marginBottom: '32px',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div style={{ position: 'absolute', top: '-10px', right: '-10px', fontSize: '40px', opacity: 0.1 }}>🗓️</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '20px' }}>🛡️</span>
+                    <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--primary-light)', margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>Your Safety Window</h4>
+                  </div>
+                  <p style={{ fontSize: '18px', color: 'var(--text-main)', margin: 0, lineHeight: 1.4, fontWeight: '700' }}>
+                    You are <span style={{ color: 'var(--success)', fontWeight: '900' }}>Safe to Bunk</span> until {
+                      (() => {
+                        const today = new Date().toISOString().split('T')[0];
+                        const subjectEvents = (calendarEvents || []).filter(e => 
+                          e.subjectName === selectedSubject?.name && e.date >= today
+                        );
+                        // The N-th class from now is the one we would hit our limit on if we bunked all N
+                        const targetEvent = subjectEvents[selectedStats.bunkableNow - 1];
+                        return targetEvent 
+                          ? new Date(targetEvent.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+                          : 'the end of semester';
+                      })()
+                    }
+                  </p>
+                  <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }}></span>
+                    Next {selectedStats.bunkableNow} classes of {selectedSubject?.name} are buffer classes.
+                  </div>
+                </motion.div>
+              )}
+
               {/* Recovery Insight Block - Phase 7 */}
               {selectedStats.percentage < (selectedSubject?.criteria || 75) && (
                 <motion.div 
@@ -251,10 +293,10 @@ function BunkCalculator() {
                     <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--warning)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recovery Roadmap</h4>
                   </div>
                   <p style={{ fontSize: '15px', color: 'var(--text-main)', margin: 0, lineHeight: 1.5, fontWeight: '600' }}>
-                    You need <span style={{ color: 'var(--warning)', fontSize: '18px', fontWeight: '900' }}>{selectedStats.mustAttend} consecutive classes</span> to recover your attendance to {selectedSubject?.criteria || 75}%.
+                    Attend <span style={{ color: 'var(--warning)', fontSize: '18px', fontWeight: '900' }}>{selectedStats.mustAttend} consecutive classes</span> to reach {selectedSubject?.criteria || 75}%.
                   </p>
                   <div style={{ fontSize: '12px', color: 'var(--text-dim)', fontStyle: 'italic' }}>
-                    Estimated recovery date: {new Date(new Date().setDate(new Date().getDate() + (selectedStats.mustAttend * 1.5))).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    Target Completion: {new Date(new Date().setDate(new Date().getDate() + (selectedStats.mustAttend * 1.5))).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </div>
                 </motion.div>
               )}

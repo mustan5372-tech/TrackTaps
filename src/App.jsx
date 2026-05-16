@@ -18,10 +18,9 @@ import Community from './community/Community';
 import useAppStore from './store/appStore';
 import { motion } from 'framer-motion';
 import GlobalToast from './components/GlobalToast';
-import AuthModal from './components/AuthModal';
-import Onboarding from './components/Onboarding';
 import DownloadAPK from './components/DownloadAPK';
-import logo from '../icon.png';
+import ErrorBoundary from './components/ErrorBoundary';
+import logo from './assets/logo.png';
 
 function App() {
   const { initAuth, isAuthLoading, isRestoringSession, isAuthModalOpen, setAuthModalOpen } = useAppStore();
@@ -33,7 +32,7 @@ function App() {
     const isProd = hostname === 'tracktaps.online' || hostname === 'www.tracktaps.online';
     setIsStaging(!isProd && hostname !== '');
 
-    // Initialize Auth (which also initializes theme from appStore)
+    // Initialize Auth
     const unsubscribePromise = initAuth();
     return () => {
       unsubscribePromise.then(unsubscribe => {
@@ -54,24 +53,65 @@ function App() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '24px'
+        gap: '32px',
+        overflow: 'hidden',
+        position: 'relative'
       }}>
+        {/* Premium Background Ambient Glow */}
+        <div style={{
+          position: 'absolute',
+          width: '60vw',
+          height: '60vw',
+          background: 'radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)',
+          opacity: 0.15,
+          filter: 'blur(60px)',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 0
+        }} />
+
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ 
+            scale: [0.95, 1, 0.95],
+            opacity: 1,
+            filter: ['blur(4px)', 'blur(0px)', 'blur(4px)']
+          }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          style={{ zIndex: 1 }}
         >
-          <img src={logo} alt="TrackTaps" style={{ width: '120px', height: '120px', filter: 'drop-shadow(0 0 20px var(--primary-glow))' }} />
+          <img src={logo} alt="TrackTaps" style={{ width: '140px', height: '140px', filter: 'drop-shadow(0 0 30px var(--primary-glow))' }} />
         </motion.div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            style={{ width: '32px', height: '32px', border: '3px solid var(--primary-glow)', borderTopColor: 'var(--primary)', borderRadius: '50%' }}
-          />
-          <span style={{ color: 'var(--primary-light)', fontSize: '12px', fontWeight: '800', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-            {isRestoringSession ? 'Restoring your session...' : 'Initializing Ecosystem...'}
-          </span>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', zIndex: 1 }}>
+          <div style={{ width: '180px', height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '100px', overflow: 'hidden', position: 'relative' }}>
+             <motion.div 
+               initial={{ x: '-100%' }}
+               animate={{ x: '100%' }}
+               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+               style={{ 
+                 position: 'absolute',
+                 inset: 0,
+                 background: 'linear-gradient(90deg, transparent, var(--primary-light), transparent)',
+                 width: '60%'
+               }}
+             />
+          </div>
+          <motion.span 
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            style={{ 
+              color: 'var(--text-dim)', 
+              fontSize: '11px', 
+              fontWeight: '800', 
+              letterSpacing: '0.25em', 
+              textTransform: 'uppercase',
+              textAlign: 'center'
+            }}
+          >
+            {isRestoringSession ? 'Restoring Session' : 'Initializing Ecosystem'}
+          </motion.span>
         </div>
       </div>
     );
@@ -101,25 +141,30 @@ function App() {
         </div>
       )}
       <GlobalToast />
-      <Onboarding />
+      <ErrorBoundary>
+        <Onboarding />
+      </ErrorBoundary>
       <DownloadAPK />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
-      <Routes>
-        <Route path="/pod" element={<Pod />} />
-        <Route path="/" element={<AppShell><Home /></AppShell>} />
-        <Route path="/calendar" element={<AppShell><Calendar /></AppShell>} />
-        <Route path="/timetable" element={<AppShell><Timetable /></AppShell>} />
-        <Route path="/subjects" element={<AppShell><Subjects /></AppShell>} />
-        <Route path="/insights" element={<AppShell><Insights /></AppShell>} />
-        <Route path="/history" element={<AppShell><History /></AppShell>} />
-        <Route path="/about" element={<AppShell><About /></AppShell>} />
-        <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
-        <Route path="/premium" element={<AppShell><Premium /></AppShell>} />
-        <Route path="/admin" element={<AppShell><Admin /></AppShell>} />
-        <Route path="/ai-import" element={<AppShell><AiSemesterImport /></AppShell>} />
-        <Route path="/bunk-calculator" element={<AppShell><BunkCalculator /></AppShell>} />
-        <Route path="/community" element={<AppShell><Community /></AppShell>} />
-      </Routes>
+      
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/pod" element={<Pod />} />
+          <Route path="/" element={<AppShell><Home /></AppShell>} />
+          <Route path="/calendar" element={<AppShell><Calendar /></AppShell>} />
+          <Route path="/timetable" element={<AppShell><Timetable /></AppShell>} />
+          <Route path="/subjects" element={<AppShell><Subjects /></AppShell>} />
+          <Route path="/insights" element={<AppShell><Insights /></AppShell>} />
+          <Route path="/history" element={<AppShell><History /></AppShell>} />
+          <Route path="/about" element={<AppShell><About /></AppShell>} />
+          <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
+          <Route path="/premium" element={<AppShell><Premium /></AppShell>} />
+          <Route path="/admin" element={<AppShell><Admin /></AppShell>} />
+          <Route path="/ai-import" element={<AppShell><AiSemesterImport /></AppShell>} />
+          <Route path="/bunk-calculator" element={<AppShell><BunkCalculator /></AppShell>} />
+          <Route path="/community" element={<AppShell><Community /></AppShell>} />
+        </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

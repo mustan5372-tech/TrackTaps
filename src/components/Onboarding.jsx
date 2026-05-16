@@ -19,24 +19,24 @@ const Onboarding = () => {
 
   const steps = [
     {
-      icon: '👋',
+      icon: '✨',
       title: 'Welcome to TrackTaps',
-      text: 'The most powerful way to manage your academic life. Let\'s get you set up in 30 seconds.'
+      text: 'The premium student ecosystem designed to help you dominate your semester while keeping your attendance in check.'
     },
     {
-      icon: '🔄',
-      title: 'Pod.ai Sync',
-      text: 'Stop manual entry. Connect your college Pod.ai account to automatically sync your attendance and subjects.'
+      icon: '📥',
+      title: 'Pod.ai Integration',
+      text: 'Skip manual entry. One-tap sync with Pod.ai pulls your subjects, timetable, and attendance automatically.'
     },
     {
-      icon: '📅',
-      title: 'Smart Timetable',
-      text: 'Add your weekly schedule once, and we\'ll generate your entire semester calendar automatically.'
+      icon: '🏖️',
+      title: 'Smart Bunking',
+      text: 'Our AI engine calculates exactly how many classes you can safely skip. Know your limits before you hit them.'
     },
     {
-      icon: '💎',
-      title: 'Premium Edge',
-      text: 'Unlock real-time bunk predictions, cloud backup, and elite community features.'
+      icon: '🏆',
+      title: 'Elite Community',
+      text: 'Join the top students in your college. Compete on the leaderboard and unlock exclusive premium themes.'
     }
   ];
 
@@ -44,9 +44,13 @@ const Onboarding = () => {
     if (step < steps.length - 1) {
       setStep(step + 1);
     } else {
-      setShow(false);
-      localStorage.setItem('tracktaps_onboarding_seen', 'true');
+      handleComplete();
     }
+  };
+
+  const handleComplete = () => {
+    setShow(false);
+    localStorage.setItem('tracktaps_onboarding_seen', 'true');
   };
 
   if (!show) return null;

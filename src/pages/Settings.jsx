@@ -351,7 +351,7 @@ function Settings() {
                         navigate('/premium');
                         return;
                       }
-                      pushToCloud();
+                      pushToCloud(true);
                     }}
                     disabled={isSyncing}
                     style={{

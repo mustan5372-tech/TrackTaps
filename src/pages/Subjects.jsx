@@ -65,7 +65,7 @@ const SubjectCard = React.memo(({
       <div style={{ 
         marginTop: '8px', 
         padding: '12px', 
-        background: 'rgba(15, 23, 42, 0.4)', 
+        background: 'var(--surface-dark)', 
         borderRadius: '12px',
         border: '1px solid var(--primary-glow)',
         display: 'flex',
@@ -78,7 +78,7 @@ const SubjectCard = React.memo(({
              <div style={{ 
                fontSize: '12px', 
                fontWeight: '800', 
-               color: (safeBunks > 0) ? '#10b981' : 'var(--text-dim)' 
+               color: (safeBunks > 0) ? 'var(--success)' : 'var(--text-dim)' 
              }}>
                {safeBunks} Classes Safe
              </div>
@@ -95,8 +95,8 @@ const SubjectCard = React.memo(({
             }}
             style={{
               width: '100%',
-              background: 'rgba(139, 92, 246, 0.1)',
-              border: '1px solid var(--primary-glow)',
+              background: 'var(--primary-glow)',
+              border: '1px solid var(--border)',
               borderRadius: '8px',
               padding: '8px',
               color: 'var(--primary-light)',
@@ -115,8 +115,8 @@ const SubjectCard = React.memo(({
             }}
             style={{
               width: '100%',
-              background: 'rgba(139, 92, 246, 0.1)',
-              border: '1px solid var(--primary-glow)',
+              background: 'var(--primary-glow)',
+              border: '1px solid var(--border)',
               borderRadius: '8px',
               padding: '10px',
               color: 'var(--text-main)',
@@ -133,7 +133,7 @@ const SubjectCard = React.memo(({
 
       <div style={{
         height: '4px',
-        background: 'rgba(255,255,255,0.05)',
+        background: 'var(--surface-glass)',
         borderRadius: '2px',
         overflow: 'hidden'
       }}>

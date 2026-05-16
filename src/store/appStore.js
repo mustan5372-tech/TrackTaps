@@ -347,26 +347,30 @@ const useAppStore = create(
         isSyncing: false,
         lastCloudSync: null,
 
-        pushToCloud: async () => {
+        pushToCloud: async (manual = false) => {
           const { user, subjects, timetable, calendarEvents, attendanceData, history, subscription, isSyncing } = get();
           if (!user || isSyncing) return;
 
           set({ isSyncing: true });
           try {
+            console.log("📤 [CloudSync] Starting backup...");
+            
             // Basic profile info is synced for all logged-in users
             const profileInfo = {
               displayName: user.displayName,
               email: user.email,
-              role: get().role, // Sync the calculated role back to cloud
+              role: get().role, 
               lastSynced: new Date().toISOString()
             };
 
             let dataToSync = { ...profileInfo };
 
             // Full data sync is gated for premium users
-            if (subscription.plan === 'plus' || subscription.status === 'active') {
+            const isPremium = subscription.plan === 'plus' || subscription.status === 'active';
+            if (isPremium) {
               const stats = calculateAttendanceStats(subjects, calendarEvents, attendanceData);
-              const activityScore = calculateActivityScore(subjects, attendanceData);
+              // Fallback for activity score if not defined
+              const activityScore = typeof calculateActivityScore === 'function' ? calculateActivityScore(subjects, attendanceData) : 0;
               
               dataToSync = {
                 ...dataToSync,
@@ -384,9 +388,15 @@ const useAppStore = create(
             }
 
             await syncService.saveToCloud(user.uid, dataToSync);
-            set({ lastCloudSync: new Date().toISOString(), isSyncing: false });
+            set({ lastCloudSync: new Date().toISOString() });
+            
+            if (manual) {
+              alert('✅ Data Backed Up Successfully!');
+            }
           } catch (error) {
             console.error("Cloud sync failed:", error);
+            if (manual) alert('❌ Backup Failed: ' + error.message);
+          } finally {
             set({ isSyncing: false });
           }
         },

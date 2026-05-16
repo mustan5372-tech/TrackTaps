@@ -495,7 +495,9 @@ class AttendanceEngine {
   /**
    * Get insights based on attendance
    */
-  static generateInsights(subjects, calendarEvents, attendanceData) {
+  static generateInsights(subjects = [], calendarEvents = [], attendanceData = {}) {
+    if (!Array.isArray(subjects) || !Array.isArray(calendarEvents)) return [];
+
     const stats = this.calculateOverallStats(subjects, calendarEvents, attendanceData);
     const insights = [];
 
@@ -508,18 +510,22 @@ class AttendanceEngine {
         const finalNeeded = Math.max(0, total === 0 ? 1 : (isNaN(needed) ? 0 : needed));
         insights.push({
           type: 'critical',
-          subject: stat.subjectName,
-          message: `${stat.subjectName} is at ${stat.percentage}%. Need ${finalNeeded} more classes to reach 75%.`,
+          subject: stat.subjectName || 'Unknown',
+          title: 'Critical Attention',
+          icon: '🚨',
+          message: `${stat.subjectName || 'Subject'} is at ${stat.percentage}%. Attend ${finalNeeded} more to reach 75%.`,
           priority: 'high'
         });
       }
     });
 
-    const safeCount = stats.subjectStats.filter(s => s.status === 'safe').length;
+    const safeCount = (stats.subjectStats || []).filter(s => s && s.status === 'safe').length;
     if (safeCount > 0) {
       insights.push({
         type: 'safe',
-        message: `${safeCount} subject(s) are safe. Great job!`,
+        title: 'Safety Zone',
+        icon: '🛡️',
+        message: `${safeCount} subject(s) are above threshold. Great job!`,
         priority: 'low'
       });
     }
@@ -527,7 +533,9 @@ class AttendanceEngine {
     if (stats.overallPercentage < 65) {
       insights.push({
         type: 'warning',
-        message: `Overall attendance is ${stats.overallPercentage}%. Focus on attending more classes.`,
+        title: 'Efficiency Warning',
+        icon: '⚠️',
+        message: `Overall attendance is ${stats.overallPercentage}%. Focus on next week.`,
         priority: 'high'
       });
     }
