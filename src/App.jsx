@@ -18,9 +18,10 @@ import Community from './community/Community';
 import useAppStore from './store/appStore';
 import { motion } from 'framer-motion';
 import GlobalToast from './components/GlobalToast';
+import AuthModal from './components/AuthModal';
+import Onboarding from './components/Onboarding';
 import DownloadAPK from './components/DownloadAPK';
 import ErrorBoundary from './components/ErrorBoundary';
-import logo from './assets/logo.png';
 
 function App() {
   const { initAuth, isAuthLoading, isRestoringSession, isAuthModalOpen, setAuthModalOpen } = useAppStore();
@@ -81,7 +82,7 @@ function App() {
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           style={{ zIndex: 1 }}
         >
-          <img src={logo} alt="TrackTaps" style={{ width: '140px', height: '140px', filter: 'drop-shadow(0 0 30px var(--primary-glow))' }} />
+          <img src="/logo.png" alt="TrackTaps" style={{ width: '140px', height: '140px', filter: 'drop-shadow(0 0 30px var(--primary-glow))' }} />
         </motion.div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', zIndex: 1 }}>
