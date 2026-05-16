@@ -1020,48 +1020,7 @@ const useAppStore = create(
             set({ 
               subjects: merged,
               podaiSyncStatus: {
-                connected: true,      /**
-       * 💎 GROWTH PHASE: Ensure user has a valid referral identity
-       */
-      ensureReferralData: async () => {
-        const { user, referralData, pushToCloud } = get();
-        if (!user) return;
-
-        // If ID or Code is missing, generate and persist
-        if (!referralData?.referralId || !referralData?.referralCode) {
-          console.log("🛠️ [Referral] Bulletproofing identity: Generating missing fields...");
-          
-          const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-          let code = referralData?.referralCode || referralData?.code;
-          
-          if (!code) {
-            code = '';
-            for (let i = 0; i < 6; i++) {
-              code += characters.charAt(Math.floor(Math.random() * characters.length));
-            }
-          }
-          
-          const referralId = `TT-${code}`;
-          
-          set(state => ({
-            referralData: {
-              ...state.referralData,
-              referralId: referralId,
-              referralCode: code,
-              // Initialize analytics if they don't exist
-              analytics: state.referralData?.analytics || {
-                totalInvitesShared: 0,
-                totalSignups: 0,
-                activeUsers: 0,
-                validReferrals: 0
-              }
-            }
-          }));
-
-          console.log(`💎 [Referral] Identity Created: ${referralId}`);
-          await pushToCloud();
-        }
-      },
+                connected: true,
                 syncing: false,
                 lastSync: new Date().toISOString(),
                 error: null
@@ -1090,6 +1049,48 @@ const useAppStore = create(
           }
         },
         
+        /**
+         * 💎 GROWTH PHASE: Ensure user has a valid referral identity
+         */
+        ensureReferralData: async () => {
+          const { user, referralData, pushToCloud } = get();
+          if (!user) return;
+
+          // If ID or Code is missing, generate and persist
+          if (!referralData?.referralId || !referralData?.referralCode) {
+            console.log("🛠️ [Referral] Bulletproofing identity: Generating missing fields...");
+            
+            const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = referralData?.referralCode || referralData?.code;
+            
+            if (!code) {
+              code = '';
+              for (let i = 0; i < 6; i++) {
+                code += characters.charAt(Math.floor(Math.random() * characters.length));
+              }
+            }
+            
+            const referralId = `TT-${code}`;
+            
+            set(state => ({
+              referralData: {
+                ...state.referralData,
+                referralId: referralId,
+                referralCode: code,
+                analytics: state.referralData?.analytics || {
+                  totalInvitesShared: 0,
+                  totalSignups: 0,
+                  activeUsers: 0,
+                  validReferrals: 0
+                }
+              }
+            }));
+
+            console.log(`💎 [Referral] Identity Created: ${referralId}`);
+            await pushToCloud();
+          }
+        },
+
         syncPodaiSubjects: async (podaiSubjects) => {
           const { subjects } = get();
           
