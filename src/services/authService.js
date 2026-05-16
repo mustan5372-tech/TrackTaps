@@ -56,9 +56,9 @@ const authService = {
     const isAPK = isNativeAPK();
     console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : 'WEB'}`);
     
-    // DIAGNOSTIC ALERT: We need to see if the app knows it is an APK
+    // Detection for internal logging
     if (isAPK) {
-      alert("📱 APK Mode Detected - Locking login inside app...");
+      console.log("📱 [Auth] APK Mode Detected - Native flow active.");
     }
 
     try {
@@ -69,13 +69,9 @@ const authService = {
 
       if (isAPK) {
         // --- 1. NATIVE APK FLOW ---
-        console.log("📱 [Auth] Attempting Native Google Sign-In...");
-        
-        // Import plugin dynamically
         const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
         
         try { 
-          // Initialize plugin. This is required before calling signIn() in many environments
           await GoogleAuth.initialize({
             clientId: '273530797417-bd8fuigvtn5pteccivud773ijo8s9ioe.apps.googleusercontent.com',
           }).catch(e => console.log("ℹ️ [Auth] GoogleAuth already initialized or skip: ", e.message)); 
@@ -83,44 +79,27 @@ const authService = {
           console.warn("⚠️ [Auth] Non-critical initialization warning:", e);
         }
 
-        console.log("👉 [Auth] Triggering Native Account Chooser...");
         const nativeUser = await GoogleAuth.signIn();
         
         if (!nativeUser || !nativeUser.authentication?.idToken) {
-          console.error("❌ [Auth] Native Sign-In returned no idToken");
           throw new Error("Google Sign-In was cancelled or failed to return a valid token.");
         }
 
-        console.log("✅ [Auth] Native Token Received, linking with Firebase...");
         const credential = GoogleAuthProvider.credential(nativeUser.authentication.idToken);
-        
         const result = await signInWithCredential(auth, credential);
-        console.log("🏁 [Auth] Firebase Native Auth Successful:", result.user.email);
         return result.user;
 
       } else {
         // --- 2. WEB FLOW (Browser Only) ---
-        console.log("🌐 [Auth] Using standard Firebase Web Popup...");
         const result = await signInWithPopup(auth, googleProvider);
         return result.user;
       }
     } catch (error) {
       console.error("❌ [Auth] Login Lifecycle Error:", error);
       
-      // Safety: If native fails critically, and it's not a cancellation, alert the user
-      // Error code 12501 is the standard Google Sign-In cancellation code for Android
       const isCancellation = error.message?.includes('cancel') || error.code?.includes('cancel') || error.message?.includes('12501');
-      
       if (!isCancellation && isAPK) {
-        const errorMsg = error.message || error.code || "Unknown native error";
-        console.error("🏁 [Auth] Final Native Error:", errorMsg);
-        
-        // WE STAY IN THE APP. No more redirects.
-        alert(`Native Login Error: ${errorMsg}\n\nThis usually means the SHA-1 key in Firebase Console is incorrect for this specific APK build.`);
-      }
-      
-      if (error.code === 'auth/popup-blocked') {
-        alert("🔒 Popup Blocked: Please enable popups in your browser settings.");
+        console.error("🏁 [Auth] Final Native Error:", error.message || error.code);
       }
       
       throw error;

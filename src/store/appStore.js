@@ -170,8 +170,14 @@ const useAppStore = create(
           try {
             const user = await authService.loginWithGoogle();
             if (user) {
-              set({ user, isAuthLoading: false });
-              await get().pullFromCloud();
+              console.log("👤 [AppStore] Login Success:", user.email);
+              // Set user and clear loading immediately to show dashboard
+              set({ user, isAuthLoading: false, isAuthModalOpen: false });
+              
+              // Restore data in background so UI isn't blocked
+              get().pullFromCloud().catch(err => console.error("Cloud restore failed:", err));
+            } else {
+              set({ isAuthLoading: false });
             }
             return user;
           } catch (error) {
