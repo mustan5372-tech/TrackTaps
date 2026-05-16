@@ -72,7 +72,7 @@ const authService = {
         try { 
           // Initialize plugin. This is required before calling signIn() in many environments
           await GoogleAuth.initialize({
-            clientId: '629606821213-92f7q8909h1v6v7q8909h1v.apps.googleusercontent.com',
+            clientId: '273530797417-bd8fuigvtn5pteccivud773ijo8s9ioe.apps.googleusercontent.com',
           }).catch(e => console.log("ℹ️ [Auth] GoogleAuth already initialized or skip: ", e.message)); 
         } catch (e) {
           console.warn("⚠️ [Auth] Non-critical initialization warning:", e);
