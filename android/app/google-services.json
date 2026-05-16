@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "273530797417",
+    "project_id": "tracktaps-cc644",
+    "storage_bucket": "tracktaps-cc644.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:273530797417:android:4a5d7a9a12698fed7ed1f8",
+        "android_client_info": {
+          "package_name": "com.tracktaps.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "273530797417-bd8fuigvtn5pteccivud773ijo8s9ioe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhQJcuzxaPFaKQqWmK_hh_B39QKKpJwFQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "273530797417-bd8fuigvtn5pteccivud773ijo8s9ioe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
