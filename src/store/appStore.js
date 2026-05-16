@@ -161,13 +161,20 @@ const useAppStore = create(
         
         // ─── REFERRAL SYSTEM ───────────────────────────────────────────────
         referralData: {
-          code: null,
+          referralId: null, // Format: TT-XXXXXX
+          referralCode: null, // Format: XXXXXX
           invitedBy: null,
           referrals: [], // Array of { uid, status: 'joined' | 'verified' | 'synced', date }
           claimedRewards: [], // Array of { rewardId, date }
           totalValidReferrals: 0,
+          analytics: {
+            totalInvitesShared: 0,
+            totalSignups: 0,
+            activeUsers: 0,
+            validReferrals: 0
+          },
           campaignActive: true,
-          campaignEndDate: '2026-12-31' // Limited time campaign
+          campaignEndDate: '2026-12-31'
         },
 
         isAuthLoading: true, 
@@ -337,15 +344,20 @@ const useAppStore = create(
                 }
               });
 
-              // INITIALIZE REFERRAL CODE IF MISSING
-              if (!cloudData?.referralData?.code) {
+              // INITIALIZE REFERRAL CODE IF MISSING (REAL PRODUCTION ID)
+              if (!cloudData?.referralData?.referralId) {
                 const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-                let newCode = '';
+                let code = '';
                 for (let i = 0; i < 6; i++) {
-                  newCode += characters.charAt(Math.floor(Math.random() * characters.length));
+                  code += characters.charAt(Math.floor(Math.random() * characters.length));
                 }
+                const referralId = `TT-${code}`;
                 set(state => ({
-                  referralData: { ...state.referralData, code: newCode }
+                  referralData: { 
+                    ...state.referralData, 
+                    referralId: referralId,
+                    referralCode: code 
+                  }
                 }));
                 get().pushToCloud();
               }
