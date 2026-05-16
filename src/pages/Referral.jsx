@@ -13,27 +13,26 @@ function Referral() {
     ensureReferralData();
   }, [ensureReferralData]);
 
-  const totalInvited = referralData?.referrals?.length || 0;
   const validReferrals = referralData?.totalValidReferrals || 0;
   const analytics = referralData?.analytics || { totalSignups: 0, activeUsers: 0 };
   const target = 10;
   const progress = Math.min((validReferrals / target) * 100, 100);
-  const isRewardClaimed = referralData?.claimedRewards?.some(r => r.rewardId === 'launch_campaign_30d');
+  const isCampaignCompleted = referralData?.referralCampaignCompleted || false;
   
-  // Backward compatibility check for the referral code
-  const activeCode = referralData?.referralCode || referralData?.code || '';
-  const referralLink = `https://tracktaps.online?ref=${activeCode}`;
+  const activeCode = referralData?.referralCode || '';
+  const referralLink = activeCode ? `https://tracktaps.online?ref=${activeCode}` : '';
 
-  // 🔍 DEBUG LOGS FOR VERIFICATION
-  console.log("🛠️ [Referral] Referral Code:", activeCode);
-  console.log("🛠️ [Referral] Generated Link:", referralLink);
-  
   const handleCopy = () => {
+    if (!referralLink) {
+      showToast("⏳ Generating your link, please wait...", "info");
+      return;
+    }
     navigator.clipboard.writeText(referralLink);
     showToast("📋 Invite link copied to clipboard!", "success");
   };
 
   const handleShareWhatsApp = () => {
+    if (!referralLink) return;
     const text = `🚀 Track your attendance smarter with TrackTaps. Sync Pod.ai, calculate safe bunks, and manage your semester like a pro. Join using my link: ${referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
@@ -51,9 +50,9 @@ function Referral() {
           <div>
             <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)' }}>Referral Campaign</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-               <span style={{ fontSize: '10px', color: 'var(--primary-light)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🎓 Early Access</span>
+               <span style={{ fontSize: '10px', color: 'var(--primary-light)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🎓 Campus Launch</span>
                <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>•</span>
-               <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>ID: {referralData?.referralId || 'TT-XXXXXX'}</span>
+               <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>ID: {referralData?.referralId || 'Generating...'}</span>
             </div>
           </div>
         </div>
@@ -61,27 +60,35 @@ function Referral() {
 
       <div className="referral-content" style={{ display: 'grid', gap: '24px', maxWidth: '600px', margin: '0 auto' }}>
         
-        {/* Campaign Reward Banner */}
-        {isRewardClaimed ? (
-          <div className="dashboard-card" style={{ 
-            padding: '32px', 
-            textAlign: 'center',
-            background: 'linear-gradient(135deg, var(--success) 0%, rgba(16, 185, 129, 0.1) 100%)',
-            border: '1px solid var(--success)',
-          }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
-            <h3 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>Campaign Goal Reached!</h3>
-            <p style={{ fontSize: '14px', color: 'var(--text-dim)', lineHeight: '1.6' }}>
-              You've successfully invited 10 active students. Your <strong>30-Day Premium Plus</strong> reward is active.
+        {/* Campaign Status Banner */}
+        {isCampaignCompleted ? (
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="dashboard-card" 
+            style={{ 
+              padding: '40px 32px', 
+              textAlign: 'center',
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.05) 100%)',
+              border: '2px solid var(--success)',
+              boxShadow: '0 0 30px rgba(16, 185, 129, 0.15)'
+            }}
+          >
+            <div style={{ fontSize: '56px', marginBottom: '20px' }}>🎉</div>
+            <h3 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--text-main)', marginBottom: '12px' }}>Reward Successfully Claimed!</h3>
+            <p style={{ fontSize: '15px', color: 'var(--text-dim)', lineHeight: '1.6', marginBottom: '24px' }}>
+              You have already completed the Early Campus Campaign and unlocked <strong>15 Days of Premium Plus</strong>.
             </p>
-          </div>
+            <div style={{ display: 'inline-block', padding: '8px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>
+              Campaign Status: <span style={{ color: 'var(--success)', fontWeight: '800' }}>COMPLETED</span>
+            </div>
+          </motion.div>
         ) : (
           <div className="dashboard-card" style={{ 
             padding: '32px', 
             textAlign: 'center',
             background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(139, 92, 246, 0.1) 100%)',
             border: '1px solid var(--primary-glow)',
-            overflow: 'hidden',
             position: 'relative'
           }}>
             <motion.div 
@@ -92,10 +99,11 @@ function Referral() {
               🎁
             </motion.div>
             <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '12px' }}>
-              Earn 30 Days Premium Plus
+              Unlock 15 Days Premium Plus
             </h3>
-            <p style={{ fontSize: '14px', color: 'var(--text-dim)', lineHeight: '1.6', marginBottom: '24px' }}>
-              Invite 10 active students to TrackTaps and unlock all Plus features for a full month.
+            <p style={{ fontSize: '15px', color: 'var(--text-dim)', lineHeight: '1.6', marginBottom: '24px' }}>
+              🎓 Invite 10 Active Students and Unlock<br/>
+              <strong>15 Days of TrackTaps Premium Plus FREE</strong>
             </p>
             
             {/* Progress Section */}
@@ -113,7 +121,7 @@ function Referral() {
                 />
               </div>
               <p style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'left' }}>
-                {validReferrals >= target ? "🎉 Validated! Premium Unlocking..." : `Only active verified students who log into TrackTaps count.`}
+                {validReferrals >= target ? "🎉 Threshold met! Activating Premium..." : `Only unique active students who sync Pod.ai count towards your reward.`}
               </p>
             </div>
           </div>
@@ -127,13 +135,15 @@ function Referral() {
           </div>
           <div className="dashboard-card" style={{ padding: '20px', textAlign: 'center' }}>
             <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', display: 'block', marginBottom: '8px' }}>Active Users</span>
-            <span style={{ fontSize: '28px', fontWeight: '900', color: 'var(--success)' }}>{analytics.activeUsers || 0}</span>
+            <span style={{ fontSize: '28px', fontWeight: '900', color: 'var(--success)' }}>{analytics.validReferrals || 0}</span>
           </div>
         </div>
 
         {/* Share Section */}
         <div className="dashboard-card" style={{ padding: '24px' }}>
-          <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '16px' }}>Share Your Invite Link</h4>
+          <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '16px' }}>
+            {isCampaignCompleted ? 'Continue Sharing' : 'Start Sharing Your Invite Link'}
+          </h4>
           
           <div style={{ 
             display: 'flex', 
@@ -145,12 +155,12 @@ function Referral() {
           }}>
             <input 
               readOnly 
-              value={referralLink} 
+              value={referralLink || 'Generating your unique code...'} 
               style={{ 
                 flex: 1, 
                 background: 'none', 
                 border: 'none', 
-                color: 'var(--text-dim)', 
+                color: referralLink ? 'var(--text-dim)' : 'var(--text-muted)', 
                 padding: '12px', 
                 fontSize: '13px',
                 fontFamily: 'monospace'
@@ -167,6 +177,7 @@ function Referral() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <button 
               onClick={handleShareWhatsApp}
+              disabled={!referralLink}
               style={{ 
                 padding: '14px', 
                 background: '#25D366', 
@@ -174,11 +185,12 @@ function Referral() {
                 border: 'none', 
                 borderRadius: '12px', 
                 fontWeight: '700', 
-                cursor: 'pointer',
+                cursor: referralLink ? 'pointer' : 'not-allowed',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
+                opacity: referralLink ? 1 : 0.5
               }}
             >
               <span>WhatsApp</span>
@@ -202,13 +214,13 @@ function Referral() {
 
         {/* Validation Info */}
         <div className="dashboard-card" style={{ padding: '24px' }}>
-          <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '12px' }}>How it works</h4>
+          <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '12px' }}>Anti-Abuse Rules</h4>
           <ul style={{ padding: 0, margin: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {[
-              { icon: '📩', text: 'Share your unique invite link with friends.' },
-              { icon: '👤', text: 'Friend creates an account on TrackTaps.' },
-              { icon: '🔄', text: 'Friend successfully syncs Pod.ai attendance.' },
-              { icon: '✅', text: 'Referral becomes VALID after the sync.' }
+              { icon: '👤', text: 'Each referral must be a UNIQUE student identity.' },
+              { icon: '🔄', text: 'Validation requires a successful Pod.ai Sync.' },
+              { icon: '🚫', text: 'Duplicate Pod.ai accounts will NOT be counted.' },
+              { icon: '🔒', text: 'One-time reward: 15 days of Premium Plus.' }
             ].map((item, i) => (
               <li key={i} style={{ display: 'flex', gap: '12px', alignItems: 'center', fontSize: '13px', color: 'var(--text-dim)' }}>
                 <span style={{ fontSize: '18px' }}>{item.icon}</span>

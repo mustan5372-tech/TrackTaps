@@ -174,7 +174,9 @@ const useAppStore = create(
             validReferrals: 0
           },
           campaignActive: true,
-          campaignEndDate: '2026-12-31'
+          campaignEndDate: '2026-12-31',
+          referralCampaignCompleted: false,
+          referralRewardClaimed: false
         },
 
         isAuthLoading: true, 
@@ -1039,11 +1041,13 @@ const useAppStore = create(
             get().pushToCloud();
             
             // GROWTH PHASE: Validate Referral on successful Pod.ai Sync
-            const { referralData } = get();
-            if (referralData.invitedBy) {
+            const { referralData, user } = get();
+            if (referralData.invitedBy && !referralData.referralCampaignCompleted) {
               import('../services/referralService').then(m => {
                 const referralService = m.default;
-                referralService.validateReferral(get().user.uid, referralData.invitedBy);
+                // Get the Pod.ai email from localStorage (cached during login)
+                const podEmail = localStorage.getItem('pod_username'); 
+                referralService.validateReferral(user.uid, referralData.invitedBy, podEmail);
               });
             }
 
