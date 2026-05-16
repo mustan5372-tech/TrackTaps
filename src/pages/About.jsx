@@ -576,27 +576,62 @@ function About() {
             TrackTaps is building the next generation of academic tools, starting with smart attendance tracking and AI-driven student insights.
           </p>
 
-          {/* Call to Action */}
-          <Link 
-            to="/" 
-            style={{ 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              gap: '12px', 
-              background: 'var(--primary)', 
-              color: 'white', 
-              padding: '16px 36px', 
-              borderRadius: '16px', 
-              textDecoration: 'none', 
-              fontWeight: '800', 
-              fontSize: '16px', 
-              boxShadow: '0 15px 30px var(--primary-glow)',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            Explore Platform
-            <span style={{ fontSize: '18px' }}>→</span>
-          </Link>
+          {/* Call to Action Buttons */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '16px', 
+            flexWrap: 'wrap',
+            justifyContent: 'flex-start'
+          }}>
+            <Link 
+              to="/" 
+              style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '12px', 
+                background: 'var(--primary)', 
+                color: 'white', 
+                padding: '16px 36px', 
+                borderRadius: '16px', 
+                textDecoration: 'none', 
+                fontWeight: '800', 
+                fontSize: '16px', 
+                boxShadow: '0 15px 30px var(--primary-glow)',
+                transition: 'all 0.3s ease',
+                flex: '0 1 auto',
+                minWidth: '200px',
+                justifyContent: 'center'
+              }}
+            >
+              Explore Platform
+              <span style={{ fontSize: '18px' }}>→</span>
+            </Link>
+
+            <Link 
+              to="/community" 
+              style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '12px', 
+                background: 'rgba(139, 92, 246, 0.08)', 
+                color: 'var(--text-main)', 
+                padding: '16px 36px', 
+                borderRadius: '16px', 
+                textDecoration: 'none', 
+                fontWeight: '800', 
+                fontSize: '16px', 
+                border: '1px solid var(--primary-glow)',
+                boxShadow: '0 10px 25px rgba(139, 92, 246, 0.1)',
+                transition: 'all 0.3s ease',
+                flex: '0 1 auto',
+                minWidth: '200px',
+                justifyContent: 'center'
+              }}
+            >
+              Explore Community
+              <span style={{ fontSize: '18px' }}>🏆</span>
+            </Link>
+          </div>
         </motion.section>
 
         {/* WHY TRACKTAPS SECTION */}
@@ -617,63 +652,6 @@ function About() {
           </div>
         </motion.section>
 
-        {/* COMMUNITY CTA SECTION - HIGH DISCOVERABILITY */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="about-section" 
-          style={{ marginBottom: '120px', textAlign: 'center' }}
-        >
-          <div style={{ 
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
-            border: '1px solid var(--primary-glow)',
-            borderRadius: '32px',
-            padding: '48px 24px',
-            maxWidth: '900px',
-            margin: '0 auto',
-            position: 'relative',
-            overflow: 'hidden',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.2)'
-          }}>
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                style={{ fontSize: '56px', marginBottom: '24px' }}
-              >
-                🏆
-              </motion.div>
-              <h2 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '16px', color: 'var(--text-main)' }}>Explore the Community</h2>
-              <p style={{ color: 'var(--text-dim)', fontSize: '16px', maxWidth: '600px', margin: '0 auto 32px', lineHeight: '1.6' }}>
-                Join the ranks of the most disciplined students. View the global leaderboard and see where you stand among the TrackTaps elite.
-              </p>
-              <Link 
-                to="/community"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  background: 'var(--primary)',
-                  color: 'white',
-                  padding: '16px 32px',
-                  borderRadius: '16px',
-                  textDecoration: 'none',
-                  fontWeight: '800',
-                  fontSize: '16px',
-                  boxShadow: '0 10px 25px var(--primary-glow)',
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                View Global Leaderboard →
-              </Link>
-            </div>
-            
-            {/* Decorative elements */}
-            <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'var(--primary-glow)', filter: 'blur(120px)', opacity: 0.2 }}></div>
-            <div style={{ position: 'absolute', bottom: '-100px', left: '-100px', width: '300px', height: '300px', background: 'var(--primary-glow)', filter: 'blur(120px)', opacity: 0.1 }}></div>
-          </div>
-        </motion.section>
 
         {/* TEAM SECTION */}
         <motion.section className="about-section" style={{ marginBottom: '120px' }}>
