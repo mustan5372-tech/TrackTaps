@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 const DownloadAPK = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('android'); // android, windows, ios
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const location = useLocation();
+
+  // Helper to detect if we are in the native APK
+  const isNativeAPK = () => {
+    return !!(window.Capacitor && window.Capacitor.isNativePlatform());
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -20,6 +27,11 @@ const DownloadAPK = () => {
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // ONLY VISIBLE ON HOME AND ABOUT PAGES
+  // ALSO HIDE IF ALREADY IN NATIVE APK
+  const isVisiblePage = location.pathname === '/' || location.pathname === '/about';
+  if (!isVisiblePage || isNativeAPK()) return null;
 
   const downloadAPK = () => {
     const link = document.createElement('a');
