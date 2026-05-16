@@ -71,7 +71,9 @@ const authService = {
         
         try { 
           // Initialize plugin. This is required before calling signIn() in many environments
-          await GoogleAuth.initialize().catch(e => console.log("ℹ️ [Auth] GoogleAuth already initialized or skip: ", e.message)); 
+          await GoogleAuth.initialize({
+            clientId: '629606821213-92f7q8909h1v6v7q8909h1v.apps.googleusercontent.com',
+          }).catch(e => console.log("ℹ️ [Auth] GoogleAuth already initialized or skip: ", e.message)); 
         } catch (e) {
           console.warn("⚠️ [Auth] Non-critical initialization warning:", e);
         }
@@ -107,10 +109,13 @@ const authService = {
       console.error("❌ [Auth] Login Lifecycle Error:", error);
       
       // Safety: If native fails critically, and it's not a cancellation, alert the user
-      const isCancellation = error.message?.includes('cancel') || error.code?.includes('cancel');
+      // Error code 12501 is the standard Google Sign-In cancellation code for Android
+      const isCancellation = error.message?.includes('cancel') || error.code?.includes('cancel') || error.message?.includes('12501');
       
       if (!isCancellation && isAPK) {
-        alert("Native Login failed. Please try again or use the Web version.");
+        // Provide the actual error message to the user for diagnosis (e.g. "Developer Error" if SHA-1 is missing)
+        const errorMsg = error.message || error.code || "Unknown native error";
+        alert(`Native Login Failed: ${errorMsg}\n\nTroubleshooting:\n1. Check Internet\n2. Verify SHA-1 in Firebase Console\n3. Ensure Google Play Services is updated`);
       }
       
       if (error.code === 'auth/popup-blocked') {
