@@ -346,11 +346,17 @@ const useAppStore = create(
 
               // INITIALIZE REFERRAL CODE IF MISSING (REAL PRODUCTION ID)
               if (!cloudData?.referralData?.referralId) {
-                const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-                let code = '';
-                for (let i = 0; i < 6; i++) {
-                  code += characters.charAt(Math.floor(Math.random() * characters.length));
+                // MIGRATION: Use legacy code if available, otherwise generate new
+                let code = cloudData?.referralData?.referralCode || cloudData?.referralData?.code;
+                
+                if (!code) {
+                  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                  code = '';
+                  for (let i = 0; i < 6; i++) {
+                    code += characters.charAt(Math.floor(Math.random() * characters.length));
+                  }
                 }
+                
                 const referralId = `TT-${code}`;
                 set(state => ({
                   referralData: { 

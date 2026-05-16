@@ -14,7 +14,9 @@ function Referral() {
   const progress = Math.min((validReferrals / target) * 100, 100);
   const isRewardClaimed = referralData?.claimedRewards?.some(r => r.rewardId === 'launch_campaign_30d');
   
-  const referralLink = `https://tracktaps.online?ref=${referralData?.referralCode || ''}`;
+  // Backward compatibility check for the referral code
+  const activeCode = referralData?.referralCode || referralData?.code || '';
+  const referralLink = `https://tracktaps.online?ref=${activeCode}`;
   
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
