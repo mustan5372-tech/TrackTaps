@@ -198,8 +198,20 @@ function BunkCalculator() {
           </div>
         )}
 
+        {!selectedSubjectId && subjects.length > 0 && (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+            Please select a subject to calculate bunk stats.
+          </div>
+        )}
+
+        {subjects.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+            No subjects found. Please add subjects in the Subjects tab first.
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
-          {selectedStats && (
+          {selectedStats && selectedSubject && (
             <motion.div
               key={selectedSubjectId}
               initial={{ opacity: 0, x: 20 }}
@@ -210,28 +222,28 @@ function BunkCalculator() {
               <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '32px' }}>
                 <div style={{ padding: '24px', background: 'var(--surface)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '12px', fontWeight: '800', letterSpacing: '0.1em' }}>Current Attendance</div>
-                  <div style={{ fontSize: '36px', fontWeight: '950', color: getStatusColor(selectedStats.percentage), letterSpacing: '-1px' }}>{selectedStats.percentage}%</div>
+                  <div style={{ fontSize: '36px', fontWeight: '950', color: getStatusColor(selectedStats?.percentage || 0), letterSpacing: '-1px' }}>{selectedStats?.percentage || 0}%</div>
                   <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '6px', fontWeight: '600' }}>
-                    <span style={{ color: 'var(--text-main)' }}>{selectedStats.present}</span> of {selectedStats.total} classes
+                    <span style={{ color: 'var(--text-main)' }}>{selectedStats?.present || 0}</span> of {selectedStats?.total || 0} classes
                   </div>
                 </div>
                 <div style={{ 
                   padding: '24px', 
-                  background: selectedStats.bunkableNow > 0 ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)', 
+                  background: (selectedStats?.bunkableNow || 0) > 0 ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)', 
                   borderRadius: '24px', 
-                  border: `1px solid ${selectedStats.bunkableNow > 0 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
+                  border: `1px solid ${(selectedStats?.bunkableNow || 0) > 0 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
                   boxShadow: 'var(--shadow-sm)' 
                 }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '12px', fontWeight: '800', letterSpacing: '0.1em' }}>Safe to Bunk</div>
-                  <div style={{ fontSize: '36px', fontWeight: '950', color: selectedStats.bunkableNow > 0 ? 'var(--success)' : 'var(--danger)', letterSpacing: '-1px' }}>
-                    {selectedStats.bunkableNow} <span style={{ fontSize: '16px', fontWeight: '700', letterSpacing: '0' }}>Classes</span>
+                  <div style={{ fontSize: '36px', fontWeight: '950', color: (selectedStats?.bunkableNow || 0) > 0 ? 'var(--success)' : 'var(--danger)', letterSpacing: '-1px' }}>
+                    {selectedStats?.bunkableNow || 0} <span style={{ fontSize: '16px', fontWeight: '700', letterSpacing: '0' }}>Classes</span>
                   </div>
                   <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '6px', fontWeight: '600' }}>Until you hit {selectedSubject?.criteria || 75}%</div>
                 </div>
               </div>
 
-              {/* Safety Window Insight - NEW HERO FEATURE */}
-              {selectedStats.bunkableNow > 0 && (
+              {/* Safety Window Insight */}
+              {(selectedStats?.bunkableNow || 0) > 0 && (
                 <motion.div 
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -253,27 +265,28 @@ function BunkCalculator() {
                   <p style={{ fontSize: '18px', color: 'var(--text-main)', margin: 0, lineHeight: 1.4, fontWeight: '700' }}>
                     You are <span style={{ color: 'var(--success)', fontWeight: '900' }}>Safe to Bunk</span> until {
                       (() => {
-                        const today = new Date().toISOString().split('T')[0];
-                        const subjectEvents = (calendarEvents || []).filter(e => 
-                          e.subjectName === selectedSubject?.name && e.date >= today
-                        );
-                        // The N-th class from now is the one we would hit our limit on if we bunked all N
-                        const targetEvent = subjectEvents[selectedStats.bunkableNow - 1];
-                        return targetEvent 
-                          ? new Date(targetEvent.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
-                          : 'the end of semester';
+                        try {
+                          const today = new Date().toISOString().split('T')[0];
+                          const subjectEvents = (calendarEvents || []).filter(e => 
+                            e.subjectName === selectedSubject?.name && e.date >= today
+                          );
+                          const targetEvent = subjectEvents[(selectedStats?.bunkableNow || 1) - 1];
+                          return targetEvent 
+                            ? new Date(targetEvent.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+                            : 'the end of semester';
+                        } catch (e) { return 'the end of semester'; }
                       })()
                     }
                   </p>
                   <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }}></span>
-                    Next {selectedStats.bunkableNow} classes of {selectedSubject?.name} are buffer classes.
+                    Next {selectedStats?.bunkableNow || 0} classes of {selectedSubject?.name || 'this subject'} are buffer classes.
                   </div>
                 </motion.div>
               )}
 
-              {/* Recovery Insight Block - Phase 7 */}
-              {selectedStats.percentage < (selectedSubject?.criteria || 75) && (
+              {/* Recovery Insight Block */}
+              {(selectedStats?.percentage || 0) < (selectedSubject?.criteria || 75) && (
                 <motion.div 
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -293,10 +306,10 @@ function BunkCalculator() {
                     <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--warning)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recovery Roadmap</h4>
                   </div>
                   <p style={{ fontSize: '15px', color: 'var(--text-main)', margin: 0, lineHeight: 1.5, fontWeight: '600' }}>
-                    Attend <span style={{ color: 'var(--warning)', fontSize: '18px', fontWeight: '900' }}>{selectedStats.mustAttend} consecutive classes</span> to reach {selectedSubject?.criteria || 75}%.
+                    Attend <span style={{ color: 'var(--warning)', fontSize: '18px', fontWeight: '900' }}>{selectedStats?.mustAttend || 0} consecutive classes</span> to reach {selectedSubject?.criteria || 75}%.
                   </p>
                   <div style={{ fontSize: '12px', color: 'var(--text-dim)', fontStyle: 'italic' }}>
-                    Target Completion: {new Date(new Date().setDate(new Date().getDate() + (selectedStats.mustAttend * 1.5))).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    Target Completion: {new Date(new Date().setDate(new Date().getDate() + ((selectedStats?.mustAttend || 1) * 1.5))).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </div>
                 </motion.div>
               )}
@@ -312,14 +325,14 @@ function BunkCalculator() {
                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--danger)' }}></span>
                       <span style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '600' }}>If you miss next class:</span>
                     </div>
-                    <span style={{ fontSize: '18px', fontWeight: '900', color: getStatusColor(selectedStats.prediction.ifMissNext1) }}>{selectedStats.prediction.ifMissNext1}%</span>
+                    <span style={{ fontSize: '18px', fontWeight: '900', color: getStatusColor(selectedStats?.prediction?.ifMissNext1 || 0) }}>{selectedStats?.prediction?.ifMissNext1 || 0}%</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)' }}></span>
                       <span style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '600' }}>If you attend next class:</span>
                     </div>
-                    <span style={{ fontSize: '18px', fontWeight: '900', color: getStatusColor(selectedStats.prediction.ifAttendNext1) }}>{selectedStats.prediction.ifAttendNext1}%</span>
+                    <span style={{ fontSize: '18px', fontWeight: '900', color: getStatusColor(selectedStats?.prediction?.ifAttendNext1 || 0) }}>{selectedStats?.prediction?.ifAttendNext1 || 0}%</span>
                   </div>
                   <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0' }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -332,15 +345,15 @@ function BunkCalculator() {
               <div style={{ display: 'flex', gap: '12px' }}>
                 <div style={{ flex: 1, padding: '18px', background: 'rgba(15, 23, 42, 0.5)', borderRadius: '20px', textAlign: 'center', border: '1px solid var(--border)' }}>
                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '800' }}>Total Scheduled</div>
-                   <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-main)' }}>{selectedStats.totalPlanned}</div>
+                   <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-main)' }}>{selectedStats?.totalPlanned || 0}</div>
                 </div>
                 <div style={{ flex: 1, padding: '18px', background: 'rgba(15, 23, 42, 0.5)', borderRadius: '20px', textAlign: 'center', border: '1px solid var(--border)' }}>
                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '800' }}>Classes Left</div>
-                   <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-main)' }}>{selectedStats.remainingClasses}</div>
+                   <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-main)' }}>{selectedStats?.remainingClasses || 0}</div>
                 </div>
                 <div style={{ flex: 1, padding: '18px', background: 'rgba(15, 23, 42, 0.5)', borderRadius: '20px', textAlign: 'center', border: '1px solid var(--border)' }}>
                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '800' }}>Bunk Buffer</div>
-                   <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--primary-light)' }}>{Math.max(0, selectedStats.remainingClasses - selectedStats.mustAttend)}</div>
+                   <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--primary-light)' }}>{Math.max(0, (selectedStats?.remainingClasses || 0) - (selectedStats?.mustAttend || 0))}</div>
                 </div>
               </div>
             </motion.div>
