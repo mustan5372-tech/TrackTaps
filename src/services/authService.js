@@ -12,13 +12,23 @@ import {
   signInWithPhoneNumber,
   updateProfile,
   linkWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  signInWithRedirect,
+  GoogleAuthProvider,
+  signInWithCredential,
+  getRedirectResult
 } from "firebase/auth";
 import { auth, googleProvider } from "./firebase";
 
-// Conservative detection: Only use Native plugin if the bridge is definitely available
+// Robust detection: Check for Capacitor bridge and specific platform properties
 const isNativeAPK = () => {
-  return !!(window.Capacitor && window.Capacitor.isNativePlatform());
+  const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform());
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  
+  // Also check for the bridge existence even if isNativePlatform isn't ready
+  const hasCapacitorBridge = !!(window.Capacitor?.Plugins);
+  
+  return isNative || (isAndroid && hasCapacitorBridge);
 };
 
 const isMobileBrowser = () => {
@@ -31,7 +41,9 @@ const authService = {
     try {
       console.log("🚀 [Auth] Initializing persistent storage...");
       // IndexedDB is the gold standard for mobile/native persistence
-      await setPersistence(auth, indexedDBLocalPersistence).catch(() => {
+      // We force this early to ensure session recovery is stable
+      await setPersistence(auth, indexedDBLocalPersistence).catch((err) => {
+        console.warn("⚠️ [Auth] IndexedDB persistence failed, falling back to LocalStorage", err);
         return setPersistence(auth, browserLocalPersistence);
       });
       console.log("✅ [Auth] Persistence established");
@@ -41,39 +53,70 @@ const authService = {
   },
 
   loginWithGoogle: async () => {
+    const isAPK = isNativeAPK();
+    console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : 'WEB'}`);
+
     try {
       if (!auth.app) throw new Error("Firebase not initialized");
-
-      const isAPK = isNativeAPK();
-      console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : 'WEB'}`);
       
+      // Ensure persistence is ready before login
       await authService.init();
 
       if (isAPK) {
         // --- 1. NATIVE APK FLOW ---
+        console.log("📱 [Auth] Attempting Native Google Sign-In...");
+        
+        // Import plugin dynamically
         const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
-        try { await GoogleAuth.initialize(); } catch (e) {}
+        
+        try { 
+          // Initialize plugin. This is required before calling signIn() in many environments
+          await GoogleAuth.initialize().catch(e => console.log("ℹ️ [Auth] GoogleAuth already initialized or skip: ", e.message)); 
+        } catch (e) {
+          console.warn("⚠️ [Auth] Non-critical initialization warning:", e);
+        }
+
+        console.log("👉 [Auth] Triggering Native Account Chooser...");
         const nativeUser = await GoogleAuth.signIn();
         
-        if (nativeUser && nativeUser.authentication.idToken) {
-          const { GoogleAuthProvider, signInWithCredential } = await import("firebase/auth");
-          const credential = GoogleAuthProvider.credential(nativeUser.authentication.idToken);
-          return (await signInWithCredential(auth, credential)).user;
+        if (!nativeUser || !nativeUser.authentication?.idToken) {
+          console.error("❌ [Auth] Native Sign-In returned no idToken");
+          throw new Error("Google Sign-In was cancelled or failed to return a valid token.");
         }
-        throw new Error("Native Auth failed.");
+
+        console.log("✅ [Auth] Native Token Received, linking with Firebase...");
+        const credential = GoogleAuthProvider.credential(nativeUser.authentication.idToken);
+        
+        const result = await signInWithCredential(auth, credential);
+        console.log("🏁 [Auth] Firebase Native Auth Successful:", result.user.email);
+        return result.user;
 
       } else {
-        // --- 2. WEB FLOW (Standard Popup for both Desktop & Mobile) ---
+        // --- 2. WEB FLOW ---
+        if (isMobileBrowser()) {
+          console.log("📱 [Auth] Mobile Browser detected, using Redirect flow to prevent popup blocks...");
+          await signInWithRedirect(auth, googleProvider);
+          return null; // Redirecting...
+        }
+
         console.log("🌐 [Auth] Using standard Firebase Web Popup...");
         const result = await signInWithPopup(auth, googleProvider);
         return result.user;
       }
     } catch (error) {
-      console.error("❌ [Auth] Google Login Failure:", error);
-      // Fallback for blocked popups on mobile
-      if (error.code === 'auth/popup-blocked') {
-        alert("🔒 Popup Blocked: Please enable popups for this site or try Email Login.");
+      console.error("❌ [Auth] Login Lifecycle Error:", error);
+      
+      // Safety: If native fails critically, and it's not a cancellation, alert the user
+      const isCancellation = error.message?.includes('cancel') || error.code?.includes('cancel');
+      
+      if (!isCancellation && isAPK) {
+        alert("Native Login failed. Please try again or use the Web version.");
       }
+      
+      if (error.code === 'auth/popup-blocked') {
+        alert("🔒 Popup Blocked: Please enable popups in your browser settings.");
+      }
+      
       throw error;
     }
   },
@@ -179,7 +222,6 @@ const authService = {
     }
     
     try {
-      const { getRedirectResult } = await import("firebase/auth");
       const result = await getRedirectResult(auth);
       
       if (result && result.user) {

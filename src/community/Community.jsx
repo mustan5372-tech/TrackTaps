@@ -107,80 +107,115 @@ function Community() {
               <motion.div
                 key={item.uid}
                 variants={itemVariants}
+                whileHover={{ scale: 1.02, y: -4 }}
                 style={{ 
-                  background: index === 0 ? 'linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, var(--surface-glass) 100%)' : 'var(--surface-glass)',
-                  border: index === 0 ? '1px solid #fbbf24' : '1px solid rgba(255,255,255,0.05)',
-                  borderRadius: '24px',
-                  padding: '20px 24px',
+                  background: index === 0 ? 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, var(--surface-glass) 100%)' : 'var(--surface-glass)',
+                  border: index === 0 ? '2px solid rgba(251, 191, 36, 0.5)' : 
+                          index === 1 ? '1px solid rgba(203, 213, 225, 0.3)' :
+                          index === 2 ? '1px solid rgba(217, 119, 6, 0.3)' :
+                          '1px solid rgba(255,255,255,0.05)',
+                  borderRadius: '28px',
+                  padding: '24px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '20px',
                   position: 'relative',
                   overflow: 'hidden',
-                  boxShadow: index === 0 ? '0 10px 40px rgba(251, 191, 36, 0.15)' : 'none'
+                  boxShadow: index === 0 ? '0 20px 40px rgba(251, 191, 36, 0.15)' : 'var(--shadow-md)',
+                  transition: 'border-color 0.3s ease'
                 }}
               >
                 {/* Elite Rank Badge */}
                 <div style={{ 
-                  width: '48px', 
-                  height: '48px',
-                  borderRadius: '16px',
+                  width: '52px', 
+                  height: '52px',
+                  borderRadius: '18px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '20px', 
-                  fontWeight: '900', 
+                  fontSize: '22px', 
+                  fontWeight: '950', 
                   background: index === 0 ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' : 
                              index === 1 ? 'linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%)' : 
                              'linear-gradient(135deg, #d97706 0%, #92400e 100%)',
                   color: '#000',
-                  boxShadow: index === 0 ? '0 0 20px rgba(251, 191, 36, 0.5)' : 'none',
+                  boxShadow: index === 0 ? '0 8px 20px rgba(251, 191, 36, 0.4)' : 'none',
                   flexShrink: 0
                 }}>
-                  {index === 0 ? '1' : index === 1 ? '2' : '3'}
+                  {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
                 </div>
 
-                {/* Profile Photo */}
+                {/* Profile Photo with verified status */}
                 <div style={{ 
-                  width: '56px', 
-                  height: '56px', 
-                  borderRadius: '18px', 
+                  width: '64px', 
+                  height: '64px', 
+                  borderRadius: '20px', 
                   background: 'var(--surface-glass)',
-                  padding: '2px',
+                  padding: '3px',
                   border: index === 0 ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.1)',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  position: 'relative'
                 }}>
                   {item.photoURL ? (
                     <img src={item.photoURL} alt={item.name} style={{ width: '100%', height: '100%', borderRadius: '16px', objectFit: 'cover' }} />
                   ) : (
-                    <div style={{ width: '100%', height: '100%', borderRadius: '16px', background: 'var(--primary-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '900', color: 'var(--primary-light)' }}>
+                    <div style={{ width: '100%', height: '100%', borderRadius: '16px', background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '900', color: 'white' }}>
                       {item.name.charAt(0)}
                     </div>
                   )}
+                  {/* Verified Badge */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '-4px',
+                    right: '-4px',
+                    background: 'var(--primary)',
+                    borderRadius: '50%',
+                    width: '20px',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '10px',
+                    border: '2px solid var(--bg-primary)',
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.5)'
+                  }}>💎</div>
                 </div>
 
                 {/* User Info */}
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ fontWeight: '800', fontSize: '18px', letterSpacing: '-0.5px' }}>{item.name}</span>
-                    {index === 0 && <span style={{ fontSize: '14px' }}>👑</span>}
+                    {index === 0 && (
+                      <span style={{ 
+                        fontSize: '10px', 
+                        padding: '2px 8px', 
+                        background: 'rgba(251, 191, 36, 0.2)', 
+                        color: '#fbbf24', 
+                        borderRadius: '100px', 
+                        fontWeight: '900',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        border: '1px solid rgba(251, 191, 36, 0.3)'
+                      }}>Absolute Unit</span>
+                    )}
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px', fontWeight: '600' }}>
-                    ⚡ {item.totalClasses} classes tracked
+                  <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '6px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: 'var(--primary-light)' }}>⚡ {item.totalClasses}</span> classes tracked
                   </div>
                 </div>
 
                 {/* Attendance Score */}
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ 
-                    fontSize: '24px', 
-                    fontWeight: '950', 
+                    fontSize: '28px', 
+                    fontWeight: '1000', 
                     color: item.attendance >= 75 ? '#10b981' : '#f59e0b',
-                    lineHeight: 1
+                    lineHeight: 1,
+                    textShadow: item.attendance >= 75 ? '0 0 20px rgba(16, 185, 129, 0.3)' : 'none'
                   }}>
                     {item.attendance}%
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginTop: '6px', letterSpacing: '0.5px' }}>
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '900', marginTop: '8px', letterSpacing: '1px' }}>
                     Consistency
                   </div>
                 </div>

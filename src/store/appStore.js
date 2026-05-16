@@ -192,8 +192,17 @@ const useAppStore = create(
         },
 
         initAuth: async () => {
-          set({ isAuthLoading: true });
+          set({ isAuthLoading: true, isRestoringSession: true });
           
+          // Safety Timeout: Prevent permanent "Initializing" screen
+          const authTimeout = setTimeout(() => {
+            const { user, isAuthLoading } = get();
+            if (isAuthLoading && !user) {
+              console.warn("⚠️ [AuthStore] Auth initialization timed out. Proceeding as Guest.");
+              set({ isAuthLoading: false, isRestoringSession: false });
+            }
+          }, 8000); // 8 seconds is plenty for most redirects/persistence checks
+
           try {
             // 1. Initialize Persistence (Critical for session recovery after redirect)
             await authService.init();
@@ -203,6 +212,8 @@ const useAppStore = create(
             if (redirectUser) {
               console.log("🎯 [AuthStore] Caught Redirect User:", redirectUser.email);
               await get().handleUserAuthenticated(redirectUser);
+              clearTimeout(authTimeout);
+              return; // We are done, handleUserAuthenticated sets loading to false
             }
           } catch (err) {
             console.error("❌ [AuthStore] Initial Redirect/Persistence check failed:", err);
@@ -210,6 +221,7 @@ const useAppStore = create(
 
           // 3. Set up the ongoing listener
           const unsubscribe = authService.onAuthChange(async (user) => {
+            clearTimeout(authTimeout);
             if (user) {
               console.log("👤 [AuthStore] Active Session Found:", user.email);
               await get().handleUserAuthenticated(user);

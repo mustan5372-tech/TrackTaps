@@ -356,13 +356,18 @@ body {
         box-sizing: border-box;
     }
 
-    /* Native-like card proportions */
+    /* Native-like card proportions - Performance Optimized */
     .subject-card, .shortcut-card, .insight-card, .history-card, .dashboard-card {
         border-radius: var(--card-radius) !important;
         padding: 20px !important;
         background: var(--surface-glass) !important;
         border: 1px solid var(--border) !important;
-        backdrop-filter: blur(12px) !important;
+        /* Use the performance token instead of hardcoded 12px */
+        backdrop-filter: blur(var(--glass-blur)) !important;
+        -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+        /* Content visibility optimization for long lists */
+        content-visibility: auto;
+        contain-intrinsic-size: 100px;
     }
 
     /* Mobile Typography Refinements */

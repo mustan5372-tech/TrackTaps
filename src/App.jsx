@@ -19,6 +19,8 @@ import useAppStore from './store/appStore';
 import { motion } from 'framer-motion';
 import GlobalToast from './components/GlobalToast';
 import AuthModal from './components/AuthModal';
+import Onboarding from './components/Onboarding';
+import DownloadAPK from './components/DownloadAPK';
 import logo from '../icon.png';
 
 function App() {
@@ -99,6 +101,8 @@ function App() {
         </div>
       )}
       <GlobalToast />
+      <Onboarding />
+      <DownloadAPK />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
       <Routes>
         <Route path="/pod" element={<Pod />} />

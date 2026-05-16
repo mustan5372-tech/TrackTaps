@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, limit, addDoc, serverTimestamp, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 
 const syncService = {
@@ -45,7 +45,6 @@ const syncService = {
    */
   fetchByEmail: async (email) => {
     try {
-      const { collection, query, where, getDocs, limit } = await import("firebase/firestore");
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", email.toLowerCase()), limit(1));
       const querySnapshot = await getDocs(q);
@@ -65,7 +64,6 @@ const syncService = {
    */
   reportUser: async (reportData) => {
     try {
-      const { collection, addDoc, serverTimestamp } = await import("firebase/firestore");
       const reportsRef = collection(db, "reports");
       await addDoc(reportsRef, {
         ...reportData,
@@ -84,7 +82,6 @@ const syncService = {
    */
   fetchReports: async () => {
     try {
-      const { collection, getDocs, query, orderBy } = await import("firebase/firestore");
       const reportsRef = collection(db, "reports");
       const q = query(reportsRef, orderBy("createdAt", "desc"));
       const querySnapshot = await getDocs(q);
