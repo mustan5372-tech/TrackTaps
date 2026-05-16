@@ -125,13 +125,6 @@ const authService = {
       
       throw error;
     }
-      
-      if (error.code === 'auth/popup-blocked') {
-        alert("🔒 Popup Blocked: Please enable popups in your browser settings.");
-      }
-      
-      throw error;
-    }
   },
 
   // --- Email Authentication ---
