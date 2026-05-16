@@ -69,6 +69,7 @@ function Home() {
   const getCriticalSubjects = useAppStore(state => state.getCriticalSubjects);
   const getTodaySchedule = useAppStore(state => state.getTodaySchedule);
   const semesterStats = useAppStore(state => state.semesterStats);
+  const referralData = useAppStore(state => state.referralData);
 
   // Non-logged-in landing page (no Google login - auth handled elsewhere)
   if (!user && !isAuthLoading) {
@@ -383,6 +384,117 @@ function Home() {
           </motion.div>
         ))}
       </motion.div>
+      
+      {/* 🎁 CAMPUS LAUNCH CAMPAIGN - GROWTH ENGINE */}
+      <motion.section
+        variants={fadeInUp}
+        initial="initial"
+        whileInView="animate"
+        viewport={{ once: true }}
+        style={{ padding: window.innerWidth < 768 ? '0 16px' : '0' }}
+      >
+        <div style={{
+          background: subscription?.status === 'active' 
+            ? 'var(--surface-glass)' 
+            : 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(15, 23, 42, 0.4) 100%)',
+          border: subscription?.status === 'active' 
+            ? '1px solid var(--border)' 
+            : '1px solid var(--primary-glow)',
+          borderRadius: '28px',
+          padding: window.innerWidth < 768 ? '24px' : '32px',
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '24px'
+        }}>
+          {/* Background Glow for Free Users */}
+          {subscription?.status !== 'active' && (
+            <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)', opacity: 0.3, pointerEvents: 'none' }} />
+          )}
+
+          <div style={{ flex: 1, textAlign: window.innerWidth < 768 ? 'center' : 'left' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: window.innerWidth < 768 ? 'center' : 'flex-start', marginBottom: '8px' }}>
+              <span style={{ fontSize: '20px' }}>🎁</span>
+              <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>Campus Launch Campaign</h3>
+              <span style={{ 
+                fontSize: '10px', 
+                background: 'var(--primary)', 
+                color: 'white', 
+                padding: '2px 8px', 
+                borderRadius: '100px', 
+                fontWeight: '900',
+                letterSpacing: '0.05em'
+              }}>EARLY ACCESS</span>
+            </div>
+            
+            {subscription?.status !== 'active' ? (
+              <>
+                <p style={{ color: 'var(--text-main)', fontSize: '15px', fontWeight: '600', margin: '0 0 4px 0' }}>
+                  Invite 10 students & Unlock 30 Days Premium FREE.
+                </p>
+                <p style={{ color: 'var(--text-dim)', fontSize: '12px', margin: 0 }}>
+                  🔥 Unlock Premium through referrals during the Early Campus Launch.
+                </p>
+              </>
+            ) : (
+              <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: 0 }}>
+                Keep growing the TrackTaps community! Track your referral milestones below.
+              </p>
+            )}
+          </div>
+
+          <div style={{ 
+            minWidth: window.innerWidth < 768 ? '100%' : '320px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            {/* Progress Bar Container */}
+            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase' }}>Valid Referrals</span>
+                <span style={{ fontSize: '14px', fontWeight: '900', color: 'var(--primary-light)' }}>
+                  {referralData?.totalValidReferrals || 0} <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>/ 10</span>
+                </span>
+              </div>
+              <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '100px', overflow: 'hidden' }}>
+                <motion.div 
+                  initial={{ width: 0 }}
+                  whileInView={{ width: `${Math.min(((referralData?.totalValidReferrals || 0) / 10) * 100, 100)}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  style={{ height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%)' }}
+                />
+              </div>
+            </div>
+
+            <motion.button 
+              whileHover={{ scale: 1.02, boxShadow: '0 0 20px var(--primary-glow)' }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate('/referral')}
+              style={{
+                width: '100%',
+                background: subscription?.status === 'active' ? 'var(--surface-bright)' : 'var(--primary-glow)',
+                color: subscription?.status === 'active' ? 'var(--text-main)' : 'var(--primary-light)',
+                border: `1px solid ${subscription?.status === 'active' ? 'var(--border)' : 'var(--primary-glow)'}`,
+                padding: '14px',
+                borderRadius: '12px',
+                fontWeight: '800',
+                fontSize: '14px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              {subscription?.status === 'active' ? 'View Referrals →' : 'Invite & Earn Premium →'}
+            </motion.button>
+          </div>
+        </div>
+      </motion.section>
 
       {/* Prediction Widgets */}
       <motion.div 
