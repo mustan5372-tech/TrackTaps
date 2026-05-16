@@ -108,6 +108,14 @@ const authService = {
     } catch (error) {
       console.error("❌ [Auth] Login Lifecycle Error:", error);
       
+      // FALLBACK LOGIC: If native plugin is missing or fails, use the web redirect flow
+      const isNotImplemented = error.message?.includes('not implemented');
+      if (isNotImplemented && isAPK) {
+        console.warn("⚠️ [Auth] Native plugin not found in APK. Falling back to Web Redirect...");
+        await signInWithRedirect(auth, googleProvider);
+        return null;
+      }
+
       // Safety: If native fails critically, and it's not a cancellation, alert the user
       // Error code 12501 is the standard Google Sign-In cancellation code for Android
       const isCancellation = error.message?.includes('cancel') || error.code?.includes('cancel') || error.message?.includes('12501');
@@ -115,7 +123,10 @@ const authService = {
       if (!isCancellation && isAPK) {
         // Provide the actual error message to the user for diagnosis (e.g. "Developer Error" if SHA-1 is missing)
         const errorMsg = error.message || error.code || "Unknown native error";
-        alert(`Native Login Failed: ${errorMsg}\n\nTroubleshooting:\n1. Check Internet\n2. Verify SHA-1 in Firebase Console\n3. Ensure Google Play Services is updated`);
+        alert(`Native Login Failed: ${errorMsg}\n\nFalling back to web login... Please wait.`);
+        
+        // Final fallback to redirect
+        await signInWithRedirect(auth, googleProvider);
       }
       
       if (error.code === 'auth/popup-blocked') {
