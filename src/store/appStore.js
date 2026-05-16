@@ -1063,69 +1063,83 @@ const useAppStore = create(
         
         /**
          * 💎 GROWTH PHASE: Ensure user has a valid referral identity (PERMANENT)
-         * Optimized for speed: Generates and sets code immediately, syncs cloud in background.
+         * Optimized for speed & persistence: 
+         * 1. Check State -> 2. Check LocalStorage (Instant) -> 3. Background Cloud Reconcile
          */
         ensureReferralData: () => {
           const { user, referralData } = get();
           if (!user) return;
 
-          // 🛡️ RECURSION & CLASH GUARD: Prevent multiple calls from running at once
+          // 🛡️ RECURSION GUARD
           if (window._isEnsuringReferral) return;
           
-          // 🛡️ PERMANENCE GUARD: If we already have a locked identity, stop.
+          // 🛡️ STAGE 1: Already in memory? Done.
           if (referralData?.referralId && referralData?.referralCode) {
             return;
           }
 
           window._isEnsuringReferral = true;
-          console.log("🛠️ [Referral] Initializing permanent identity...");
-          
-          // 1. INSTANT GENERATION (Synchronous)
-          // We generate a code immediately so the user NEVER sees "Generating..."
-          const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-          let code = '';
-          for (let i = 0; i < 6; i++) {
-            code += characters.charAt(Math.floor(Math.random() * characters.length));
-          }
-          
-          const referralId = `TT-${code}`;
-          const initialReferralData = {
-            ...referralData,
-            referralId: referralId,
-            referralCode: code,
-            isLocalOnly: true // Flag to indicate we need to check cloud
-          };
-          
-          // Apply to state IMMEDIATELY (Instant UI)
-          set({ referralData: initialReferralData });
-          console.log(`✨ [Referral] Instant Identity Created: ${referralId}`);
 
-          // 2. BACKGROUND RECONCILIATION (Asynchronous, Non-blocking)
-          const syncWithCloud = async () => {
+          // 🛡️ STAGE 2: Instant Consistency via LocalStorage Cache
+          const cacheKey = `tt_ref_${user.uid}`;
+          const cachedData = localStorage.getItem(cacheKey);
+          
+          if (cachedData) {
+            try {
+              const parsed = JSON.parse(cachedData);
+              if (parsed.referralId && parsed.referralCode) {
+                console.log("⚡ [Referral] Instant Recovery from LocalCache:", parsed.referralId);
+                set({ referralData: parsed });
+                // We still fall through to sync with cloud in background to be safe
+              }
+            } catch (e) {
+              localStorage.removeItem(cacheKey);
+            }
+          }
+
+          // 🛡️ STAGE 3: If still no code (new session/new device), generate one immediately
+          if (!get().referralData?.referralCode) {
+            console.log("✨ [Referral] Generating new session identity...");
+            const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+              code += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            const referralId = `TT-${code}`;
+            const initialData = { ...referralData, referralId, referralCode: code };
+            
+            set({ referralData: initialData });
+            localStorage.setItem(cacheKey, JSON.stringify(initialData));
+          }
+
+          // 🛡️ STAGE 4: Background Cloud Reconciliation (Truth Source)
+          const reconcile = async () => {
             try {
               const userRef = doc(db, 'users', user.uid);
               const userSnap = await getDoc(userRef);
               const cloudData = userSnap.exists() ? userSnap.data() : {};
               const cloudReferral = cloudData.referralData || {};
 
-              // If cloud already has a DIFFERENT code, we MUST respect cloud (permanence)
               if (cloudReferral.referralId && cloudReferral.referralCode) {
-                console.log("💎 [Referral] Cloud identity recovered, overriding local:", cloudReferral.referralId);
-                set({ referralData: cloudReferral });
+                // Cloud is the master. If it differs, we override.
+                if (cloudReferral.referralId !== get().referralData?.referralId) {
+                   console.log("💎 [Referral] Cloud Truth recovered, overriding session identity.");
+                   set({ referralData: cloudReferral });
+                   localStorage.setItem(cacheKey, JSON.stringify(cloudReferral));
+                }
               } else {
-                // Cloud is empty, save our instant code
-                console.log("📤 [Referral] Locking instant identity to cloud...");
-                await setDoc(userRef, { referralData: initialReferralData }, { merge: true });
-                set(state => ({ referralData: { ...state.referralData, isLocalOnly: false } }));
+                // Cloud is empty, we lock our generated identity forever
+                console.log("📤 [Referral] Locking session identity to cloud permanently.");
+                await setDoc(userRef, { referralData: get().referralData }, { merge: true });
               }
             } catch (error) {
-              console.error("❌ [Referral] Background sync failed:", error);
+              console.error("❌ [Referral] Reconciliation failed:", error);
             } finally {
               window._isEnsuringReferral = false;
             }
           };
 
-          syncWithCloud();
+          reconcile();
         },
 
         syncPodaiSubjects: async (podaiSubjects) => {
