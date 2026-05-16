@@ -108,25 +108,26 @@ const authService = {
     } catch (error) {
       console.error("❌ [Auth] Login Lifecycle Error:", error);
       
-      // FALLBACK LOGIC: If native plugin is missing or fails, use the web redirect flow
+      // FALLBACK LOGIC: If native plugin is missing or fails with 403/disallowed_useragent
       const isNotImplemented = error.message?.includes('not implemented');
-      if (isNotImplemented && isAPK) {
-        console.warn("⚠️ [Auth] Native plugin not found in APK. Falling back to Web Redirect...");
-        await signInWithRedirect(auth, googleProvider);
+      if ((isNotImplemented || error.message?.includes('disallowed_useragent')) && isAPK) {
+        console.warn("⚠️ [Auth] Native plugin unavailable. Using System Browser Fallback...");
+        const { Browser } = await import('@capacitor/browser');
+        // We open the web login in the ACTUAL system browser to avoid the 403 error
+        await Browser.open({ url: 'https://www.tracktaps.online/auth-fallback' });
         return null;
       }
 
       // Safety: If native fails critically, and it's not a cancellation, alert the user
-      // Error code 12501 is the standard Google Sign-In cancellation code for Android
       const isCancellation = error.message?.includes('cancel') || error.code?.includes('cancel') || error.message?.includes('12501');
       
       if (!isCancellation && isAPK) {
-        // Provide the actual error message to the user for diagnosis (e.g. "Developer Error" if SHA-1 is missing)
         const errorMsg = error.message || error.code || "Unknown native error";
-        alert(`Native Login Failed: ${errorMsg}\n\nFalling back to web login... Please wait.`);
+        console.error("🏁 [Auth] Final Native Error:", errorMsg);
         
-        // Final fallback to redirect
-        await signInWithRedirect(auth, googleProvider);
+        // Final fallback: Open in system browser
+        const { Browser } = await import('@capacitor/browser');
+        await Browser.open({ url: 'https://www.tracktaps.online/' });
       }
       
       if (error.code === 'auth/popup-blocked') {
