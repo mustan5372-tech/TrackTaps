@@ -108,27 +108,24 @@ const authService = {
     } catch (error) {
       console.error("❌ [Auth] Login Lifecycle Error:", error);
       
-      // FALLBACK LOGIC: If native plugin is missing or fails with 403/disallowed_useragent
-      const isNotImplemented = error.message?.includes('not implemented');
-      if ((isNotImplemented || error.message?.includes('disallowed_useragent')) && isAPK) {
-        console.warn("⚠️ [Auth] Native plugin unavailable. Using System Browser Fallback...");
-        const { Browser } = await import('@capacitor/browser');
-        // We open the web login in the ACTUAL system browser to avoid the 403 error
-        await Browser.open({ url: 'https://www.tracktaps.online/auth-fallback' });
-        return null;
-      }
-
       // Safety: If native fails critically, and it's not a cancellation, alert the user
+      // Error code 12501 is the standard Google Sign-In cancellation code for Android
       const isCancellation = error.message?.includes('cancel') || error.code?.includes('cancel') || error.message?.includes('12501');
       
       if (!isCancellation && isAPK) {
         const errorMsg = error.message || error.code || "Unknown native error";
         console.error("🏁 [Auth] Final Native Error:", errorMsg);
         
-        // Final fallback: Open in system browser
-        const { Browser } = await import('@capacitor/browser');
-        await Browser.open({ url: 'https://www.tracktaps.online/' });
+        // WE STAY IN THE APP. No more redirects.
+        alert(`Native Login Error: ${errorMsg}\n\nThis usually means the SHA-1 key in Firebase Console is incorrect for this specific APK build.`);
       }
+      
+      if (error.code === 'auth/popup-blocked') {
+        alert("🔒 Popup Blocked: Please enable popups in your browser settings.");
+      }
+      
+      throw error;
+    }
       
       if (error.code === 'auth/popup-blocked') {
         alert("🔒 Popup Blocked: Please enable popups in your browser settings.");
