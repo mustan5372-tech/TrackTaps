@@ -374,7 +374,6 @@ const useAppStore = create(
                   });
                 });
               }
-            }
             
             // Trigger Premium Auto-Sync immediately after auth
             if (updatedSub.status === 'active') {
