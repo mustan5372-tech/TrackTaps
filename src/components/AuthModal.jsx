@@ -14,17 +14,17 @@ function AuthModal({ isOpen, onClose }) {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
 
-  const { handleUserAuthenticated } = useAppStore();
-
-  // Phone Auth Timer removed
-
+  const { login, setUser } = useAppStore();
+  
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError('');
     try {
-      const user = await authService.loginWithGoogle();
-      handleUserAuthenticated(user);
-      onClose();
+      // Use the centralized store login which handles everything
+      const user = await login();
+      if (user) {
+        onClose();
+      }
     } catch (err) {
       setError(err.message || 'Google Login failed');
     } finally {
