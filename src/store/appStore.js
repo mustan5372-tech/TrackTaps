@@ -158,6 +158,17 @@ const useAppStore = create(
             theme: 'default' // 'default', 'neon', 'sunset', 'forest'
           }
         },
+        
+        // ─── REFERRAL SYSTEM ───────────────────────────────────────────────
+        referralData: {
+          code: null,
+          invitedBy: null,
+          referrals: [], // Array of { uid, status: 'joined' | 'verified' | 'synced', date }
+          claimedRewards: [], // Array of { rewardId, date }
+          totalValidReferrals: 0,
+          campaignActive: true,
+          campaignEndDate: '2026-12-31' // Limited time campaign
+        },
 
         isAuthLoading: true, 
         isRestoringSession: false, 
@@ -319,9 +330,44 @@ const useAppStore = create(
                 calendarEvents: cloudData.calendarEvents || [],
                 attendanceData: cloudData.attendanceData || {},
                 history: cloudData.history || [],
-                lastCloudSync: cloudData.lastSynced || new Date().toISOString()
+                lastCloudSync: cloudData.lastSynced || new Date().toISOString(),
+                referralData: {
+                  ...get().referralData,
+                  ...(cloudData.referralData || {})
+                }
               });
+
+              // INITIALIZE REFERRAL CODE IF MISSING
+              if (!cloudData?.referralData?.code) {
+                const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                let newCode = '';
+                for (let i = 0; i < 6; i++) {
+                  newCode += characters.charAt(Math.floor(Math.random() * characters.length));
+                }
+                set(state => ({
+                  referralData: { ...state.referralData, code: newCode }
+                }));
+                get().pushToCloud();
+              }
+
               get().fullSync();
+
+              // GROWTH PHASE: Track Referral if new user
+              const inviteCode = sessionStorage.getItem('tracktaps_invited_by');
+              if (!cloudData && inviteCode) {
+                import('../services/referralService').then(m => {
+                  const referralService = m.default;
+                  referralService.trackNewReferral(user.uid, inviteCode).then(inviterUid => {
+                    if (inviterUid) {
+                      set(state => ({
+                        referralData: { ...state.referralData, invitedBy: inviterUid }
+                      }));
+                      sessionStorage.removeItem('tracktaps_invited_by');
+                      get().pushToCloud();
+                    }
+                  });
+                });
+              }
             }
             
             // Trigger Premium Auto-Sync immediately after auth
@@ -384,6 +430,7 @@ const useAppStore = create(
                 totalClasses: stats.totalClasses,
                 attendanceStreak: get().dashboardStats.attendanceStreak, // RETENTION: Track consistency milestones
                 activityScore: activityScore,
+                referralData: get().referralData, // GROWTH: Track referrals
                 lastSyncDate: new Date().toISOString()
               };
             }
@@ -420,6 +467,10 @@ const useAppStore = create(
                 attendanceData: cloudData.attendanceData || {},
                 history: cloudData.history || [],
                 subscription: cloudData.subscription || { plan: 'free', status: 'inactive' },
+                referralData: {
+                  ...get().referralData,
+                  ...(cloudData.referralData || {})
+                },
                 lastCloudSync: cloudData.lastSynced || new Date().toISOString(),
                 isSyncing: false
               });
@@ -982,6 +1033,15 @@ const useAppStore = create(
             get().fullSync();
             get().pushToCloud();
             
+            // GROWTH PHASE: Validate Referral on successful Pod.ai Sync
+            const { referralData } = get();
+            if (referralData.invitedBy) {
+              import('../services/referralService').then(m => {
+                const referralService = m.default;
+                referralService.validateReferral(get().user.uid, referralData.invitedBy);
+              });
+            }
+
             // Notify user of success
             get().showToast("✨ Pod.ai attendance synced successfully!", "success");
             

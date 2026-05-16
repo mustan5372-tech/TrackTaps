@@ -15,6 +15,7 @@ import Admin from './pages/Admin';
 import AiSemesterImport from './pages/AiSemesterImport';
 import BunkCalculator from './pages/BunkCalculator';
 import Community from './community/Community';
+import Referral from './pages/Referral';
 import useAppStore from './store/appStore';
 import { motion } from 'framer-motion';
 import GlobalToast from './components/GlobalToast';
@@ -28,6 +29,14 @@ function App() {
   const [isStaging, setIsStaging] = React.useState(false);
 
   useEffect(() => {
+    // 🔍 GROWTH PHASE: Capture Referral Code
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    if (refCode) {
+      console.log(`🎁 [Referral] Captured invite code: ${refCode}`);
+      sessionStorage.setItem('tracktaps_invited_by', refCode);
+    }
+
     // Detect environment for Staging Badge
     const hostname = window.location.hostname;
     const isProd = hostname === 'tracktaps.online' || hostname === 'www.tracktaps.online';
@@ -184,6 +193,7 @@ function App() {
           <Route path="/ai-import" element={<AppShell><AiSemesterImport /></AppShell>} />
           <Route path="/bunk-calculator" element={<AppShell><BunkCalculator /></AppShell>} />
           <Route path="/community" element={<AppShell><Community /></AppShell>} />
+          <Route path="/referral" element={<AppShell><Referral /></AppShell>} />
         </Routes>
       </ErrorBoundary>
     </BrowserRouter>

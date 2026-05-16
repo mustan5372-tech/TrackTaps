@@ -57,7 +57,8 @@ function Settings() {
     removeWorkingSaturday,
     theme,
     setTheme,
-    setAuthModalOpen
+    setAuthModalOpen,
+    referralData
   } = useAppStore();
 
   useEffect(() => {
@@ -754,6 +755,57 @@ function Settings() {
               }}
             >
               🗑️ Clear All Data
+            </button>
+          </div>
+        </div>
+
+        {/* Campus Launch Referral */}
+        <div className="dashboard-card" style={{ 
+          background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
+          border: '1px solid var(--primary-glow)',
+          overflow: 'hidden'
+        }}>
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="card-title">🎁 Campus Launch Campaign</span>
+            <span style={{ 
+              fontSize: '10px', 
+              background: 'var(--primary)', 
+              color: 'white', 
+              padding: '2px 8px', 
+              borderRadius: '100px', 
+              fontWeight: '900' 
+            }}>EARLY ACCESS</span>
+          </div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '14px', lineHeight: '1.6' }}>
+              Invite 10 active students to TrackTaps and unlock <strong>30 Days of Premium Plus</strong> for free.
+            </p>
+            <div style={{ 
+              background: 'rgba(0,0,0,0.2)', 
+              padding: '12px', 
+              borderRadius: '12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '700' }}>Your Progress</span>
+              <span style={{ fontSize: '14px', color: 'var(--primary-light)', fontWeight: '800' }}>
+                {referralData?.totalValidReferrals || 0} / 10
+              </span>
+            </div>
+            <button 
+              onClick={() => navigate('/referral')}
+              style={{
+                padding: '14px',
+                borderRadius: '12px',
+                background: 'var(--primary-glow)',
+                color: 'var(--primary-light)',
+                border: '1px solid var(--primary-glow)',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+            >
+              Invite & Earn Premium →
             </button>
           </div>
         </div>
