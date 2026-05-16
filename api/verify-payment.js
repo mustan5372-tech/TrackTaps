@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import admin from 'firebase-admin';
+import { sendPremiumWelcomeEmail } from './services/emailService.js';
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {
@@ -90,6 +91,27 @@ export default async function handler(req, res) {
       }, { merge: true });
       
       console.log(`✅ [Backend] Premium Activated successfully for ${uid}`);
+
+      // --- Email Notification Logic ---
+      try {
+        const userDoc = await db.collection('users').doc(uid).get();
+        const userData = userDoc.data();
+        const email = userData?.email;
+        const userName = userData?.displayName || 'User';
+
+        if (email) {
+          // Send Welcome Email asynchronously
+          sendPremiumWelcomeEmail(email, userName, subscriptionData).catch(err => {
+            console.error('❌ [Backend] Async Welcome Email failed:', err);
+          });
+        } else {
+          console.warn(`⚠️ [Backend] No email found for user ${uid}, skipping Welcome Email.`);
+        }
+      } catch (notifyErr) {
+        console.error('❌ [Backend] Error preparing Welcome Email:', notifyErr);
+      }
+      // ------------------------------------
+
     } else {
       console.warn('⚠️ [Backend] Firestore update skipped: db or uid missing');
       if (!db) {

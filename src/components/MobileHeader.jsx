@@ -19,7 +19,7 @@ function MobileHeader() {
   const isSyncing = podaiSyncStatus?.syncing;
 
   return (
-    <header className="mobile-header">
+    <header className="mobile-header" data-nosnippet>
       {/* LEFT: Logo */}
       <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
         <img 

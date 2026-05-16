@@ -628,6 +628,50 @@ function About() {
           </div>
         </motion.section>
 
+        {/* COMMUNITY SECTION */}
+        <motion.section className="about-section" style={{ marginBottom: '120px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '40px', fontWeight: '800', marginBottom: '24px', color: 'var(--text-main)' }}>Global Community</h2>
+          <p style={{ fontSize: '16px', color: 'var(--text-dim)', maxWidth: '600px', margin: '0 auto 40px' }}>Join a network of thousands of students striving for academic excellence and consistency.</p>
+          
+          <div style={{ 
+            background: 'var(--surface-glass)', 
+            border: '1px solid var(--primary-glow)', 
+            borderRadius: '32px', 
+            padding: '40px', 
+            maxWidth: '800px', 
+            margin: '0 auto',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{ fontSize: '48px', marginBottom: '20px' }}>🌍</div>
+              <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '16px' }}>Consistency at Scale</h3>
+              <p style={{ color: 'var(--text-dim)', marginBottom: '32px', lineHeight: '1.7' }}>
+                Our global leaderboard recognizes the top-performing students on the platform. 
+                Whether you are tracking locally or syncing with Pod.ai, you can see how your 
+                discipline compares to others in the ecosystem.
+              </p>
+              <Link 
+                to="/community" 
+                style={{ 
+                  display: 'inline-block',
+                  background: 'var(--primary)', 
+                  color: 'white', 
+                  padding: '14px 32px', 
+                  borderRadius: '14px', 
+                  textDecoration: 'none', 
+                  fontWeight: '800',
+                  boxShadow: '0 8px 25px var(--primary-glow)'
+                }}
+              >
+                Join the Leaderboard
+              </Link>
+            </div>
+            {/* Background Glow */}
+            <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'var(--primary-glow)', filter: 'blur(100px)', opacity: 0.3 }}></div>
+          </div>
+        </motion.section>
+
         {/* ROADMAP SECTION */}
         <motion.section className="about-section" style={{ marginBottom: '60px' }}>
           <h2 style={{ fontSize: '40px', fontWeight: '800', textAlign: 'center', marginBottom: '60px', color: 'var(--text-main)' }}>The Roadmap</h2>

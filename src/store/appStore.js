@@ -5,6 +5,7 @@ import PodAiService from '../services/podaiService';
 import authService from '../services/authService';
 import syncService from '../services/syncService';
 import { applyTheme } from '../services/themeEngine';
+import { calculateAttendanceStats } from '../utils/attendanceUtils';
 
 /**
  * Centralized App Store using Zustand
@@ -344,6 +345,8 @@ const useAppStore = create(
 
             // Full data sync is gated for premium users
             if (subscription.plan === 'plus' || subscription.status === 'active') {
+              const stats = calculateAttendanceStats(subjects, calendarEvents, attendanceData);
+              
               dataToSync = {
                 ...dataToSync,
                 subjects,
@@ -351,7 +354,10 @@ const useAppStore = create(
                 calendarEvents,
                 attendanceData,
                 history,
-                subscription
+                subscription,
+                overallAttendance: stats.overallPercentage,
+                totalClasses: stats.totalClasses,
+                lastSyncDate: new Date().toISOString()
               };
             }
 
@@ -745,7 +751,7 @@ const useAppStore = create(
         updateDashboardStats: () => {
           const { subjects, calendarEvents, attendanceData } = get();
           
-          const stats = AttendanceEngine.calculateOverallStats(subjects, calendarEvents, attendanceData);
+          const stats = calculateAttendanceStats(subjects, calendarEvents, attendanceData);
           
           // Get today's schedule
           const today = AttendanceEngine.formatDate(new Date());
@@ -759,11 +765,20 @@ const useAppStore = create(
             dashboardStats: {
               totalSubjects: subjects.length,
               overallPercentage: stats.overallPercentage,
-              safeSubjects: stats.safeSubjects,
-              criticalSubjects: stats.criticalSubjects,
-              warningSubjects: stats.warningSubjects,
+              safeSubjects: subjects.filter(s => {
+                const sStats = get().subjectStats[s.id];
+                return sStats && sStats.percentage >= 75;
+              }).length,
+              criticalSubjects: subjects.filter(s => {
+                const sStats = get().subjectStats[s.id];
+                return sStats && sStats.percentage < 65;
+              }).length,
+              warningSubjects: subjects.filter(s => {
+                const sStats = get().subjectStats[s.id];
+                return sStats && sStats.percentage >= 65 && sStats.percentage < 75;
+              }).length,
               present: stats.totalPresent,
-              missed: stats.totalAbsent,
+              missed: stats.totalClasses - stats.totalPresent,
               total: stats.totalClasses,
               streak: 0, // TODO: Calculate real streak
               todaySchedule

@@ -770,6 +770,33 @@ function Settings() {
             <p style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>© 2026 TrackTaps. All rights reserved.</p>
           </div>
         </div>
+
+        {/* Community & Leaderboard */}
+        <div className="dashboard-card" style={{ border: '1px solid var(--primary-glow)', background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(15, 23, 42, 0.2) 100%)' }}>
+          <div className="card-header">
+            <span className="card-title">🏆 Global Community</span>
+          </div>
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '14px', lineHeight: '1.6' }}>
+              See where you stand among the most consistent students on TrackTaps. Premium members can be featured on the global leaderboard.
+            </p>
+            <button 
+              onClick={() => navigate('/community')}
+              style={{
+                padding: '14px',
+                borderRadius: '12px',
+                background: 'var(--primary)',
+                color: 'white',
+                border: 'none',
+                fontWeight: '700',
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px var(--primary-glow)'
+              }}
+            >
+              View Global Leaderboard
+            </button>
+          </div>
+        </div>
           {subscription?.status === 'active' && (
             <div 
               onClick={() => navigate('/ai-import')}

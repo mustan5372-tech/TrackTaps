@@ -35,7 +35,7 @@ function Sidebar() {
   }
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" data-nosnippet>
       <div className={`sidebar-branding ${subscription?.status === 'active' ? 'premium-glow' : ''}`}>
         <Link to="/" className="logo-link">
           <img 

@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrackTaps — Smart Attendance Tracking Platform</title>
-    <meta name="description" content="Modern AI-powered attendance tracking, timetable management, insights, and analytics for students.">
+    <title>TrackTaps — Pod.ai Attendance Sync & Smart Bunk Calculator</title>
+    <meta name="description" content="TrackTaps is a modern attendance management and smart bunk planning platform created by Mustansir Sanawadwala for students. Automatically sync Pod.ai attendance, track classes, manage timetables, calculate safe bunks, and improve semester planning with a smooth mobile-first experience.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <!-- Favicon & App Icons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/logo.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="assets/logo.png">
-    <link rel="apple-touch-icon" href="assets/logo.png">
-    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <link rel="manifest" href="/manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,17 +21,41 @@
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.tracktaps.online/">
-    <meta property="og:title" content="TrackTaps — Smart Attendance Tracking Platform">
-    <meta property="og:description" content="Modern AI-powered attendance tracking, timetable management, insights, and analytics for students.">
-    <meta property="og:image" content="https://www.tracktaps.online/og-image.png">
+    <meta property="og:url" content="https://tracktaps.online/">
+    <meta property="og:title" content="TrackTaps — Smart Attendance & Bunk Planner">
+    <meta property="og:description" content="Smart attendance and bunk planning platform for students. Sync Pod.ai attendance, calculate safe bunks, and manage timetables easily.">
+    <meta property="og:image" content="https://tracktaps.online/logo.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://www.tracktaps.online/">
-    <meta property="twitter:title" content="TrackTaps — Smart Attendance Tracking Platform">
-    <meta property="twitter:description" content="Modern AI-powered attendance tracking, timetable management, insights, and analytics for students.">
-    <meta property="twitter:image" content="https://www.tracktaps.online/og-image.png">
+    <meta property="twitter:url" content="https://tracktaps.online/">
+    <meta property="twitter:title" content="TrackTaps — Smart Attendance & Bunk Planner">
+    <meta property="twitter:description" content="Smart attendance and bunk planning platform for students. Sync Pod.ai attendance, calculate safe bunks, and manage timetables easily.">
+    <meta property="twitter:image" content="https://tracktaps.online/logo.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "TrackTaps",
+      "url": "https://tracktaps.online",
+      "logo": "https://tracktaps.online/logo.png",
+      "founder": {
+        "@type": "Person",
+        "name": "Mustansir Sanawadwala"
+      },
+      "description": "Smart attendance and bunk planning platform for students."
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "TrackTaps",
+      "url": "https://tracktaps.online"
+    }
+    </script>
     
     <meta name="theme-color" content="#8b5cf6">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -50,6 +73,7 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
+    <h1 class="sr-only">TrackTaps — Smart Attendance Tracking & Pod.ai Bunk Planner</h1>
     <div id="root"></div>
     <script type="module" src="./src/index.jsx"></script>
 </body>

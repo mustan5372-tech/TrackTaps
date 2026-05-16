@@ -26,7 +26,7 @@ function MobileNav() {
   }
 
   return (
-    <nav className="mobile-nav">
+    <nav className="mobile-nav" data-nosnippet>
       <div className="mobile-nav-scroll-container">
         {navItems.map((item) => (
           <Link
