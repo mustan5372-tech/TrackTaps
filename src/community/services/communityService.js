@@ -6,57 +6,63 @@ const communityService = {
    * Fetch top premium users for the leaderboard
    * Isolated from core app logic
    */
-  fetchLeaderboard: async (limitCount = 10) => {
+  fetchLeaderboard: async (limitCount = 20) => {
     try {
-      console.log("🏆 [CommunityService] Fetching leaderboard data...");
+      console.log("🏆 [CommunityService] Initializing global leaderboard fetch...");
       
       const usersRef = collection(db, "users");
       
-      // STABILITY UPGRADE:
-      // To avoid Firestore index requirements (which often break queries with multiple where/orderBy),
-      // we fetch active premium users and then sort them in memory.
-      // This is extremely safe and prevents the "Oops" error state.
+      // We fetch all users who have an active subscription
+      // Note: We avoid orderBy in the query to prevent index errors
       const q = query(
         usersRef,
         where("subscription.status", "==", "active"),
-        limit(limitCount * 5) // Fetch more than needed to ensure we have enough data points
+        limit(100) // Fetch top 100 premium users to rank
       );
 
       const querySnapshot = await getDocs(q);
       
       if (querySnapshot.empty) {
-        console.log("ℹ️ [CommunityService] No premium users found.");
+        console.warn("⚠️ [CommunityService] No premium users found in database.");
         return [];
       }
 
-      const leaderboard = [];
+      const rawUsers = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        // Only include users who have attendance data synced
-        if (data.overallAttendance !== undefined) {
-          leaderboard.push({
-            uid: doc.id,
-            name: data.displayName || "Anonymous",
-            attendance: Number(data.overallAttendance) || 0,
-            totalClasses: data.totalClasses || 0,
-            role: data.role || "PREMIUM",
-            photoURL: data.photoURL || null,
-            lastSynced: data.lastSyncDate || data.lastSynced
-          });
-        }
+        rawUsers.push({
+          uid: doc.id,
+          name: data.displayName || "TrackTaps User",
+          attendance: Number(data.overallAttendance) || 0,
+          totalClasses: Number(data.totalClasses) || 0,
+          activityScore: Number(data.activityScore) || 0,
+          photoURL: data.photoURL || null,
+          lastSynced: data.lastSyncDate || data.lastSynced
+        });
       });
 
-      // Sort by attendance descending
-      leaderboard.sort((a, b) => b.attendance - a.attendance);
+      console.log(`📊 [CommunityService] Fetched ${rawUsers.length} raw premium records.`);
 
-      // Return only the requested limit
-      const finalData = leaderboard.slice(0, limitCount);
-      console.log(`✅ [CommunityService] Loaded ${finalData.length} leaderboard entries.`);
-      return finalData;
+      // RANKING LOGIC (Activity-Aware)
+      // 1. Primary: Attendance Percentage (desc)
+      // 2. Secondary (Tie-breaker): Activity Score (desc)
+      // 3. Tertiary: Total Classes (desc)
+      const sortedLeaderboard = rawUsers.sort((a, b) => {
+        if (b.attendance !== a.attendance) {
+          return b.attendance - a.attendance;
+        }
+        if (b.activityScore !== a.activityScore) {
+          return b.activityScore - a.activityScore;
+        }
+        return b.totalClasses - a.totalClasses;
+      });
+
+      const finalRankings = sortedLeaderboard.slice(0, limitCount);
+      console.log("✅ [CommunityService] Final rankings calculated:", finalRankings.map(u => u.name));
+      
+      return finalRankings;
     } catch (error) {
-      console.error("❌ [CommunityService] FATAL FETCH ERROR:", error);
-      console.error("Error Code:", error.code);
-      console.error("Error Message:", error.message);
+      console.error("❌ [CommunityService] Critical Leaderboard Error:", error);
       throw error;
     }
   }

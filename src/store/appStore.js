@@ -346,6 +346,7 @@ const useAppStore = create(
             // Full data sync is gated for premium users
             if (subscription.plan === 'plus' || subscription.status === 'active') {
               const stats = calculateAttendanceStats(subjects, calendarEvents, attendanceData);
+              const activityScore = calculateActivityScore(subjects, attendanceData);
               
               dataToSync = {
                 ...dataToSync,
@@ -357,6 +358,7 @@ const useAppStore = create(
                 subscription,
                 overallAttendance: stats.overallPercentage,
                 totalClasses: stats.totalClasses,
+                activityScore: activityScore,
                 lastSyncDate: new Date().toISOString()
               };
             }
