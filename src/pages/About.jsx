@@ -617,6 +617,64 @@ function About() {
           </div>
         </motion.section>
 
+        {/* COMMUNITY CTA SECTION - HIGH DISCOVERABILITY */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="about-section" 
+          style={{ marginBottom: '120px', textAlign: 'center' }}
+        >
+          <div style={{ 
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
+            border: '1px solid var(--primary-glow)',
+            borderRadius: '32px',
+            padding: '48px 24px',
+            maxWidth: '900px',
+            margin: '0 auto',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.2)'
+          }}>
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                style={{ fontSize: '56px', marginBottom: '24px' }}
+              >
+                🏆
+              </motion.div>
+              <h2 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '16px', color: 'var(--text-main)' }}>Explore the Community</h2>
+              <p style={{ color: 'var(--text-dim)', fontSize: '16px', maxWidth: '600px', margin: '0 auto 32px', lineHeight: '1.6' }}>
+                Join the ranks of the most disciplined students. View the global leaderboard and see where you stand among the TrackTaps elite.
+              </p>
+              <Link 
+                to="/community"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  padding: '16px 32px',
+                  borderRadius: '16px',
+                  textDecoration: 'none',
+                  fontWeight: '800',
+                  fontSize: '16px',
+                  boxShadow: '0 10px 25px var(--primary-glow)',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                View Global Leaderboard →
+              </Link>
+            </div>
+            
+            {/* Decorative elements */}
+            <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'var(--primary-glow)', filter: 'blur(120px)', opacity: 0.2 }}></div>
+            <div style={{ position: 'absolute', bottom: '-100px', left: '-100px', width: '300px', height: '300px', background: 'var(--primary-glow)', filter: 'blur(120px)', opacity: 0.1 }}></div>
+          </div>
+        </motion.section>
+
         {/* TEAM SECTION */}
         <motion.section className="about-section" style={{ marginBottom: '120px' }}>
           <h2 style={{ fontSize: '40px', fontWeight: '800', textAlign: 'center', marginBottom: '16px', color: 'var(--text-main)' }}>Founders & Core Team</h2>
@@ -625,50 +683,6 @@ function About() {
             {TEAM_MEMBERS.map((m, idx) => (
               <FounderCard key={idx} member={m} index={idx} onSelect={setSelectedMember} />
             ))}
-          </div>
-        </motion.section>
-
-        {/* COMMUNITY SECTION */}
-        <motion.section className="about-section" style={{ marginBottom: '120px', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '40px', fontWeight: '800', marginBottom: '24px', color: 'var(--text-main)' }}>Global Community</h2>
-          <p style={{ fontSize: '16px', color: 'var(--text-dim)', maxWidth: '600px', margin: '0 auto 40px' }}>Join a network of thousands of students striving for academic excellence and consistency.</p>
-          
-          <div style={{ 
-            background: 'var(--surface-glass)', 
-            border: '1px solid var(--primary-glow)', 
-            borderRadius: '32px', 
-            padding: '40px', 
-            maxWidth: '800px', 
-            margin: '0 auto',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ fontSize: '48px', marginBottom: '20px' }}>🌍</div>
-              <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '16px' }}>Consistency at Scale</h3>
-              <p style={{ color: 'var(--text-dim)', marginBottom: '32px', lineHeight: '1.7' }}>
-                Our global leaderboard recognizes the top-performing students on the platform. 
-                Whether you are tracking locally or syncing with Pod.ai, you can see how your 
-                discipline compares to others in the ecosystem.
-              </p>
-              <Link 
-                to="/community" 
-                style={{ 
-                  display: 'inline-block',
-                  background: 'var(--primary)', 
-                  color: 'white', 
-                  padding: '14px 32px', 
-                  borderRadius: '14px', 
-                  textDecoration: 'none', 
-                  fontWeight: '800',
-                  boxShadow: '0 8px 25px var(--primary-glow)'
-                }}
-              >
-                Join the Leaderboard
-              </Link>
-            </div>
-            {/* Background Glow */}
-            <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'var(--primary-glow)', filter: 'blur(100px)', opacity: 0.3 }}></div>
           </div>
         </motion.section>
 

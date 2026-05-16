@@ -8,43 +8,56 @@ const communityService = {
    */
   fetchLeaderboard: async (limitCount = 10) => {
     try {
-      console.log("🏆 [CommunityService] Fetching leaderboard...");
+      console.log("🏆 [CommunityService] Fetching leaderboard data...");
       
       const usersRef = collection(db, "users");
       
-      // Query criteria:
-      // 1. Must be active premium user
-      // 2. Must have shared data (overallAttendance exists)
-      // 3. Ordered by attendance percentage descending
+      // STABILITY UPGRADE:
+      // To avoid Firestore index requirements (which often break queries with multiple where/orderBy),
+      // we fetch active premium users and then sort them in memory.
+      // This is extremely safe and prevents the "Oops" error state.
       const q = query(
         usersRef,
         where("subscription.status", "==", "active"),
-        where("overallAttendance", ">=", 0),
-        orderBy("overallAttendance", "desc"),
-        limit(limitCount)
+        limit(limitCount * 5) // Fetch more than needed to ensure we have enough data points
       );
 
       const querySnapshot = await getDocs(q);
-      const leaderboard = [];
+      
+      if (querySnapshot.empty) {
+        console.log("ℹ️ [CommunityService] No premium users found.");
+        return [];
+      }
 
+      const leaderboard = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        leaderboard.push({
-          uid: doc.id,
-          name: data.displayName || "Anonymous",
-          attendance: data.overallAttendance || 0,
-          totalClasses: data.totalClasses || 0,
-          role: data.role || "PREMIUM",
-          photoURL: data.photoURL || null,
-          lastSynced: data.lastSyncDate || data.lastSynced
-        });
+        // Only include users who have attendance data synced
+        if (data.overallAttendance !== undefined) {
+          leaderboard.push({
+            uid: doc.id,
+            name: data.displayName || "Anonymous",
+            attendance: Number(data.overallAttendance) || 0,
+            totalClasses: data.totalClasses || 0,
+            role: data.role || "PREMIUM",
+            photoURL: data.photoURL || null,
+            lastSynced: data.lastSyncDate || data.lastSynced
+          });
+        }
       });
 
-      console.log(`✅ [CommunityService] Loaded ${leaderboard.length} users`);
-      return leaderboard;
+      // Sort by attendance descending
+      leaderboard.sort((a, b) => b.attendance - a.attendance);
+
+      // Return only the requested limit
+      const finalData = leaderboard.slice(0, limitCount);
+      console.log(`✅ [CommunityService] Loaded ${finalData.length} leaderboard entries.`);
+      return finalData;
     } catch (error) {
-      console.error("❌ [CommunityService] Leaderboard fetch failed:", error);
-      throw error; // Let the UI handle it via try/catch
+      console.error("❌ [CommunityService] FATAL FETCH ERROR:", error);
+      console.error("Error Code:", error.code);
+      console.error("Error Message:", error.message);
+      throw error;
     }
   }
 };
