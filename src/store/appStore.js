@@ -239,7 +239,8 @@ const useAppStore = create(
 
             // ROLE IDENTIFICATION
             const isOwner = user.email === 'mustan5372@gmail.com';
-            const isCoreMember = user.email === 'purandarydv23@gmail.com';
+            const CORE_ADMINS = ['purandarydv23@gmail.com', 'pgxdh42@gmail.com'];
+            const isCoreAdmin = CORE_ADMINS.includes(user.email);
 
             const cloudSub = cloudData?.subscription || { plan: 'free', status: 'inactive' };
             
@@ -256,7 +257,7 @@ const useAppStore = create(
                 expiryDate: '2099-12-31'
               };
               updatedRole = 'ADMIN_OWNER';
-            } else if (isCoreMember) {
+            } else if (isCoreAdmin) {
               updatedSub = {
                 ...updatedSub,
                 plan: 'plus',
@@ -264,7 +265,7 @@ const useAppStore = create(
                 status: 'active',
                 expiryDate: '2099-12-31'
               };
-              updatedRole = 'CORE_MEMBER';
+              updatedRole = 'CORE_ADMIN';
             } else if (cloudSub && cloudSub.status === 'active') {
               updatedSub = { ...updatedSub, ...cloudSub };
               updatedRole = 'PREMIUM';
@@ -338,6 +339,7 @@ const useAppStore = create(
             const profileInfo = {
               displayName: user.displayName,
               email: user.email,
+              role: get().role, // Sync the calculated role back to cloud
               lastSynced: new Date().toISOString()
             };
 

@@ -10,7 +10,7 @@ function Admin() {
   const navigate = useNavigate();
   const { user, role, isAuthLoading } = useAppStore();
   const isOwner = role === 'ADMIN_OWNER';
-  const isCore = role === 'CORE_MEMBER';
+  const isCore = role === 'CORE_ADMIN';
   const canAccess = isOwner || isCore;
 
   // STRICT SECURITY: Role-based access control
@@ -61,17 +61,21 @@ function Admin() {
           'monthly': 'Starter',
           'half_yearly': 'Super Saver',
           'yearly': 'Mega Saver',
-          'lifetime': 'Lifetime (Owner)',
+          'lifetime': 'Lifetime',
           'plus': 'Plus'
         };
 
         const planName = planMap[sub.planType] || planMap[sub.plan] || sub.planType || sub.plan || 'Free';
 
+        const userRole = data.role === 'ADMIN_OWNER' ? 'OWNER' : 
+                         data.role === 'CORE_ADMIN' ? 'CORE ADMIN' : 
+                         (sub.status === 'active' ? 'PREMIUM' : 'USER');
+
         userList.push({
           uid: doc.id,
           name: data.displayName || data.phoneNumber || 'Anonymous',
           email: data.email || (data.phoneNumber ? `Phone: ${data.phoneNumber}` : 'No email'),
-          role: data.role || (sub.status === 'active' ? 'PREMIUM' : 'USER'),
+          role: userRole,
           plan: planName,
           status: data.banned ? 'Banned' : (sub.status === 'active' ? 'Active' : 'Inactive'),
           expiry: sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString() : '-',
@@ -108,6 +112,14 @@ function Admin() {
   };
 
   const handleAction = async (action, targetUser, customPlan = null) => {
+    // SECURITY: Prevent Core Admins from accessing Owner actions
+    if ((action === 'assign_plan' || action === 'remove_premium' || action === 'delete') && !isOwner) {
+      if (action !== 'delete' || !isCore) { // Core Admins CAN delete as per req
+         alert("🚫 Permission Denied: Only the Owner can perform this action.");
+         return;
+      }
+    }
+
     const actionMsg = customPlan ? `assign ${customPlan.name} to` : action;
     if (!window.confirm(`Are you sure you want to ${actionMsg} ${targetUser.name}?`)) return;
 
@@ -328,8 +340,10 @@ function Admin() {
                       fontSize: '10px', 
                       padding: '2px 8px', 
                       borderRadius: '4px', 
-                      background: u.role === 'ADMIN_OWNER' ? 'var(--primary-glow)' : 'rgba(100, 116, 139, 0.1)',
-                      color: u.role === 'ADMIN_OWNER' ? 'var(--primary-light)' : 'var(--text-dim)',
+                      background: u.role === 'OWNER' ? 'var(--primary-glow)' : 
+                                 u.role === 'CORE ADMIN' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(100, 116, 139, 0.1)',
+                      color: u.role === 'OWNER' ? 'var(--primary-light)' : 
+                             u.role === 'CORE ADMIN' ? '#3b82f6' : 'var(--text-dim)',
                       fontWeight: '700'
                     }}>
                       {u.role}
