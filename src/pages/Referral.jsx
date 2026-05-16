@@ -7,6 +7,12 @@ function Referral() {
   const navigate = useNavigate();
   const { referralData, user, showToast } = useAppStore();
   
+  const ensureReferralData = useAppStore(state => state.ensureReferralData);
+  
+  useEffect(() => {
+    ensureReferralData();
+  }, [ensureReferralData]);
+
   const totalInvited = referralData?.referrals?.length || 0;
   const validReferrals = referralData?.totalValidReferrals || 0;
   const analytics = referralData?.analytics || { totalSignups: 0, activeUsers: 0 };
@@ -17,6 +23,10 @@ function Referral() {
   // Backward compatibility check for the referral code
   const activeCode = referralData?.referralCode || referralData?.code || '';
   const referralLink = `https://tracktaps.online?ref=${activeCode}`;
+
+  // 🔍 DEBUG LOGS FOR VERIFICATION
+  console.log("🛠️ [Referral] Referral Code:", activeCode);
+  console.log("🛠️ [Referral] Generated Link:", referralLink);
   
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
