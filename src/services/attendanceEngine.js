@@ -39,7 +39,7 @@ class AttendanceEngine {
       const dayName = days[dayNum];
 
       // Find subject details for metadata (color, code, etc.)
-      const subject = subjects.find(s => s.name === subjectData.name);
+      const subject = (subjects || []).find(s => s.name === subjectData.name);
 
       // We start from the absolute beginning of the semester
       let currentDate = new Date(startDate);
@@ -312,7 +312,7 @@ class AttendanceEngine {
     let warningSubjects = 0;
     let criticalSubjects = 0;
 
-    const subjectStats = subjects.map(subject => {
+    const subjectStats = (subjects || []).map(subject => {
       const stats = this.calculateSubjectStats(subject.name, calendarEvents, attendanceData, subjects);
 
       totalPresent += stats.present;

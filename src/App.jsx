@@ -24,6 +24,14 @@ import Onboarding from './components/Onboarding';
 import DownloadAPK from './components/DownloadAPK';
 import ErrorBoundary from './components/ErrorBoundary';
 
+const SafeRoute = ({ children }) => (
+  <AppShell>
+    <ErrorBoundary>
+      {children}
+    </ErrorBoundary>
+  </AppShell>
+);
+
 function App() {
   const { initAuth, isAuthLoading, isRestoringSession, isAuthModalOpen, setAuthModalOpen } = useAppStore();
   const [isStaging, setIsStaging] = React.useState(false);
@@ -177,25 +185,23 @@ function App() {
       <DownloadAPK />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
       
-      <ErrorBoundary>
-        <Routes>
-          <Route path="/pod" element={<Pod />} />
-          <Route path="/" element={<AppShell><Home /></AppShell>} />
-          <Route path="/calendar" element={<AppShell><Calendar /></AppShell>} />
-          <Route path="/timetable" element={<AppShell><Timetable /></AppShell>} />
-          <Route path="/subjects" element={<AppShell><Subjects /></AppShell>} />
-          <Route path="/insights" element={<AppShell><Insights /></AppShell>} />
-          <Route path="/history" element={<AppShell><History /></AppShell>} />
-          <Route path="/about" element={<AppShell><About /></AppShell>} />
-          <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
-          <Route path="/premium" element={<AppShell><Premium /></AppShell>} />
-          <Route path="/admin" element={<AppShell><Admin /></AppShell>} />
-          <Route path="/ai-import" element={<AppShell><AiSemesterImport /></AppShell>} />
-          <Route path="/bunk-calculator" element={<AppShell><BunkCalculator /></AppShell>} />
-          <Route path="/community" element={<AppShell><Community /></AppShell>} />
-          <Route path="/referral" element={<AppShell><Referral /></AppShell>} />
-        </Routes>
-      </ErrorBoundary>
+      <Routes>
+        <Route path="/pod" element={<ErrorBoundary><Pod /></ErrorBoundary>} />
+        <Route path="/" element={<SafeRoute><Home /></SafeRoute>} />
+        <Route path="/calendar" element={<SafeRoute><Calendar /></SafeRoute>} />
+        <Route path="/timetable" element={<SafeRoute><Timetable /></SafeRoute>} />
+        <Route path="/subjects" element={<SafeRoute><Subjects /></SafeRoute>} />
+        <Route path="/insights" element={<SafeRoute><Insights /></SafeRoute>} />
+        <Route path="/history" element={<SafeRoute><History /></SafeRoute>} />
+        <Route path="/about" element={<SafeRoute><About /></SafeRoute>} />
+        <Route path="/settings" element={<SafeRoute><Settings /></SafeRoute>} />
+        <Route path="/premium" element={<SafeRoute><Premium /></SafeRoute>} />
+        <Route path="/admin" element={<SafeRoute><Admin /></SafeRoute>} />
+        <Route path="/ai-import" element={<SafeRoute><AiSemesterImport /></SafeRoute>} />
+        <Route path="/bunk-calculator" element={<SafeRoute><BunkCalculator /></SafeRoute>} />
+        <Route path="/community" element={<SafeRoute><Community /></SafeRoute>} />
+        <Route path="/referral" element={<SafeRoute><Referral /></SafeRoute>} />
+      </Routes>
     </BrowserRouter>
   );
 }

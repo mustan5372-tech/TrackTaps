@@ -520,7 +520,7 @@ function Home() {
             <span className="pred-icon" style={{ fontSize: '28px' }}>✅</span>
             <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Safe to Skip</span>
           </div>
-          <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: 'var(--success)', marginBottom: '8px' }}>{getSafeSubjects().length}</div>
+          <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: 'var(--success)', marginBottom: '8px' }}>{(getSafeSubjects() || []).length}</div>
           <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Subjects you can safely skip while staying above 75%</div>
         </motion.div>
         
@@ -556,7 +556,7 @@ function Home() {
               <span className="pred-icon" style={{ fontSize: '28px' }}>🚨</span>
               <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--danger)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Critical Risk</span>
             </div>
-            <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: 'var(--danger)', marginBottom: '8px' }}>{getCriticalSubjects().length}</div>
+            <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: 'var(--danger)', marginBottom: '8px' }}>{(getCriticalSubjects() || []).length}</div>
             <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Subjects at risk of falling below your target attendance</div>
           </motion.div>
         )}
@@ -676,7 +676,7 @@ function Home() {
             </motion.span>
           </div>
           <div className="ai-insights-list">
-            {insights.length === 0 ? (
+            {(!insights || insights.length === 0) ? (
               <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>No insights yet. Add subjects to get started!</p>
             ) : (
               insights.slice(0, 3).map((insight, idx) => (
@@ -716,7 +716,7 @@ function Home() {
             </span>
           </div>
           <div className="schedule-list">
-            {getTodaySchedule().length === 0 ? (
+            {(!getTodaySchedule() || getTodaySchedule().length === 0) ? (
               <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>No classes scheduled for today</p>
             ) : (
               getTodaySchedule().map((event, idx) => (

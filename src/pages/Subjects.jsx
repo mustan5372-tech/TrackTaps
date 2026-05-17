@@ -278,7 +278,7 @@ function Subjects() {
       </header>
 
       <div className="subjects-grid">
-        {subjects.length === 0 ? (
+        {(!subjects || subjects.length === 0) ? (
           <p style={{ color: 'var(--text-dim)', textAlign: 'center', padding: '32px', width: '100%' }}>No subjects added yet.</p>
         ) : (
           subjects.map((subject, idx) => (
