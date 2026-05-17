@@ -32,7 +32,7 @@ function MobileNav() {
           <Link
             key={item.path}
             to={item.path}
-            style={{ textDecoration: 'none', flex: 1, minWidth: 0 }}
+            style={{ textDecoration: 'none' }}
           >
             <motion.div
               whileTap={{ scale: 0.9 }}

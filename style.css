@@ -32,8 +32,10 @@
     --radius-sm: 12px;
     
     /* Transitions & Shadows */
-    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --shadow-premium: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(139, 92, 246, 0.1);
+    --transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    --shadow-premium: 0 16px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(139, 92, 246, 0.08);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.2);
+    --glass-border: rgba(255, 255, 255, 0.06);
 }
 
 /* --- Premium Themes System --- */
@@ -419,8 +421,61 @@ body {
         backdrop-filter: blur(20px);
         border-top: 1px solid var(--border);
         z-index: 10000;
-        padding: 0 16px;
+        padding: 0;
         padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .mobile-nav-scroll-container {
+        display: flex;
+        overflow-x: auto;
+        gap: 16px;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-snap-type: x mandatory;
+        padding: 0 20px;
+    }
+    
+    .mobile-nav-scroll-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .mobile-nav-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 60px;
+        height: 56px;
+        border-radius: var(--radius-sm);
+        color: var(--text-dim);
+        text-decoration: none;
+        position: relative;
+        scroll-snap-align: center;
+        transition: all var(--transition);
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-nav-btn.active {
+        color: var(--primary-light);
+    }
+    
+    .mobile-nav-btn .nav-icon {
+        font-size: 20px;
+        margin-bottom: 4px;
+        transition: transform var(--transition);
+    }
+    
+    .mobile-nav-btn.active .nav-icon {
+        transform: translateY(-2px);
+    }
+    
+    .mobile-nav-btn .nav-label {
+        font-size: 10px;
+        font-weight: 600;
+        transition: color var(--transition);
     }
 }
 

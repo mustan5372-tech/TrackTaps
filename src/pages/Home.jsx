@@ -44,13 +44,13 @@ const StatSkeleton = () => (
       style={{
         position: 'absolute',
         inset: 0,
-        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)',
+        background: 'linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.05), transparent)',
         zIndex: 1
       }}
     />
-    <div style={{ height: '32px', width: '200px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '16px' }} />
-    <div style={{ height: '20px', width: '140px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', marginBottom: '32px' }} />
-    <div style={{ height: '60px', width: '100px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }} />
+    <div style={{ height: '32px', width: '200px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', marginBottom: '16px' }} />
+    <div style={{ height: '20px', width: '140px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', marginBottom: '32px' }} />
+    <div style={{ height: '60px', width: '100px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }} />
   </div>
 );
 
@@ -266,8 +266,17 @@ function Home() {
             id="hero-greeting" 
             style={{ fontSize: '32px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px', letterSpacing: '-0.02em' }}
           >
-            Hi, {user?.displayName?.split(' ')[0] || 'Scholar'}
+            Welcome back, {user?.displayName?.split(' ')[0] || 'Scholar'} 👋
           </motion.h2>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '8px', fontWeight: '500' }}
+          >
+            {dashboardStats.overallPercentage >= 85 ? 'Your attendance is looking strong this week.' : 'Let\'s focus on improving your consistency today.'}
+          </motion.div>
           
           {/* DAILY PULSE - RETENTION ENGINE */}
           <motion.div 
@@ -311,11 +320,28 @@ function Home() {
                {dashboardStats.dailyImpact?.criticalSubject ? (
                  <span style={{ color: 'var(--danger)' }}>🚨 Critical: Missing {dashboardStats.dailyImpact.criticalSubject} today will drop your stats!</span>
                ) : dashboardStats.dailyImpact?.totalSafeBunks > 0 ? (
-                 <span>🛡️ You have <span style={{ color: 'var(--success)' }}>{dashboardStats.dailyImpact.totalSafeBunks} Safe Bunks</span> available today.</span>
+                 <span>🛡️ You can safely bunk <span style={{ color: 'var(--success)' }}>{dashboardStats.dailyImpact.totalSafeBunks} classes</span> today.</span>
                ) : (
                  <span style={{ color: 'var(--text-dim)' }}>✨ Focus on maintaining your consistency today!</span>
                )}
              </div>
+
+             {/* Social Proof */}
+             {dashboardStats.overallPercentage >= 75 && (
+               <div style={{ 
+                 fontSize: '11px', 
+                 color: 'var(--primary-light)', 
+                 fontWeight: '700',
+                 marginTop: '4px',
+                 background: 'rgba(139, 92, 246, 0.1)',
+                 padding: '4px 8px',
+                 borderRadius: '6px',
+                 width: 'fit-content',
+                 border: '1px solid rgba(139, 92, 246, 0.2)'
+               }}>
+                 🌟 You are performing better than {Math.min(99, Math.max(60, Math.round(dashboardStats.overallPercentage * 1.05)))}% of students.
+               </div>
+             )}
           </motion.div>
         </div>
         <motion.div 

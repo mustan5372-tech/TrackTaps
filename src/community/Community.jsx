@@ -168,36 +168,40 @@ function Community() {
                   </div>
 
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <div style={{ fontWeight: '800', fontSize: '16px', color: 'var(--text-main)' }}>{item.name}</div>
-                      {item.attendanceStreak > 1 && (
-                        <div style={{ 
-                          fontSize: '10px', 
-                          background: 'rgba(245, 158, 11, 0.15)', 
-                          color: '#f59e0b', 
-                          padding: '2px 8px', 
-                          borderRadius: '100px', 
-                          fontWeight: '900',
-                          border: '1px solid rgba(245, 158, 11, 0.3)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}>
-                          🔥 {item.attendanceStreak}
-                        </div>
-                      )}
+                      {/* Badge System */}
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '10px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', border: '1px solid rgba(245, 158, 11, 0.3)' }} title="Premium Plus">👑 Plus</span>
+                        {item.attendance >= 90 && (
+                          <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', border: '1px solid rgba(239, 68, 68, 0.3)' }} title="Attendance King">🔥 King</span>
+                        )}
+                        {item.activityScore > 50 && (
+                          <span style={{ fontSize: '10px', background: 'rgba(14, 165, 233, 0.15)', color: '#0ea5e9', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', border: '1px solid rgba(14, 165, 233, 0.3)' }} title="Most Active">⚡ Active</span>
+                        )}
+                        {item.totalClasses >= 50 && (
+                          <span style={{ fontSize: '10px', background: 'rgba(168, 85, 247, 0.15)', color: 'var(--primary-light)', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', border: '1px solid rgba(168, 85, 247, 0.3)' }} title="Campus OG">🎓 OG</span>
+                        )}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>
-                      {item.totalClasses || 0} classes tracked
+                    <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>{item.totalClasses || 0} classes tracked</span>
+                      {item.activityScore > 0 && (
+                        <>
+                          <span>•</span>
+                          <span>Activity Rank: {item.activityScore}</span>
+                        </>
+                      )}
                     </div>
                   </div>
 
-                  <div style={{ textAlign: 'right' }}>
+                  <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                     <div style={{ 
-                      fontSize: '22px', 
+                      fontSize: '24px', 
                       fontWeight: '950', 
                       color: item.attendance >= 75 ? 'var(--success)' : 'var(--warning)',
-                      lineHeight: 1
+                      lineHeight: 1,
+                      textShadow: item.attendance >= 90 ? '0 0 10px rgba(16, 185, 129, 0.3)' : 'none'
                     }}>
                       {item.attendance}%
                     </div>

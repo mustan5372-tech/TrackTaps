@@ -199,9 +199,10 @@ const ProfileModal = ({ member, onClose }) => {
       }}
     >
       <motion.div
-        initial={window.innerWidth < 768 ? { y: '100%' } : { scale: 0.9, opacity: 0 }}
+        initial={window.innerWidth < 768 ? { y: '100%' } : { scale: 0.95, opacity: 0 }}
         animate={window.innerWidth < 768 ? { y: 0 } : { scale: 1, opacity: 1 }}
-        exit={window.innerWidth < 768 ? { y: '100%' } : { scale: 0.9, opacity: 0 }}
+        exit={window.innerWidth < 768 ? { y: '100%' } : { scale: 0.95, opacity: 0 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%',
@@ -656,7 +657,7 @@ function About() {
         {/* TEAM SECTION */}
         <motion.section className="about-section" style={{ marginBottom: '120px' }}>
           <h2 style={{ fontSize: '40px', fontWeight: '800', textAlign: 'center', marginBottom: '16px', color: 'var(--text-main)' }}>Founders & Core Team</h2>
-          <p style={{ fontSize: '16px', color: 'var(--text-dim)', textAlign: 'center', maxWidth: '600px', margin: '0 auto 60px' }}>Built by students from Medicaps University, focused on redefining academic productivity.</p>
+          <p style={{ fontSize: '18px', color: 'var(--text-dim)', textAlign: 'center', maxWidth: '600px', margin: '0 auto 60px', fontWeight: '500' }}>Built by students, for students.</p>
           <div className="founders-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px', maxWidth: '1100px', margin: '0 auto' }}>
             {TEAM_MEMBERS.map((m, idx) => (
               <FounderCard key={idx} member={m} index={idx} onSelect={setSelectedMember} />
