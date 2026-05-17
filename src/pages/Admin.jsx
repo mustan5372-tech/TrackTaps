@@ -320,7 +320,7 @@ function Admin() {
           />
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
+        <div className="admin-table-container" style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -340,11 +340,11 @@ function Admin() {
                 <tr><td colSpan="7" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>No users found.</td></tr>
               ) : filteredUsers.map((u, i) => (
                 <tr key={u.uid} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}>
-                  <td style={{ padding: '16px' }}>
+                  <td data-label="User" style={{ padding: '16px', textAlign: 'left' }}>
                     <div style={{ fontWeight: '600' }}>{u.name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{u.email}</div>
                   </td>
-                  <td style={{ padding: '16px' }}>
+                  <td data-label="Role" style={{ padding: '16px', textAlign: 'left' }}>
                     <span style={{ 
                       fontSize: '10px', 
                       padding: '2px 8px', 
@@ -358,13 +358,13 @@ function Admin() {
                       {u.role}
                     </span>
                   </td>
-                  <td style={{ padding: '16px', fontSize: '14px' }}>{u.plan}</td>
-                  <td style={{ padding: '16px' }}>
+                  <td data-label="Plan" style={{ padding: '16px', fontSize: '14px', textAlign: 'left' }}>{u.plan}</td>
+                  <td data-label="Status" style={{ padding: '16px', textAlign: 'left' }}>
                     <span style={{ color: u.status === 'Active' ? '#10b981' : 'var(--text-muted)', fontSize: '14px' }}>● {u.status}</span>
                   </td>
-                  {isOwner && <td style={{ padding: '16px', fontSize: '14px', color: 'var(--text-dim)' }}>{u.expiry}</td>}
+                  {isOwner && <td data-label="Expiry" style={{ padding: '16px', fontSize: '14px', color: 'var(--text-dim)', textAlign: 'left' }}>{u.expiry}</td>}
                   {isOwner && (
-                    <td style={{ padding: '16px' }}>
+                    <td data-label="Source" style={{ padding: '16px', textAlign: 'left' }}>
                       {u.paymentSource === 'razorpay' || u.amountPaid > 0 ? (
                         <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontWeight: '700' }}>💰 PAID</span>
                       ) : u.status === 'Active' ? (
@@ -374,7 +374,7 @@ function Admin() {
                       )}
                     </td>
                   )}
-                  <td style={{ padding: '16px' }}>
+                  <td data-label="Actions" style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {/* Premium Plan Management - OWNER ONLY */}
                       {isOwner && (
@@ -506,7 +506,7 @@ function Admin() {
             {reports.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>No reports found.</p>
             ) : reports.map(report => (
-              <div key={report.id} style={{ 
+              <div key={report.id} className="report-card" style={{ 
                 background: 'rgba(255,255,255,0.02)', 
                 border: '1px solid rgba(255,255,255,0.05)', 
                 borderRadius: '16px', 
@@ -547,6 +547,28 @@ function Admin() {
           </div>
         </div>
       )}
+
+      <style>{`
+        .admin-view { font-family: 'Outfit', sans-serif; }
+        @media (max-width: 768px) {
+          .admin-header { flex-direction: column; align-items: flex-start !important; gap: 16px !important; }
+          .admin-header > div:last-child { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+          .admin-table-container table,
+          .admin-table-container thead,
+          .admin-table-container tbody,
+          .admin-table-container th,
+          .admin-table-container td,
+          .admin-table-container tr { display: block; }
+          .admin-table-container thead tr { position: absolute; top: -9999px; left: -9999px; }
+          .admin-table-container tr { margin-bottom: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05) !important; padding: 12px; }
+          .admin-table-container td { border: none !important; position: relative; padding: 10px 12px !important; display: flex; justify-content: space-between; align-items: center; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.02) !important; }
+          .admin-table-container td:last-child { border-bottom: none !important; }
+          .admin-table-container td::before { content: attr(data-label); position: relative; font-weight: 700; color: var(--text-muted); font-size: 11px; text-transform: uppercase; text-align: left; margin-right: 12px; }
+          .admin-table-container td[data-label="Actions"] { flex-direction: column; align-items: flex-start; margin-top: 8px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 16px !important; }
+          .admin-table-container td[data-label="Actions"]::before { margin-bottom: 12px; }
+          .report-card { flex-direction: column; align-items: flex-start !important; gap: 16px; }
+        }
+      `}</style>
     </div>
   );
 }
