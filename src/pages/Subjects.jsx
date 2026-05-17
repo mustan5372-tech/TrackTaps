@@ -279,7 +279,11 @@ function Subjects() {
 
       <div className="subjects-grid">
         {(!subjects || subjects.length === 0) ? (
-          <p style={{ color: 'var(--text-dim)', textAlign: 'center', padding: '32px', width: '100%' }}>No subjects added yet.</p>
+          <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--surface-glass)', borderRadius: '24px', border: '1px dashed var(--border)', width: '100%', gridColumn: '1 / -1' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.8 }}>📚</div>
+            <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>No Subjects Yet</h3>
+            <p style={{ color: 'var(--text-dim)', fontSize: '14px', maxWidth: '300px', margin: '0 auto' }}>Sync with Pod.ai or manually add subjects to start tracking your attendance.</p>
+          </div>
         ) : (
           subjects.map((subject, idx) => (
             <SubjectCard 

@@ -651,19 +651,42 @@ export default function Pod() {
       >
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           {syncSuccess && (
-            <div style={{
-              background: 'rgba(16, 185, 129, 0.1)',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              borderRadius: '12px',
-              padding: '16px',
-              marginBottom: '24px',
-              color: '#10b981',
-              fontWeight: '600',
-              textAlign: 'center',
-              animation: 'fadeIn 0.3s ease'
-            }}>
-              ✨ Subjects synced successfully! Attendance imported from Pod.ai
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              style={{
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                border: '1px solid rgba(16, 185, 129, 0.4)',
+                borderRadius: '16px',
+                padding: '20px',
+                marginBottom: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                boxShadow: '0 10px 25px rgba(16, 185, 129, 0.1)',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
+              <div style={{
+                background: 'var(--success)',
+                color: 'white',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px',
+                boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
+              }}>
+                ✓
+              </div>
+              <div>
+                <h4 style={{ color: 'var(--success)', margin: '0 0 4px 0', fontSize: '16px', fontWeight: '800' }}>Sync Successful!</h4>
+                <p style={{ color: 'var(--text-dim)', margin: 0, fontSize: '13px' }}>Your attendance has been perfectly synchronized from Pod.ai.</p>
+              </div>
+            </motion.div>
           )}
 
           {activeTab === 'Attendance' && (

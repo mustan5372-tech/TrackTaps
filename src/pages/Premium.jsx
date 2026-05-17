@@ -348,8 +348,36 @@ function Premium() {
                 {(subscription && subscription.status === 'active' && subscription.planType === plan.id) ? 'Current Plan' : loading && selectedPlan === plan.id ? 'Starting Checkout...' : `Upgrade to ${plan.name}`}
               </button>
             </motion.div>
-          ))}
         </div>
+
+        {/* Premium Trust Signals */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: '32px', 
+            marginBottom: '80px', 
+            flexWrap: 'wrap', 
+            opacity: 0.8,
+            padding: '0 20px'
+          }}
+        >
+           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '50%' }}>🔒</div>
+              <span style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: '600' }}>256-bit Secure Payment</span>
+           </div>
+           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '50%' }}>🛡️</div>
+              <span style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: '600' }}>Powered by Razorpay</span>
+           </div>
+           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '50%' }}>⚡</div>
+              <span style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: '600' }}>Instant Activation</span>
+           </div>
+        </motion.div>
 
         {/* Comparison Table */}
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="dashboard-card" style={{ padding: '60px 48px', borderRadius: '40px', background: 'rgba(15, 23, 42, 0.4)' }}>

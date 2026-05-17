@@ -269,7 +269,7 @@ const ProfileModal = ({ member, onClose }) => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
           <section>
-            <h4 style={{ color: 'var(--text-main)', fontSize: '18px', fontWeight: '800', marginBottom: '12px' }}>The Vision</h4>
+            <h4 style={{ color: 'var(--text-main)', fontSize: '18px', fontWeight: '800', marginBottom: '12px' }}>The Story</h4>
             <p style={{ color: 'var(--text-dim)', fontSize: '16px', lineHeight: '1.8' }}>{member.description}</p>
           </section>
 

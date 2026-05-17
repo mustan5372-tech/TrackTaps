@@ -772,18 +772,24 @@ function Calendar() {
             ) : (
               <div style={{
                 textAlign: 'center',
-                padding: '32px 16px',
-                color: 'var(--text-dim)'
+                padding: '40px 24px',
+                color: 'var(--text-dim)',
+                background: 'rgba(255, 255, 255, 0.02)',
+                borderRadius: '16px',
+                border: '1px dashed var(--border)'
               }}>
-                <p style={{ marginBottom: '8px', color: 'var(--text-main)', fontWeight: '700' }}>
+                <div style={{ fontSize: '32px', marginBottom: '12px', opacity: 0.8 }}>
+                  {selectedDate < semesterSettings.startDate || selectedDate > semesterSettings.endDate ? '📅' : '✨'}
+                </div>
+                <p style={{ marginBottom: '8px', color: 'var(--text-main)', fontWeight: '700', fontSize: '15px' }}>
                   {selectedDate < semesterSettings.startDate || selectedDate > semesterSettings.endDate 
-                    ? "📅 Outside Semester Range" 
-                    : "No classes scheduled for this date"}
+                    ? "Outside Semester Range" 
+                    : "No classes scheduled"}
                 </p>
-                <p style={{ fontSize: '13px' }}>
+                <p style={{ fontSize: '13px', maxWidth: '280px', margin: '0 auto', lineHeight: 1.5 }}>
                   {selectedDate < semesterSettings.startDate || selectedDate > semesterSettings.endDate 
-                    ? "Update your Semester Start/End dates in Semester Setup to see classes for this date."
-                    : "Add subjects to your timetable to see them here."}
+                    ? "Update your Semester Start/End dates in Semester Setup to unlock tracking."
+                    : "Add subjects to your timetable to see them appear here."}
                 </p>
               </div>
             )}
