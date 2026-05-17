@@ -50,7 +50,7 @@ function Admin() {
       const querySnapshot = await getDocs(collection(db, "users"));
       const userList = [];
       let premiumCount = 0;
-      let revenue = 9; // Account for the manually activated 9 rs payment
+      let revenue = 0;
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
