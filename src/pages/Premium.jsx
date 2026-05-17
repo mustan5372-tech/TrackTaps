@@ -348,6 +348,7 @@ function Premium() {
                 {(subscription && subscription.status === 'active' && subscription.planType === plan.id) ? 'Current Plan' : loading && selectedPlan === plan.id ? 'Starting Checkout...' : `Upgrade to ${plan.name}`}
               </button>
             </motion.div>
+          ))}
         </div>
 
         {/* Premium Trust Signals */}
@@ -404,7 +405,7 @@ function Premium() {
                 </div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ display: 'inline-flex', padding: '8px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1', color: '#10b981' }}>
+                <div style={{ display: 'inline-flex', padding: '8px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
                   <i className="fas fa-check"></i>
                 </div>
               </div>
