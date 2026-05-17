@@ -50,7 +50,7 @@ function Admin() {
       const querySnapshot = await getDocs(collection(db, "users"));
       const userList = [];
       let premiumCount = 0;
-      let revenue = 0;
+      let revenue = 9; // Account for the manually activated 9 rs payment
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
@@ -164,6 +164,15 @@ function Admin() {
           role: 'USER'
         });
         alert(`📉 ${targetUser.name} downgraded to Free.`);
+      } else if (action === 'mark_paid') {
+        const amount = window.prompt("Enter amount paid (e.g. 9):", "9");
+        if (amount !== null) {
+          await updateDoc(userRef, {
+            'subscription.paymentSource': 'razorpay',
+            'subscription.amountPaid': Number(amount)
+          });
+          alert(`✅ ${targetUser.name} marked as PAID for ₹${amount}.`);
+        }
       } else if (action === 'ban') {
         await updateDoc(userRef, { banned: true });
         alert(`🚫 ${targetUser.name} has been banned.`);
@@ -443,12 +452,20 @@ function Admin() {
 
                       {/* Remove Premium - OWNER ONLY */}
                       {isOwner && u.status === 'Active' && (
-                        <button 
-                          onClick={() => handleAction('remove_premium', u)}
-                          style={{ background: 'rgba(245, 158, 11, 0.1)', border: 'none', color: '#f59e0b', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
-                        >
-                          Remove
-                        </button>
+                        <>
+                          <button 
+                            onClick={() => handleAction('mark_paid', u)}
+                            style={{ background: 'rgba(16, 185, 129, 0.1)', border: 'none', color: '#10b981', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                          >
+                            Mark Paid
+                          </button>
+                          <button 
+                            onClick={() => handleAction('remove_premium', u)}
+                            style={{ background: 'rgba(245, 158, 11, 0.1)', border: 'none', color: '#f59e0b', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                          >
+                            Remove
+                          </button>
+                        </>
                       )}
 
                       {u.banned ? (
