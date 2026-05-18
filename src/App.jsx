@@ -18,7 +18,7 @@ import Community from './community/Community';
 import Referral from './pages/Referral';
 import Guide from './pages/Guide';
 import useAppStore from './store/appStore';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import GlobalToast from './components/GlobalToast';
 import AuthModal from './components/AuthModal';
 import Onboarding from './components/Onboarding';
@@ -37,8 +37,14 @@ const SafeRoute = ({ children }) => (
 function App() {
   const { initAuth, isAuthLoading, isRestoringSession, isAuthModalOpen, setAuthModalOpen } = useAppStore();
   const [isStaging, setIsStaging] = React.useState(false);
+  const [swUpdateAvailable, setSwUpdateAvailable] = React.useState(false);
 
   useEffect(() => {
+    const handleUpdate = () => {
+      setSwUpdateAvailable(true);
+    };
+    window.addEventListener('swUpdateAvailable', handleUpdate);
+
     // 🔍 GROWTH PHASE: Capture Referral Code
     const params = new URLSearchParams(window.location.search);
     const refCode = params.get('ref');
@@ -94,6 +100,7 @@ function App() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      window.removeEventListener('swUpdateAvailable', handleUpdate);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       unsubscribePromise.then(unsubscribe => {
         if (typeof unsubscribe === 'function') {
@@ -206,6 +213,58 @@ function App() {
         <Onboarding />
       </ErrorBoundary>
       <DownloadAPK />
+      <AnimatePresence>
+        {swUpdateAvailable && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            style={{
+              position: 'fixed',
+              bottom: '24px',
+              left: '24px',
+              right: '24px',
+              maxWidth: '480px',
+              margin: '0 auto',
+              background: 'rgba(15, 23, 42, 0.9)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(139, 92, 246, 0.4)',
+              borderRadius: '16px',
+              padding: '16px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+              zIndex: 999999,
+              boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 20px rgba(139, 92, 246, 0.15)'
+            }}
+          >
+            <div style={{ color: 'white', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>🚀</span>
+              <span style={{ fontWeight: '700', textAlign: 'left' }}>New TrackTaps update available. Refresh to get latest improvements.</span>
+            </div>
+            <button
+              onClick={() => {
+                window.location.reload(true);
+              }}
+              style={{
+                background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px var(--primary-glow)',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Refresh Now
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
       
       <Routes>

@@ -7,7 +7,18 @@ import '../style.css';
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('🚀 [PWA] Service Worker Registered:', reg.scope))
+      .then(reg => {
+        console.log('🚀 [PWA] Service Worker Registered:', reg.scope);
+        
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              window.dispatchEvent(new CustomEvent('swUpdateAvailable'));
+            }
+          });
+        });
+      })
       .catch(err => console.error('❌ [PWA] Service Worker Registration Failed:', err));
   });
 }
