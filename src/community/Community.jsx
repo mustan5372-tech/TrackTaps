@@ -133,6 +133,7 @@ function Community() {
                   key={item.uid}
                   variants={itemVariants}
                   whileHover={{ scale: 1.01, x: 5 }}
+                  className="leaderboard-item-row"
                   style={{ 
                     background: index === 0 ? 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, var(--surface-glass) 100%)' : 'var(--surface-glass)',
                     border: index === 0 ? '2px solid rgba(251, 191, 36, 0.5)' : 

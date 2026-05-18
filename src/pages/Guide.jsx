@@ -243,7 +243,7 @@ function Guide() {
       </div>
 
       {/* FAQ & Troubleshooting grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '40px', '@media (max-width: 600px)': { gridTemplateColumns: '1fr' } }}>
+      <div className="faq-trouble-grid">
         
         {/* FAQs */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

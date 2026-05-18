@@ -243,6 +243,7 @@ const DownloadAPK = () => {
               initial={{ scale: 0.9, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 30 }}
+              className="ai-assistant-modal-card"
               style={{
                 position: 'relative',
                 width: '100%',
@@ -375,6 +376,7 @@ const DownloadAPK = () => {
               initial={{ scale: 0.9, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 30 }}
+              className="apk-modal-card"
               style={{
                 position: 'relative',
                 width: '100%',
