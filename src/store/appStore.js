@@ -6,6 +6,8 @@ import authService from '../services/authService';
 import syncService from '../services/syncService';
 import { applyTheme } from '../services/themeEngine';
 import { calculateAttendanceStats } from '../utils/attendanceUtils';
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../services/firebase";
 
 /**
  * Centralized App Store using Zustand
