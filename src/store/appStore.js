@@ -1477,6 +1477,8 @@ const useAppStore = create(
               syncing: false,
               error: null
             },
+            termsAccepted: true,
+            termsVersion: '',
             lastCloudSync: null
           });
           

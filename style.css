@@ -4322,6 +4322,15 @@ html, body, #root, .app-container {
     z-index: 9999 !important;
     display: none;
 }
+
+@media (max-height: 500px) {
+    .mobile-nav {
+        display: none !important;
+    }
+    .content-wrapper {
+        padding-bottom: 20px !important;
+    }
+}
 @media (max-width: 768px) {
     .mobile-nav {
         display: flex !important;

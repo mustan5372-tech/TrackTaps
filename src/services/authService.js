@@ -91,6 +91,15 @@ const authService = {
 
       } else {
         // --- 2. WEB FLOW (Browser Only) ---
+        try {
+          if (googleProvider && typeof googleProvider.setCustomParameters === 'function') {
+            googleProvider.setCustomParameters({
+              prompt: 'select_account'
+            });
+          }
+        } catch (e) {
+          console.warn("⚠️ [Auth] Could not set custom prompt parameter:", e);
+        }
         const result = await signInWithPopup(auth, googleProvider);
         return result.user;
       }
@@ -224,9 +233,12 @@ const authService = {
       if (isNativeAPK()) {
         try {
           const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
-          await GoogleAuth.signOut().catch(e => console.log("ℹ️ [Auth] GoogleAuth signOut skip or already signed out:", e.message));
+          // Disconnect completely revokes the authorization and removes token caching to force account picker popup next time
+          await GoogleAuth.signOut().catch(() => {});
+          await GoogleAuth.disconnect().catch(e => console.log("ℹ️ [Auth] GoogleAuth disconnect skip or already disconnected:", e.message));
+          console.log("✅ [Auth] Native Google Auth disconnected and session cleared");
         } catch (e) {
-          console.warn("⚠️ [Auth] Non-critical native GoogleAuth signOut warning:", e);
+          console.warn("⚠️ [Auth] Non-critical native GoogleAuth signout/disconnect warning:", e);
         }
       }
       await signOut(auth);

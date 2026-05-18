@@ -291,6 +291,19 @@ body {
         box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
     }
 
+    @media (max-height: 500px) {
+        .mobile-nav {
+            display: none !important;
+        }
+        .content-wrapper {
+            padding-bottom: 20px !important;
+        }
+    }
+
+    .mobile-nav-keyboard-fix {
+        display: none;
+    }
+
     .mobile-nav-scroll-container {
         gap: 8px;
         justify-content: flex-start;
