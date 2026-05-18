@@ -191,7 +191,7 @@ export default function Pod() {
           
           const text = await res.text();
           if (!text) {
-            attendanceResults[classroom.token] = { total: 0, attended: 0, avgAttendance: 0, missed: 0 };
+            attendanceResults[classroom.token] = { success: false };
             continue;
           }
 
@@ -199,12 +199,12 @@ export default function Pod() {
           try {
             data = JSON.parse(text);
           } catch (e) {
-            attendanceResults[classroom.token] = { total: 0, attended: 0, avgAttendance: 0, missed: 0 };
+            attendanceResults[classroom.token] = { success: false };
             continue;
           }
           
           if (!res.ok) {
-            attendanceResults[classroom.token] = { total: 0, attended: 0, avgAttendance: 0, missed: 0 };
+            attendanceResults[classroom.token] = { success: false };
             continue;
           }
           
@@ -212,10 +212,11 @@ export default function Pod() {
             total: data.total || 0,
             attended: data.attended || 0,
             avgAttendance: data.averagePercent || 0,
-            missed: data.missed || 0
+            missed: data.missed || 0,
+            success: true
           };
         } catch (err) {
-          attendanceResults[classroom.token] = { total: 0, attended: 0, avgAttendance: 0, missed: 0 };
+          attendanceResults[classroom.token] = { success: false };
         }
       }
       
@@ -245,8 +246,12 @@ export default function Pod() {
       const subjectsToSync = classrooms.map(classroom => ({
         token: classroom.token,
         title: classroom.title,
-        ...attendanceData[classroom.token]
-      }));
+        ...(attendanceData[classroom.token] || { success: false })
+      })).filter(sub => sub.success !== false);
+      
+      if (subjectsToSync.length === 0) {
+        throw new Error('Could not retrieve valid attendance data to sync. Please try again.');
+      }
       
       await syncPodaiSubjects(subjectsToSync);
       fullSync();
@@ -557,6 +562,11 @@ export default function Pod() {
                   </span>
                 )}
               </div>
+              {useAppStore.getState().podaiSyncStatus?.lastSync && (
+                <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '4px 0 0 0', fontStyle: 'italic' }}>
+                  Last synced successfully {new Date(useAppStore.getState().podaiSyncStatus.lastSync).toLocaleString()}
+                </p>
+              )}
             </div>
           </div>
           
@@ -786,7 +796,11 @@ export default function Pod() {
                           </p>
                         )}
                         
-                        {att.total === undefined ? (
+                        {att.success === false ? (
+                          <div style={{ padding: '16px', background: 'rgba(239,68,68,0.1)', borderRadius: '12px', border: '1px dashed #ef4444', color: '#ef4444', fontSize: '13px', textAlign: 'center' }}>
+                            Data fetch failed. Preserving last known state.
+                          </div>
+                        ) : att.total === undefined ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             <div style={{ height: '14px', width: '40%', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} className="skeleton-shimmer" />
                             <div style={{ height: '40px', width: '100%', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }} className="skeleton-shimmer" />

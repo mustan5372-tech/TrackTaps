@@ -182,6 +182,17 @@ const useAppStore = create(
         isAuthLoading: true, 
         isRestoringSession: false, 
         isAuthModalOpen: false,
+        isOffline: !navigator.onLine,
+        pendingCloudSync: false,
+        
+        setOffline: (status) => {
+          set({ isOffline: status });
+          if (!status && get().pendingCloudSync && get().user) {
+            console.log("📶 [Network] Back online! Triggering pending sync...");
+            get().pushToCloud();
+          }
+        },
+        
         setAuthModalOpen: (isOpen) => set({ isAuthModalOpen: isOpen }),
         setUser: (user) => set({ user, isAuthLoading: false, isRestoringSession: false }),
 
@@ -260,8 +271,18 @@ const useAppStore = create(
           // Theme initialization
           const localTheme = localStorage.getItem('tracktaps_theme') || 'default';
           get().setTheme(localTheme);
+          
+          // Network Listeners
+          const handleOnline = () => get().setOffline(false);
+          const handleOffline = () => get().setOffline(true);
+          window.addEventListener('online', handleOnline);
+          window.addEventListener('offline', handleOffline);
 
-          return unsubscribe;
+          return () => {
+             unsubscribe();
+             window.removeEventListener('online', handleOnline);
+             window.removeEventListener('offline', handleOffline);
+          };
         },
 
         handleUserAuthenticated: async (user) => {
@@ -401,10 +422,16 @@ const useAppStore = create(
         lastCloudSync: null,
 
         pushToCloud: async (manual = false) => {
-          const { user, subjects, timetable, calendarEvents, attendanceData, history, subscription, isSyncing } = get();
+          const { user, subjects, timetable, calendarEvents, attendanceData, history, subscription, isSyncing, isOffline } = get();
           if (!user || isSyncing) return;
+          
+          if (isOffline) {
+            console.log("📴 [CloudSync] Offline. Marking for pending sync.");
+            set({ pendingCloudSync: true });
+            return;
+          }
 
-          set({ isSyncing: true });
+          set({ isSyncing: true, pendingCloudSync: false });
           try {
             console.log("📤 [CloudSync] Starting backup...");
             
@@ -443,22 +470,28 @@ const useAppStore = create(
             }
 
             await syncService.saveToCloud(user.uid, dataToSync);
-            set({ lastCloudSync: new Date().toISOString() });
+            set({ lastCloudSync: new Date().toISOString(), pendingCloudSync: false });
             
             if (manual) {
-              alert('✅ Data Backed Up Successfully!');
+              get().showToast('Data Backed Up Successfully!', 'success');
             }
           } catch (error) {
             console.error("Cloud sync failed:", error);
-            if (manual) alert('❌ Backup Failed: ' + error.message);
+            set({ pendingCloudSync: true });
+            if (manual) get().showToast('Backup pending: Network unstable', 'warning');
           } finally {
             set({ isSyncing: false });
           }
         },
 
         pullFromCloud: async (manual = false) => {
-          const { user } = get();
+          const { user, isOffline } = get();
           if (!user) return;
+          
+          if (isOffline) {
+            if (manual) get().showToast('Cannot restore while offline', 'warning');
+            return false;
+          }
 
           set({ isSyncing: true });
           try {
@@ -483,17 +516,17 @@ const useAppStore = create(
               });
               
               get().fullSync();
-              if (manual) alert('✅ Data Restored Successfully!');
+              if (manual) get().showToast('Data Restored Successfully!', 'success');
               return true;
             } else {
               set({ isSyncing: false });
-              if (manual) alert('ℹ️ No cloud backup found for this account.');
+              if (manual) get().showToast('No cloud backup found', 'info');
               return false;
             }
           } catch (error) {
             console.error("Pull from cloud failed:", error);
             set({ isSyncing: false });
-            if (manual) alert('❌ Restore Failed: ' + error.message);
+            if (manual) get().showToast('Restore Failed: ' + error.message, 'error');
             return false;
           }
         },
@@ -946,11 +979,16 @@ const useAppStore = create(
          * Enforces a 6-hour cooldown to prevent API spam
          */
         performAutoPodaiSync: async (force = false) => {
-          const { subscription, podaiSyncStatus } = get();
+          const { subscription, podaiSyncStatus, isOffline } = get();
           const token = localStorage.getItem('pod_auth_token');
           
           // 1. Basic checks
           if (subscription.status !== 'active' || !token || podaiSyncStatus.syncing) {
+            return;
+          }
+          
+          if (isOffline) {
+            console.log("📴 [PodSync] Offline. Skipping auto-sync.");
             return;
           }
 
@@ -1008,12 +1046,14 @@ const useAppStore = create(
                       total: attData.total || 0,
                       attended: attData.attended || 0,
                       avgAttendance: attData.averagePercent || 0,
-                      missed: attData.missed || 0
+                      missed: attData.missed || 0,
+                      success: true
                     };
-                  }
-                }
+                  } else { attendanceResults[classroom.token] = { success: false }; }
+                } else { attendanceResults[classroom.token] = { success: false }; }
               } catch (e) {
                 console.warn(`Failed to sync classroom ${classroom.token}`);
+                attendanceResults[classroom.token] = { success: false };
               }
             }));
 
@@ -1021,8 +1061,14 @@ const useAppStore = create(
             const subjectsToSync = classrooms.map(classroom => ({
               token: classroom.token,
               title: classroom.title,
-              ...(attendanceResults[classroom.token] || { total: 0, attended: 0, avgAttendance: 0, missed: 0 })
-            }));
+              ...(attendanceResults[classroom.token] || { success: false })
+            })).filter(sub => sub.success !== false);
+            
+            if (subjectsToSync.length === 0) {
+              console.log("⚠️ [AppStore] No valid attendance data fetched. Aborting sync.");
+              set({ podaiSyncStatus: { ...get().podaiSyncStatus, syncing: false } });
+              return;
+            }
 
             const { subjects } = get();
             const merged = PodAiService.mergeSubjects(subjects, subjectsToSync);

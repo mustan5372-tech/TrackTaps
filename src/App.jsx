@@ -23,6 +23,7 @@ import AuthModal from './components/AuthModal';
 import Onboarding from './components/Onboarding';
 import DownloadAPK from './components/DownloadAPK';
 import ErrorBoundary from './components/ErrorBoundary';
+import OfflineBanner from './components/OfflineBanner';
 
 const SafeRoute = ({ children }) => (
   <AppShell>
@@ -71,8 +72,28 @@ function App() {
         }
       }
     }, 4000); // Trigger 4s after launch to avoid clash
+    
+    // 📱 Resume Handling (APK & Backgrounding)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log("📱 [App] Resumed. Recovering state...");
+        const state = useAppStore.getState();
+        
+        // Recover UI state smoothly
+        if (state.user) {
+          state.fullSync();
+          
+          // Re-trigger sync if we came online while asleep
+          if (!state.isOffline && state.pendingCloudSync) {
+            state.pushToCloud();
+          }
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       unsubscribePromise.then(unsubscribe => {
         if (typeof unsubscribe === 'function') {
           unsubscribe();
@@ -178,6 +199,7 @@ function App() {
           Staging Build
         </div>
       )}
+      <OfflineBanner />
       <GlobalToast />
       <ErrorBoundary>
         <Onboarding />

@@ -201,7 +201,8 @@ function Subjects() {
     deleteSubject,
     subscription,
     semesterStats,
-    fullSync
+    fullSync,
+    isSyncing
   } = useAppStore();
 
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -254,6 +255,15 @@ function Subjects() {
 
   return (
     <div className="subjects-view">
+      <style>{`
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        .skeleton-shimmer {
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%);
+          background-size: 200% 100%;
+          animation: shimmer 2s infinite linear;
+          background-color: rgba(255,255,255,0.02);
+        }
+      `}</style>
       <header className="view-header">
         <h2>My Subjects</h2>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -278,7 +288,11 @@ function Subjects() {
       </header>
 
       <div className="subjects-grid">
-        {(!subjects || subjects.length === 0) ? (
+        {isSyncing && (!subjects || subjects.length === 0) ? (
+          [1, 2, 3, 4].map(i => (
+            <div key={i} className="dashboard-card skeleton-shimmer" style={{ height: '220px', borderRadius: '24px', border: '1px solid var(--border)' }} />
+          ))
+        ) : (!subjects || subjects.length === 0) ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--surface-glass)', borderRadius: '24px', border: '1px dashed var(--border)', width: '100%', gridColumn: '1 / -1' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.8 }}>📚</div>
             <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>No Subjects Yet</h3>

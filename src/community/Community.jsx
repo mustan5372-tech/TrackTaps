@@ -25,7 +25,12 @@ function Community() {
       setLeaderboard(data);
     } catch (err) {
       console.error("Community Page Error:", err);
-      setError("Leaderboard is currently unavailable. Please try again later.");
+      const { isOffline } = useAppStore.getState();
+      if (isOffline) {
+        setError("You are offline. Please check your internet connection.");
+      } else {
+        setError("Leaderboard is currently unavailable. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }
@@ -77,20 +82,38 @@ function Community() {
 
       {/* Leaderboard Section */}
       <div className="leaderboard-container" style={{ position: 'relative', minHeight: '300px' }}>
+        <style>{`
+          @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+          .skeleton-shimmer {
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite linear;
+            background-color: rgba(255,255,255,0.02);
+          }
+        `}</style>
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', color: 'var(--text-dim)' }}>
-            <motion.div 
-              animate={{ rotate: 360 }} 
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              style={{ fontSize: '32px', marginBottom: '16px' }}
-            >
-              ⌛
-            </motion.div>
-            <p style={{ fontSize: '14px', fontWeight: '600' }}>Calculating rankings...</p>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            {[1, 2, 3].map(i => (
+              <div key={i} className="skeleton-shimmer" style={{ height: '94px', borderRadius: '24px', border: '1px solid var(--border)' }} />
+            ))}
           </div>
         ) : error ? (
           <div style={{ textAlign: 'center', padding: '40px 20px', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '24px', border: '1px dashed #ef4444' }}>
-            <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Leaderboard is currently offline.</p>
+            <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '16px' }}>{error}</p>
+            <button 
+              onClick={loadLeaderboard}
+              style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                color: '#ef4444',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              Try Again
+            </button>
           </div>
         ) : (
           <motion.div 
