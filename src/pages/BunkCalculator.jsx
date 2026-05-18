@@ -25,6 +25,7 @@ function BunkCalculator() {
   useEffect(() => {
     fullSync();
     setIsPremium(subscription?.status === 'active');
+    localStorage.setItem('tracktaps_visited_bunk_calc', 'true');
   }, [fullSync, subscription]);
 
   // Handle auto-selection if passed via state

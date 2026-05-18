@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import useAppStore from '../store/appStore';
 import ContactUs from '../components/ContactUs';
 
@@ -80,6 +80,90 @@ function Home() {
   const getTotalBunkable = () => {
     return Object.values(semesterStats || {}).reduce((acc, stat) => acc + (stat.bunkableNow || 0), 0);
   };
+
+  const [tourActive, setTourActive] = useState(false);
+  const [currentTourStep, setCurrentTourStep] = useState(0);
+  const [hasTourCompleted, setHasTourCompleted] = useState(() => localStorage.getItem('tracktaps_completed_tour') === 'true');
+  const [hasVisitedBunk, setHasVisitedBunk] = useState(() => localStorage.getItem('tracktaps_visited_bunk_calc') === 'true');
+  const [hasVisitedInsights, setHasVisitedInsights] = useState(() => localStorage.getItem('tracktaps_visited_insights') === 'true');
+  const [isGuideDismissed, setIsGuideDismissed] = useState(() => localStorage.getItem('tracktaps_guide_dismissed') === 'true');
+
+  const tourSteps = [
+    {
+      title: "👋 Welcome to TrackTaps!",
+      description: "Dominating your academic semester just got incredibly simple. Let's take a quick 30-second guided tour of your workspace.",
+      icon: "🚀"
+    },
+    {
+      title: "🔄 Pod.ai Direct Sync",
+      description: "Directly sync your college portals and subjects securely. All credentials are fully processed on-device and never stored.",
+      icon: "⚡"
+    },
+    {
+      title: "🏖️ Smart Bunk Calculator",
+      description: "Plan your skips safely. Instantly see how many classes you can skip while remaining above your default target criteria.",
+      icon: "🏖️"
+    },
+    {
+      title: "📈 AI Insights Strategy",
+      description: "Receive dynamic recommendations, critical risk alert warnings, and actionable guides to maintain perfect percentages.",
+      icon: "🔮"
+    },
+    {
+      title: "📅 Smart Academic Calendar",
+      description: "Map exams, teaching slots, and national holidays. Premium users can even import complex PDF schedules via visual AI.",
+      icon: "🗓️"
+    },
+    {
+      title: "💎 Referrals & Free Premium",
+      description: "Invite classmates and secure 15 Days of Premium Plus features for free. Track your valid milestones live.",
+      icon: "🎁"
+    },
+    {
+      title: "🎉 Domination Awaits!",
+      description: "You've unlocked the full potential of TrackTaps. Go crush your semester goals!",
+      icon: "🎓"
+    }
+  ];
+
+  const getOnboardingProgress = () => {
+    let progress = 0;
+    if (dashboardStats.totalSubjects > 0) progress += 25; // Pod.ai synced / First subject added
+    if (hasTourCompleted) progress += 25;
+    if (hasVisitedBunk) progress += 25;
+    if (hasVisitedInsights) progress += 25;
+    return progress;
+  };
+
+  const startTour = () => {
+    setCurrentTourStep(0);
+    setTourActive(true);
+  };
+
+  const nextTourStep = () => {
+    if (currentTourStep < tourSteps.length - 1) {
+      setCurrentTourStep(prev => prev + 1);
+    } else {
+      localStorage.setItem('tracktaps_completed_tour', 'true');
+      setHasTourCompleted(true);
+      setTourActive(false);
+      fullSync();
+    }
+  };
+
+  const prevTourStep = () => {
+    if (currentTourStep > 0) {
+      setCurrentTourStep(prev => prev - 1);
+    }
+  };
+
+  const skipTour = () => {
+    localStorage.setItem('tracktaps_completed_tour', 'true');
+    setHasTourCompleted(true);
+    setTourActive(false);
+    fullSync();
+  };
+
 
   useEffect(() => {
     fullSync();
@@ -401,6 +485,182 @@ function Home() {
           </div>
         </motion.div>
       </motion.section>
+
+      {/* Onboarding & Guide System Card */}
+      {!isGuideDismissed && (
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{ padding: window.innerWidth < 768 ? '0 16px' : '0' }}
+        >
+          <motion.div
+            animate={getOnboardingProgress() < 100 ? {
+              boxShadow: [
+                '0 0 15px rgba(139, 92, 246, 0.15)',
+                '0 0 30px rgba(139, 92, 246, 0.35)',
+                '0 0 15px rgba(139, 92, 246, 0.15)'
+              ]
+            } : {}}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            style={{
+              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(15, 23, 42, 0.3) 100%)',
+              border: getOnboardingProgress() < 100 ? '1px solid var(--primary-glow)' : '1px solid var(--border)',
+              borderRadius: '24px',
+              padding: '24px 32px',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Recommended Badge / Completed Badge */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '18px' }}>🚀</span>
+                <span style={{ 
+                  fontSize: '11px', 
+                  background: getOnboardingProgress() < 100 ? 'var(--primary)' : 'var(--success)', 
+                  color: 'white', 
+                  padding: '3px 10px', 
+                  borderRadius: '100px', 
+                  fontWeight: '900',
+                  letterSpacing: '0.05em'
+                }}>
+                  {getOnboardingProgress() < 100 ? 'RECOMMENDED ONBOARDING' : '100% COMPLETE 🎓'}
+                </span>
+              </div>
+              
+              {/* Dismiss Button */}
+              <button 
+                onClick={() => {
+                  localStorage.setItem('tracktaps_guide_dismissed', 'true');
+                  setIsGuideDismissed(true);
+                }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-dim)',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}
+              >
+                ✕ Dismiss
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: window.innerWidth < 768 ? 'column' : 'row', gap: '32px', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 8px' }}>
+                  🚀 New to TrackTaps?
+                </h3>
+                <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 20px', lineHeight: '1.6' }}>
+                  Learn how to sync attendance, use bunk calculator, insights, referrals, and more.
+                </p>
+
+                {/* Checklist Progress Items */}
+                <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: dashboardStats.totalSubjects > 0 ? 'var(--success)' : 'var(--text-dim)' }}>
+                    <span>{dashboardStats.totalSubjects > 0 ? '✅' : '⭕'}</span> Sync Pod.ai Attendance
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: hasTourCompleted ? 'var(--success)' : 'var(--text-dim)' }}>
+                    <span>{hasTourCompleted ? '✅' : '⭕'}</span> Complete Quick Tour
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: hasVisitedBunk ? 'var(--success)' : 'var(--text-dim)' }}>
+                    <span>{hasVisitedBunk ? '✅' : '⭕'}</span> Check Bunk Calculator
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: hasVisitedInsights ? 'var(--success)' : 'var(--text-dim)' }}>
+                    <span>{hasVisitedInsights ? '✅' : '⭕'}</span> View Attendance Insights
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Bar & Actions */}
+              <div style={{ minWidth: window.innerWidth < 768 ? '100%' : '320px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase' }}>Getting Started Progression</span>
+                    <span style={{ fontSize: '14px', fontWeight: '900', color: 'var(--primary-light)' }}>
+                      {getOnboardingProgress()}%
+                    </span>
+                  </div>
+                  <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '100px', overflow: 'hidden' }}>
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${getOnboardingProgress()}%` }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                      style={{ height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%)' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={startTour}
+                    style={{
+                      flex: 1,
+                      background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      fontWeight: '800',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 15px var(--primary-glow)'
+                    }}
+                  >
+                    Start Quick Tour 🧭
+                  </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate('/guide')}
+                    style={{
+                      flex: 1,
+                      background: 'rgba(255,255,255,0.05)',
+                      color: 'var(--text-main)',
+                      border: '1px solid var(--border)',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      fontWeight: '700',
+                      fontSize: '13px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Open Guide Center
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+
+          </motion.div>
+        </motion.section>
+      )}
+
+      {/* Dismissed Helper Entry point */}
+      {isGuideDismissed && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 16px', marginTop: '-12px' }}>
+          <button 
+            onClick={() => {
+              localStorage.removeItem('tracktaps_guide_dismissed');
+              setIsGuideDismissed(false);
+            }}
+            style={{
+              background: 'rgba(139, 92, 246, 0.1)',
+              border: '1px solid var(--primary-glow)',
+              borderRadius: '100px',
+              padding: '6px 16px',
+              fontSize: '12px',
+              color: 'var(--primary-light)',
+              cursor: 'pointer',
+              fontWeight: '700'
+            }}
+          >
+            📖 Show Onboarding Checklist
+          </button>
+        </div>
+      )}
 
       {/* Quick Stats Row */}
       <motion.div 
@@ -914,10 +1174,124 @@ function Home() {
         </motion.div>
       </motion.section>
 
-      {/* Contact Us Section */}
-      <motion.div variants={fadeInUp} initial="initial" whileInView="animate" viewport={{ once: true }}>
-        <ContactUs />
-      </motion.div>
+      {/* Guided Walkthrough Tour Overlay Modal */}
+      <AnimatePresence>
+        {tourActive && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '20px'
+          }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              style={{
+                width: '100%',
+                maxWidth: '480px',
+                background: 'rgba(15, 23, 42, 0.95)',
+                border: '1px solid var(--primary-glow)',
+                borderRadius: '24px',
+                padding: '32px 24px',
+                boxShadow: '0 8px 32px rgba(139, 92, 246, 0.25)',
+                position: 'relative',
+                textAlign: 'center'
+              }}
+            >
+              <button 
+                onClick={skipTour}
+                style={{
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  color: 'white',
+                  width: '32px',
+                  height: '32px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                ✕
+              </button>
+
+              <div style={{ fontSize: '64px', marginBottom: '16px' }}>{tourSteps[currentTourStep].icon}</div>
+              <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 12px' }}>
+                {tourSteps[currentTourStep].title}
+              </h3>
+              <p style={{ fontSize: '14px', color: 'var(--text-dim)', lineHeight: '1.6', marginBottom: '32px' }}>
+                {tourSteps[currentTourStep].description}
+              </p>
+
+              {/* Step indicator */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px' }}>
+                {tourSteps.map((_, i) => (
+                  <div 
+                    key={i} 
+                    style={{
+                      width: i === currentTourStep ? '24px' : '8px',
+                      height: '8px',
+                      borderRadius: '100px',
+                      background: i === currentTourStep ? 'var(--primary-light)' : 'rgba(255,255,255,0.1)',
+                      transition: 'all 0.3s'
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Navigation controls */}
+              <div style={{ display: 'flex', gap: '12px' }}>
+                {currentTourStep > 0 && (
+                  <button
+                    onClick={prevTourStep}
+                    style={{
+                      flex: 1,
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-main)',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ← Back
+                  </button>
+                )}
+                
+                <button
+                  onClick={nextTourStep}
+                  style={{
+                    flex: 2,
+                    background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px var(--primary-glow)'
+                  }}
+                >
+                  {currentTourStep === tourSteps.length - 1 ? 'Finish Tour 🎓' : 'Next Step →'}
+                </button>
+              </div>
+
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

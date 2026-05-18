@@ -16,6 +16,7 @@ function MobileNav() {
     { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🏖️', label: 'Bunks', path: '/bunk-calculator' },
     { icon: '🌍', label: 'Community', path: '/community' },
+    { icon: '📖', label: 'Guide', path: '/guide' },
     { icon: '⚙️', label: 'Settings', path: '/settings' },
   ];
 

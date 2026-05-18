@@ -840,6 +840,39 @@ function Settings() {
             >
               🗑️ Clear All Data
             </button>
+            <button
+              onClick={() => {
+                localStorage.removeItem('tracktaps_onboarding_completed');
+                localStorage.removeItem('tracktaps_completed_tour');
+                alert('Onboarding & Guided Tour status reset! Navigate to the Home page to run the tour.');
+                navigate('/');
+              }}
+              style={{
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px solid var(--primary-light)',
+                background: 'rgba(139, 92, 246, 0.1)',
+                color: 'var(--primary-light)',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              📖 Reset & Restart Guided Tour
+            </button>
+            <button
+              onClick={() => navigate('/guide')}
+              style={{
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: 'var(--surface-bright)',
+                color: 'var(--text-main)',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              ❓ Open Help & Guide Center
+            </button>
           </div>
         </div>
 

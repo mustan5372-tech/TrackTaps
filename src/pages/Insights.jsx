@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 import { motion } from 'framer-motion';
 
 function Insights() {
   const navigate = useNavigate();
+  useEffect(() => {
+    localStorage.setItem('tracktaps_visited_insights', 'true');
+  }, []);
   const {
     insights,
     subjects,
