@@ -40,6 +40,9 @@ function Calendar() {
     updateDashboardStats();
     updateSubjectStats();
     generateInsights();
+    try {
+      import('../services/analyticsService').then(m => m.default.trackFeatureUse('calendar')).catch(() => {});
+    } catch (e) {}
   }, [updateDashboardStats, updateSubjectStats, generateInsights]);
 
   const getDaysInMonth = (date) => {

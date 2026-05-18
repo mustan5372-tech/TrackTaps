@@ -13,6 +13,9 @@ function Referral() {
     if (user) {
       ensureReferralData();
     }
+    try {
+      import('../services/analyticsService').then(m => m.default.trackFeatureUse('referral')).catch(() => {});
+    } catch (e) {}
   }, [ensureReferralData, user]);
 
   const validReferrals = referralData?.totalValidReferrals || 0;

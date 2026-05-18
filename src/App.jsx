@@ -17,13 +17,17 @@ import BunkCalculator from './pages/BunkCalculator';
 import Community from './community/Community';
 import Referral from './pages/Referral';
 import Guide from './pages/Guide';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 import useAppStore from './store/appStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import GlobalToast from './components/GlobalToast';
 import AuthModal from './components/AuthModal';
+import TermsModal from './components/TermsModal';
 import Onboarding from './components/Onboarding';
 import DownloadAPK from './components/DownloadAPK';
 import ErrorBoundary from './components/ErrorBoundary';
+import analyticsService from './services/analyticsService';
 import OfflineBanner from './components/OfflineBanner';
 
 const SafeRoute = ({ children }) => {
@@ -34,7 +38,7 @@ const SafeRoute = ({ children }) => {
     return null;
   }
   
-  const isPublicPage = location.pathname === '/' || location.pathname === '/guide';
+  const isPublicPage = ['/', '/guide', '/terms', '/privacy'].includes(location.pathname);
   
   if (!user && !isPublicPage) {
     return <Navigate to="/" replace />;
@@ -72,6 +76,9 @@ function App() {
     const hostname = window.location.hostname;
     const isProd = hostname === 'tracktaps.online' || hostname === 'www.tracktaps.online';
     setIsStaging(!isProd && hostname !== '');
+
+    // Initialize Anonymous Visitor Intelligence Tracking System
+    analyticsService.initVisitor();
 
     // Initialize Auth
     const unsubscribePromise = initAuth();
@@ -281,6 +288,7 @@ function App() {
         )}
       </AnimatePresence>
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
+      <TermsModal />
       
       <Routes>
         <Route path="/pod" element={<ErrorBoundary><Pod /></ErrorBoundary>} />
@@ -299,6 +307,8 @@ function App() {
         <Route path="/community" element={<SafeRoute><Community /></SafeRoute>} />
         <Route path="/referral" element={<SafeRoute><Referral /></SafeRoute>} />
         <Route path="/guide" element={<SafeRoute><Guide /></SafeRoute>} />
+        <Route path="/terms" element={<SafeRoute><Terms /></SafeRoute>} />
+        <Route path="/privacy" element={<SafeRoute><Privacy /></SafeRoute>} />
       </Routes>
     </BrowserRouter>
   );

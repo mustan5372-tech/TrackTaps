@@ -7,6 +7,7 @@ function Insights() {
   const navigate = useNavigate();
   useEffect(() => {
     localStorage.setItem('tracktaps_visited_insights', 'true');
+    import('../services/analyticsService').then(m => m.default.trackFeatureUse('insights')).catch(() => {});
   }, []);
   const {
     insights,

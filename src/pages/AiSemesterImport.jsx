@@ -35,6 +35,9 @@ function AiSemesterImport() {
     setProcessingState('uploading');
     setConfidence(0);
     setPreviewData(null);
+    try {
+      import('../services/analyticsService').then(m => m.default.trackFeatureUse('aiImport')).catch(() => {});
+    } catch (e) {}
 
     // Timeline simulation
     setTimeout(() => {

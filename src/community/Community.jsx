@@ -15,6 +15,9 @@ function Community() {
 
   useEffect(() => {
     loadLeaderboard();
+    try {
+      import('../services/analyticsService').then(m => m.default.trackFeatureUse('community')).catch(() => {});
+    } catch (e) {}
   }, []);
 
   const loadLeaderboard = async () => {

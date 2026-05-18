@@ -199,6 +199,8 @@ const useAppStore = create(
         isRestoringSession: false, 
         isSigningOut: false,
         isAuthModalOpen: false,
+        termsAccepted: true, // Default to true for guest sessions
+        termsVersion: '',
         isOffline: !navigator.onLine,
         pendingCloudSync: false,
         
@@ -212,6 +214,29 @@ const useAppStore = create(
         
         setAuthModalOpen: (isOpen) => set({ isAuthModalOpen: isOpen }),
         setUser: (user) => set({ user, isAuthLoading: false, isRestoringSession: false }),
+
+        acceptTerms: async (marketingConsent = false) => {
+          const user = get().user;
+          if (!user) return;
+          
+          set({ 
+            termsAccepted: true, 
+            termsVersion: 'v1.0' 
+          });
+          
+          try {
+            await syncService.saveToCloud(user.uid, {
+              termsAccepted: true,
+              termsAcceptedAt: new Date().toISOString(),
+              privacyAccepted: true,
+              termsVersion: 'v1.0',
+              marketingConsent
+            });
+            console.log("📜 [Terms] Accepted successfully!");
+          } catch (e) {
+            console.error("Failed to persist terms acceptance:", e);
+          }
+        },
 
         login: async () => {
           set({ isAuthLoading: true });
@@ -364,12 +389,28 @@ const useAppStore = create(
               updatedRole = 'USER';
             }
 
+            const cloudTermsAccepted = cloudData?.termsAccepted || false;
+            const cloudTermsVersion = cloudData?.termsVersion || '';
+
             set({ 
               user, 
               isAuthLoading: false,
               role: updatedRole,
-              subscription: updatedSub
+              subscription: updatedSub,
+              termsAccepted: cloudTermsAccepted,
+              termsVersion: cloudTermsVersion
             });
+
+            // 📊 Track Analytics Conversions in Background
+            try {
+              import('../services/analyticsService').then((m) => {
+                const analytics = m.default;
+                analytics.trackLoginConversion(user.uid);
+                if (updatedSub.status === 'active') {
+                  analytics.trackPremiumConversion();
+                }
+              }).catch(() => {});
+            } catch (e) {}
 
             // 🔍 ALWAYS SYNC REFERRAL IDENTITY (PRODUCTION CRITICAL)
             if (cloudData && cloudData.referralData) {
@@ -567,6 +608,13 @@ const useAppStore = create(
             },
             role: subData.status === 'active' ? 'PREMIUM' : 'USER'
           });
+          
+          if (subData.status === 'active') {
+            try {
+              import('../services/analyticsService').then(m => m.default.trackPremiumConversion()).catch(() => {});
+            } catch (e) {}
+          }
+
           get().pushToCloud();
         },
 

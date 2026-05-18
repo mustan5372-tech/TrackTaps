@@ -66,6 +66,9 @@ const DownloadAPK = () => {
   const handleAskAI = (query) => {
     setChatMessages(prev => [...prev, { sender: 'user', text: query }]);
     setIsTyping(true);
+    try {
+      import('../services/analyticsService').then(m => m.default.trackFeatureUse('aiAssistant')).catch(() => {});
+    } catch (e) {}
 
     setTimeout(() => {
       let reply = '';

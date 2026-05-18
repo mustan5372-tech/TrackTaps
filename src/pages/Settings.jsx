@@ -933,9 +933,19 @@ function Settings() {
             <span className="card-title">ℹ️ About TrackTaps</span>
           </div>
           <div style={{ padding: '20px', color: 'var(--text-dim)', fontSize: '14px', lineHeight: '1.6' }}>
-            <p><strong>Version:</strong> 1.0.0</p>
+            <p><strong>Version:</strong> 1.0.0 (v1.0)</p>
             <p><strong>Platform:</strong> Web & Mobile</p>
             <p style={{ marginTop: '16px' }}>TrackTaps is a smart attendance tracking platform designed to help students manage their academic attendance efficiently with AI-powered insights and predictions.</p>
+            
+            {/* Legal links */}
+            <div style={{ marginTop: '16px', display: 'flex', gap: '16px', fontSize: '13px' }}>
+              <span onClick={() => navigate('/terms')} style={{ color: 'var(--primary-light)', cursor: 'pointer', fontWeight: '750', textDecoration: 'underline' }}>Terms of Service</span>
+              <span onClick={() => navigate('/privacy')} style={{ color: 'var(--primary-light)', cursor: 'pointer', fontWeight: '750', textDecoration: 'underline' }}>Privacy Policy</span>
+            </div>
+
+            <p style={{ marginTop: '16px', fontSize: '11px', color: 'var(--text-muted)' }}>
+              🔒 TrackTaps uses lightweight anonymous analytics to improve user experience.
+            </p>
             <p style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>© 2026 TrackTaps. All rights reserved.</p>
           </div>
         </div>

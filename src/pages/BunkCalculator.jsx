@@ -26,6 +26,7 @@ function BunkCalculator() {
     fullSync();
     setIsPremium(subscription?.status === 'active');
     localStorage.setItem('tracktaps_visited_bunk_calc', 'true');
+    import('../services/analyticsService').then(m => m.default.trackFeatureUse('bunkCalc')).catch(() => {});
   }, [fullSync, subscription]);
 
   // Handle auto-selection if passed via state

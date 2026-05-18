@@ -211,8 +211,10 @@ function AuthModal({ isOpen, onClose }) {
                 />
               </div>
 
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '24px' }}>
-                By continuing, you agree to our <span style={{ color: 'var(--primary-light)' }}>Terms of Service</span>.
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '24px', lineHeight: '1.6' }}>
+                By continuing, you agree to our <br />
+                <a href="/terms" target="_blank" rel="noreferrer" style={{ color: 'var(--primary-light)', textDecoration: 'underline', fontWeight: '750' }}>Terms of Service</a> and{' '}
+                <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: 'var(--primary-light)', textDecoration: 'underline', fontWeight: '750' }}>Privacy Policy</a>.
               </p>
             </motion.div>
           )}

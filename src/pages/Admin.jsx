@@ -20,6 +20,7 @@ function Admin() {
     } else {
       fetchAdminData();
       fetchReports();
+      fetchVisitorAnalytics();
     }
   }, [user, role, navigate]);
 
@@ -33,7 +34,129 @@ function Admin() {
     activeSubscriptions: 0
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('users'); // 'users' or 'reports'
+  const [activeTab, setActiveTab] = useState('users'); // 'users', 'reports', or 'analytics'
+
+  const [visitorSessions, setVisitorSessions] = useState([]);
+  const [visitorStats, setVisitorStats] = useState({
+    totalVisitors: 0,
+    guestUsers: 0,
+    loggedInUsers: 0,
+    returningVisitors: 0,
+    loginConversionRate: 0,
+    premiumConversionRate: 0,
+    apkUsers: 0,
+    pwaUsers: 0,
+    browserUsers: 0,
+    averageSessionDuration: 0,
+    featuresRanked: [],
+    visitorsToday: 0
+  });
+
+  const fetchVisitorAnalytics = async () => {
+    try {
+      const qSnap = await getDocs(collection(db, "visitor_sessions"));
+      const sessions = [];
+      let guests = 0;
+      let loggedIn = 0;
+      let returning = 0;
+      let apk = 0;
+      let pwa = 0;
+      let browser = 0;
+      let totalDuration = 0;
+      let durationCount = 0;
+      let logins = 0;
+      let premiums = 0;
+      let todayCount = 0;
+
+      const featureCounts = {
+        bunkCalc: 0,
+        insights: 0,
+        aiAssistant: 0,
+        community: 0,
+        referral: 0,
+        calendar: 0,
+        aiImport: 0
+      };
+
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      qSnap.forEach(docSnap => {
+        const data = docSnap.data();
+        sessions.push(data);
+
+        // Classify User type
+        if (data.converted) {
+          loggedIn++;
+        } else {
+          guests++;
+        }
+
+        // Returning visitor
+        if (data.sessionCount > 1 || data.isReturning) {
+          returning++;
+        }
+
+        // Platform
+        if (data.platform === 'APK') apk++;
+        else if (data.platform === 'PWA') pwa++;
+        else browser++;
+
+        // Conversion step counters
+        if (data.converted) logins++;
+        if (data.premiumUpgraded) premiums++;
+
+        // Feature counts
+        if (data.featuresUsed) {
+          Object.keys(featureCounts).forEach(feat => {
+            featureCounts[feat] += (data.featuresUsed[feat] || 0);
+          });
+        }
+
+        // Active duration
+        if (data.totalDurationSec) {
+          totalDuration += data.totalDurationSec;
+          durationCount++;
+        }
+
+        // Today's visitors check
+        if (data.lastSeen && data.lastSeen.startsWith(todayStr)) {
+          todayCount++;
+        }
+      });
+
+      const total = sessions.length;
+      const averageSessionDuration = durationCount > 0 ? Math.round(totalDuration / durationCount) : 0;
+
+      const featuresRanked = Object.keys(featureCounts).map(key => ({
+        name: key === 'bunkCalc' ? '🏖️ Bunk Calculator' :
+              key === 'insights' ? '📈 AI Insights' :
+              key === 'aiAssistant' ? '🤖 AI Assistant' :
+              key === 'community' ? '🌍 Campus Community' :
+              key === 'referral' ? '🎁 Referral Campaign' :
+              key === 'calendar' ? '📅 Scheduler Calendar' :
+              key === 'aiImport' ? '⚡ AI Semester Import' : key,
+        count: featureCounts[key]
+      })).sort((a, b) => b.count - a.count);
+
+      setVisitorSessions(sessions);
+      setVisitorStats({
+        totalVisitors: total,
+        guestUsers: guests,
+        loggedInUsers: loggedIn,
+        returningVisitors: returning,
+        loginConversionRate: total > 0 ? Math.round((logins / total) * 100) : 0,
+        premiumConversionRate: logins > 0 ? Math.round((premiums / logins) * 100) : 0,
+        apkUsers: apk,
+        pwaUsers: pwa,
+        browserUsers: browser,
+        averageSessionDuration,
+        featuresRanked,
+        visitorsToday: todayCount
+      });
+    } catch (e) {
+      console.warn("Failed to fetch visitor analytics:", e);
+    }
+  };
 
   const fetchReports = async () => {
     try {
@@ -252,7 +375,21 @@ function Admin() {
             Reports {reports.filter(r => r.status === 'pending').length > 0 && `(${reports.filter(r => r.status === 'pending').length})`}
           </button>
           <button 
-            onClick={() => { fetchAdminData(); fetchReports(); }}
+            onClick={() => setActiveTab('analytics')}
+            style={{ 
+              padding: '10px 20px', 
+              background: activeTab === 'analytics' ? 'var(--primary)' : 'var(--surface-glass)', 
+              border: '1px solid var(--primary-glow)',
+              borderRadius: '12px',
+              color: activeTab === 'analytics' ? 'white' : 'var(--text-dim)',
+              fontWeight: '700',
+              cursor: 'pointer'
+            }}
+          >
+            📊 Analytics
+          </button>
+          <button 
+            onClick={() => { fetchAdminData(); fetchReports(); fetchVisitorAnalytics(); }}
             style={{ 
               padding: '10px', 
               background: 'var(--surface-glass)', 
@@ -499,7 +636,7 @@ function Admin() {
         </div>
       </div>
     </>
-  ) : (
+      ) : activeTab === 'reports' ? (
         <div className="dashboard-card" style={{ padding: '32px' }}>
           <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '24px' }}>Moderation Queue</h3>
           <div style={{ display: 'grid', gap: '16px' }}>
@@ -545,6 +682,109 @@ function Admin() {
               </div>
             ))}
           </div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Top Stats Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            {[
+              { label: "Total Visitors", value: visitorStats.totalVisitors, desc: "Unique local devices", color: "var(--primary-light)" },
+              { label: "Active Today", value: visitorStats.visitorsToday, desc: "Sessions active today", color: "#10b981" },
+              { label: "Returning Visitors", value: visitorStats.returningVisitors, desc: `Ratio: ${visitorStats.totalVisitors > 0 ? Math.round((visitorStats.returningVisitors / visitorStats.totalVisitors) * 100) : 0}%`, color: "#8b5cf6" },
+              { label: "Avg Session Duration", value: `${Math.floor(visitorStats.averageSessionDuration / 60)}m ${visitorStats.averageSessionDuration % 60}s`, desc: "Interaction time", color: "#eab308" }
+            ].map((card, idx) => (
+              <div key={idx} className="dashboard-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>{card.label}</div>
+                <div style={{ fontSize: '24px', fontWeight: '850', color: card.color, marginBottom: '4px' }}>{card.value}</div>
+                <div style={{ color: 'var(--text-dim)', fontSize: '12px' }}>{card.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Conversion Rates & Platforms */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+            
+            {/* Growth & Conversion Funnel */}
+            <div className="dashboard-card" style={{ padding: '24px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '750', marginBottom: '20px' }}>📈 Startup Growth Funnel</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                
+                {/* Step 1 */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
+                    <span>Visitor → Account Signups</span>
+                    <span style={{ fontWeight: '700', color: 'var(--primary-light)' }}>{visitorStats.loginConversionRate}% Conversion</span>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.05)', height: '8px', borderRadius: '10px', overflow: 'hidden' }}>
+                    <div style={{ background: 'var(--primary-light)', height: '100%', width: `${visitorStats.loginConversionRate}%` }} />
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    {visitorStats.loggedInUsers} signed up of {visitorStats.totalVisitors} unique visits
+                  </div>
+                </div>
+
+                {/* Step 2 */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
+                    <span>Signup → Premium Upgrades</span>
+                    <span style={{ fontWeight: '700', color: '#d946ef' }}>{visitorStats.premiumConversionRate}% Conversion</span>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.05)', height: '8px', borderRadius: '10px', overflow: 'hidden' }}>
+                    <div style={{ background: '#d946ef', height: '100%', width: `${visitorStats.premiumConversionRate}%` }} />
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    {stats.premiumUsers} premium members of {visitorStats.loggedInUsers} total signups
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Platform Breakdown */}
+            <div className="dashboard-card" style={{ padding: '24px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '750', marginBottom: '20px' }}>📱 Platform Distribution</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {[
+                  { name: "🤖 Native Android APK", count: visitorStats.apkUsers, color: "#a3e635" },
+                  { name: "✨ Installed PWA App", count: visitorStats.pwaUsers, color: "#38bdf8" },
+                  { name: "🌐 Web Browsers", count: visitorStats.browserUsers, color: "#fb7185" }
+                ].map((plat, idx) => {
+                  const pct = visitorStats.totalVisitors > 0 ? Math.round((plat.count / visitorStats.totalVisitors) * 100) : 0;
+                  return (
+                     <div key={idx}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+                         <span>{plat.name}</span>
+                         <span style={{ fontWeight: '700' }}>{plat.count} ({pct}%)</span>
+                       </div>
+                       <div style={{ background: 'rgba(255,255,255,0.05)', height: '6px', borderRadius: '10px', overflow: 'hidden' }}>
+                         <div style={{ background: plat.color, height: '100%', width: `${pct}%` }} />
+                       </div>
+                     </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Feature Leaderboard */}
+          <div className="dashboard-card" style={{ padding: '24px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '750', marginBottom: '20px' }}>🔥 Feature Popularity & Adoption</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+              {visitorStats.featuresRanked.map((feat, idx) => (
+                <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>{feat.name}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>Rank #{idx + 1}</div>
+                  </div>
+                  <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary-light)' }}>
+                    {feat.count} <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>uses</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       )}
 
