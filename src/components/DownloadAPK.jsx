@@ -1,12 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import useAppStore from '../store/appStore';
 
 const DownloadAPK = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('android'); // android, windows, ios
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('android');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [chatMessages, setChatMessages] = useState([
+    { sender: 'ai', text: '👋 Hello! I am the TrackTaps AI assistant. Ask me anything about your attendance buffer, skip safety, or semester goals!' }
+  ]);
+  const [isTyping, setIsTyping] = useState(false);
+  const chatEndRef = useRef(null);
+
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const {
+    subjects,
+    dashboardStats,
+    getSafeSubjects,
+    getCriticalSubjects,
+    attendanceSettings,
+    subscription,
+    fullSync
+  } = useAppStore();
 
   // Helper to detect if we are in the native APK
   const isNativeAPK = () => {
@@ -28,10 +48,11 @@ const DownloadAPK = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // ONLY VISIBLE ON HOME AND ABOUT PAGES
-  // ALSO HIDE IF ALREADY IN NATIVE APK
-  const isVisiblePage = location.pathname === '/' || location.pathname === '/about';
-  if (!isVisiblePage || isNativeAPK()) return null;
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages, isTyping]);
 
   const downloadAPK = () => {
     const link = document.createElement('a');
@@ -42,6 +63,40 @@ const DownloadAPK = () => {
     document.body.removeChild(link);
   };
 
+  const handleAskAI = (query) => {
+    setChatMessages(prev => [...prev, { sender: 'user', text: query }]);
+    setIsTyping(true);
+
+    setTimeout(() => {
+      let reply = '';
+      const defaultTarget = attendanceSettings?.defaultTarget || 75;
+      const overall = dashboardStats?.overallPercentage || 0;
+      
+      const normalizedQuery = query.toLowerCase();
+
+      if (normalizedQuery.includes('bunk') || normalizedQuery.includes('skip')) {
+        const safe = getSafeSubjects ? getSafeSubjects() : [];
+        if (safe.length > 0) {
+          reply = `🛡️ You can safely skip classes in ${safe.length} subjects: ${safe.map(s => s.name).join(', ')}. Keep an eye on critical classes to stay above ${defaultTarget}%.`;
+        } else {
+          reply = `⚠️ Alert: You currently have 0 safe bunks! Skipping any classes right now will drop your score below your ${defaultTarget}% target.`;
+        }
+      } else if (normalizedQuery.includes('critical') || normalizedQuery.includes('risk')) {
+        const critical = getCriticalSubjects ? getCriticalSubjects() : [];
+        if (critical.length > 0) {
+          reply = `🚨 Critical Risk: You have ${critical.length} subjects below your target: ${critical.map(s => s.name).join(', ')}. prioritize attending these next lectures!`;
+        } else {
+          reply = `✨ All clear! You have 0 critical subjects below your target threshold. Great consistency!`;
+        }
+      } else {
+        reply = `📊 Your current overall attendance score is ${overall}%. Your semester target is set to ${defaultTarget}%. You are ${overall >= defaultTarget ? 'safe & on track' : 'below target criteria'}. Keep tracking with TrackTaps!`;
+      }
+
+      setChatMessages(prev => [...prev, { sender: 'ai', text: reply }]);
+      setIsTyping(false);
+    }, 1200);
+  };
+
   const platforms = [
     { id: 'android', name: 'Android', icon: '🤖', description: 'Native APK' },
     { id: 'windows', name: 'Windows', icon: '💻', description: 'Desktop PWA' },
@@ -50,49 +105,261 @@ const DownloadAPK = () => {
 
   return (
     <>
-      {/* Floating Action Button */}
-      <motion.div
-        initial={{ scale: 0, opacity: 0, x: 50 }}
-        animate={{ scale: 1, opacity: 1, x: 0 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setIsOpen(true)}
+      {/* Floating AI Orb Button */}
+      <div 
+        className="floating-ai-orb-container"
         style={{
           position: 'fixed',
-          bottom: isMobile ? 'calc(105px + env(safe-area-inset-bottom, 16px))' : '30px',
+          bottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom, 16px))' : '30px',
           right: isMobile ? '16px' : '30px',
-          zIndex: 999,
-          background: 'rgba(139, 92, 246, 0.25)',
-          backdropFilter: 'blur(16px)',
-          border: '1px solid var(--primary-glow)',
-          borderRadius: '18px',
-          width: '60px',
-          height: '60px',
+          zIndex: 9999,
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 15px var(--primary-glow)',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '12px'
         }}
       >
-        <span style={{ fontSize: '24px' }}>📲</span>
-        <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          style={{
-            position: 'absolute',
-            top: '-5px',
-            right: '-5px',
-            background: 'var(--primary)',
-            width: '12px',
-            height: '12px',
-            borderRadius: '50%',
-            border: '2px solid var(--bg-deep)'
-          }}
-        />
-      </motion.div>
+        {/* Floating Quick Tools Glass Panel */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 15, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 15, scale: 0.9 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              style={{
+                background: 'rgba(15, 23, 42, 0.85)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(139, 92, 246, 0.25)',
+                borderRadius: '24px',
+                padding: '16px',
+                width: '240px',
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4), 0 0 25px rgba(139, 92, 246, 0.15)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+              }}
+            >
+              <div style={{ fontSize: '11px', fontWeight: '900', color: 'var(--primary-light)', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '4px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>✨</span> Smart Tools
+              </div>
 
-      {/* Modal Backdrop and Content */}
+              {[
+                { label: '🤖 Ask TrackTaps AI', action: () => { setIsChatOpen(true); setIsMenuOpen(false); } },
+                { label: '🏖️ Smart Bunk', action: () => { navigate('/bunk-calculator'); setIsMenuOpen(false); } },
+                { label: '📅 Semester AI', action: () => { navigate('/calendar'); setIsMenuOpen(false); } },
+                { label: '📈 Quick Insights', action: () => { navigate('/insights'); setIsMenuOpen(false); } },
+                ...(!isNativeAPK() ? [{ label: '📲 Get Native App', action: () => { setIsOpen(true); setIsMenuOpen(false); } }] : [])
+              ].map((item, idx) => (
+                <motion.button
+                  key={idx}
+                  whileHover={{ scale: 1.03, x: 4, backgroundColor: 'rgba(139, 92, 246, 0.15)' }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={item.action}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '10px',
+                    color: 'var(--text-main)',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    textAlign: 'left',
+                    padding: '10px 12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    transition: 'background-color 0.2s'
+                  }}
+                >
+                  {item.label}
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Circular Floating Assistant Orb */}
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.92 }}
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          style={{
+            width: '52px',
+            height: '52px',
+            background: 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            boxShadow: '0 8px 32px rgba(139, 92, 246, 0.3), 0 0 15px rgba(139, 92, 246, 0.2)'
+          }}
+        >
+          <motion.div
+            animate={{ rotate: isMenuOpen ? 135 : 0 }}
+            transition={{ type: 'spring', damping: 15 }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            {isMenuOpen ? (
+              <span style={{ fontSize: '20px', color: 'white', fontWeight: 'bold' }}>✕</span>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3V21M3 12H21M18 6L6 18M6 6L18 18" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+            )}
+          </motion.div>
+
+          {/* Pulse breathe effect */}
+          <motion.div
+            animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            style={{
+              position: 'absolute',
+              inset: -3,
+              borderRadius: '50%',
+              border: '2px solid var(--primary-light)',
+              pointerEvents: 'none'
+            }}
+          />
+        </motion.div>
+      </div>
+
+      {/* Conversational Assistant chat drawer */}
+      <AnimatePresence>
+        {isChatOpen && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsChatOpen(false)}
+              style={{ position: 'absolute', inset: 0, background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(12px)' }}
+            />
+            
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 30 }}
+              style={{
+                position: 'relative',
+                width: '100%',
+                maxWidth: '440px',
+                background: 'linear-gradient(135deg, #1e1b4b 0%, var(--bg-primary) 100%)',
+                border: '1px solid rgba(139, 92, 246, 0.3)',
+                borderRadius: '28px',
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                height: '520px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(139, 92, 246, 0.2)'
+              }}
+            >
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '24px' }}>🤖</span>
+                  <div style={{ textAlign: 'left' }}>
+                    <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>TrackTaps AI</h4>
+                    <span style={{ fontSize: '10px', color: 'var(--primary-light)', fontWeight: '700' }}>ONLINE ASSISTANT</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsChatOpen(false)}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', fontSize: '18px', cursor: 'pointer' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Chat messages */}
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '4px', marginBottom: '16px' }}>
+                {chatMessages.map((msg, idx) => (
+                  <div 
+                    key={idx} 
+                    style={{
+                      alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                      maxWidth: '80%',
+                      background: msg.sender === 'user' ? 'var(--primary)' : 'rgba(255,255,255,0.04)',
+                      border: msg.sender === 'user' ? 'none' : '1px solid var(--border)',
+                      borderRadius: msg.sender === 'user' ? '18px 18px 2px 18px' : '18px 18px 18px 2px',
+                      padding: '12px 16px',
+                      fontSize: '13px',
+                      color: 'var(--text-main)',
+                      lineHeight: 1.5,
+                      textAlign: 'left',
+                      whiteSpace: 'pre-line'
+                    }}
+                  >
+                    {msg.text}
+                  </div>
+                ))}
+                {isTyping && (
+                  <div style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '18px 18px 18px 2px', padding: '12px 16px', display: 'flex', gap: '4px' }}>
+                    <span style={{ width: '6px', height: '6px', background: 'var(--primary-light)', borderRadius: '50%', animation: 'bounce 1s infinite' }} />
+                    <span style={{ width: '6px', height: '6px', background: 'var(--primary-light)', borderRadius: '50%', animation: 'bounce 1s infinite 0.2s' }} />
+                    <span style={{ width: '6px', height: '6px', background: 'var(--primary-light)', borderRadius: '50%', animation: 'bounce 1s infinite 0.4s' }} />
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Suggestions chips */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                {[
+                  '🏖️ Can I bunk class?',
+                  '🚨 Critical risks?',
+                  '📊 Overall score?'
+                ].map((chip, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAskAI(chip)}
+                    style={{
+                      background: 'rgba(139, 92, 246, 0.1)',
+                      border: '1px solid rgba(139, 92, 246, 0.2)',
+                      borderRadius: '100px',
+                      padding: '6px 12px',
+                      fontSize: '11px',
+                      color: 'var(--primary-light)',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {chip}
+                  </button>
+                ))}
+              </div>
+
+              {/* Chat Input */}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  placeholder="Ask TrackTaps AI..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.target.value.trim()) {
+                      handleAskAI(e.target.value);
+                      e.target.value = '';
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(0,0,0,0.2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    color: 'white',
+                    fontSize: '13px'
+                  }}
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal Platform Chooser (Get App) */}
       <AnimatePresence>
         {isOpen && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
