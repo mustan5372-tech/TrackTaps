@@ -551,9 +551,31 @@ export default function Pod() {
               🏠
             </button>
             <div>
-              <h1 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 4px 0', background: 'linear-gradient(135deg, var(--primary-light) 0%, #c084fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                Pod Dashboard
-              </h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 4px 0' }}>
+                <h1 style={{ fontSize: '24px', fontWeight: '800', margin: 0, background: 'linear-gradient(135deg, var(--primary-light) 0%, #c084fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  Pod Dashboard
+                </h1>
+                <button
+                  onClick={() => navigate('/guide')}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    background: 'rgba(139, 92, 246, 0.1)',
+                    border: '1px solid rgba(139, 92, 246, 0.3)',
+                    color: 'var(--primary-light)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: '800'
+                  }}
+                  title="How Pod.ai sync works"
+                >
+                  ?
+                </button>
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <p style={{ color: 'var(--text-dim)', margin: 0, fontSize: '13px' }}>Welcome back, {displayName}</p>
                 {subscription?.status === 'active' && (

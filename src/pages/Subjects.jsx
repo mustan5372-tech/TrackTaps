@@ -190,7 +190,7 @@ function Subjects() {
   const [editingIdx, setEditingIdx] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
-    criteria: 75
+    criteria: attendanceSettings?.defaultTarget || 75
   });
 
   const {
@@ -201,6 +201,7 @@ function Subjects() {
     deleteSubject,
     subscription,
     semesterStats,
+    attendanceSettings,
     fullSync,
     isSyncing
   } = useAppStore();
@@ -227,9 +228,9 @@ function Subjects() {
     }
 
     setShowModal(false);
-    setFormData({ name: '', criteria: 75, color: 'var(--primary)' });
+    setFormData({ name: '', criteria: attendanceSettings?.defaultTarget || 75, color: 'var(--primary)' });
     setEditingIdx(null);
-  }, [formData, editingIdx, subjects, updateSubject, addSubject]);
+  }, [formData, editingIdx, subjects, updateSubject, addSubject, attendanceSettings]);
 
   const handleDeleteSubject = useCallback((idx) => {
     const subjectId = subjects[idx]?.id;
@@ -248,10 +249,10 @@ function Subjects() {
   }, []);
 
   const getAttendanceColor = useCallback((percentage) => {
-    if (percentage >= 75) return 'var(--success)';
-    if (percentage >= 65) return 'var(--warning)';
+    if (percentage >= (attendanceSettings?.defaultTarget || 75)) return 'var(--success)';
+    if (percentage >= (attendanceSettings?.criticalLevel || 65)) return 'var(--warning)';
     return 'var(--danger)';
-  }, []);
+  }, [attendanceSettings]);
 
   return (
     <div className="subjects-view">
@@ -277,7 +278,7 @@ function Subjects() {
           <button 
             onClick={() => {
               setEditingIdx(null);
-              setFormData({ name: '', criteria: 75 });
+              setFormData({ name: '', criteria: attendanceSettings?.defaultTarget || 75 });
               setShowModal(true);
             }}
             className="primary-btn"

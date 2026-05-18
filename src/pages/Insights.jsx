@@ -14,7 +14,8 @@ function Insights() {
     getWarningSubjects,
     subscription,
     semesterStats,
-    semesterSettings
+    semesterSettings,
+    attendanceSettings
   } = useAppStore();
 
   const [timeframe, setTimeframe] = useState('Semester');
@@ -55,9 +56,31 @@ function Insights() {
         }
       `}</style>
       <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>Attendance Insights</h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>{isPremium ? '💎 Premium Plus Analytics Active' : 'Basic Analytics'}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>Attendance Insights</h2>
+            <button
+              onClick={() => navigate('/guide')}
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                color: '#10b981',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: '800'
+              }}
+              title="How Insights work"
+            >
+              ?
+            </button>
+          </div>
+          <p style={{ fontSize: '13px', color: 'var(--text-dim)', margin: 0 }}>{isPremium ? '💎 Premium Plus Analytics Active' : 'Basic Analytics'}</p>
         </div>
         <button 
           onClick={handleExport}
@@ -191,12 +214,25 @@ function Insights() {
             ) : subjects.map(subject => {
               const stats = semesterStats[subject.id];
               if (!stats) return null;
+              
+              if (stats.totalPlanned === 0) {
+                return (
+                  <div key={subject.id} style={{ background: 'rgba(15, 23, 42, 0.6)', borderRadius: '16px', padding: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-dim)' }}>{subject.name}</span>
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>⚠️</span> No classes scheduled in timetable.
+                    </div>
+                  </div>
+                );
+              }
 
               return (
                 <div key={subject.id} style={{ background: 'rgba(15, 23, 42, 0.6)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>{subject.name}</span>
-                    <span style={{ fontSize: '11px', color: stats.percentage >= (subject.criteria || 75) ? 'var(--success)' : 'var(--danger)', fontWeight: '700' }}>
+                    <span style={{ fontSize: '11px', color: stats.percentage >= (subject.criteria || attendanceSettings?.defaultTarget || 75) ? 'var(--success)' : 'var(--danger)', fontWeight: '700' }}>
                       {stats.percentage}%
                     </span>
                   </div>

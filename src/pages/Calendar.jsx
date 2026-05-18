@@ -231,6 +231,9 @@ function Calendar() {
              gap: 8px !important;
              width: 100% !important;
           }
+          .hide-mobile {
+             display: none !important;
+          }
         }
       `}</style>
       {/* Header */}
@@ -238,11 +241,29 @@ function Calendar() {
         <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>{monthYear}</h2>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
+            onClick={() => window.location.href = '/ai-import'}
+            style={{
+              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%)',
+              border: '1px solid var(--primary-glow)',
+              color: 'var(--primary-light)',
+              padding: '10px 16px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '800',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 0 15px rgba(168, 85, 247, 0.3)'
+            }}
+          >
+            <span>✨</span> <span className="hide-mobile">AI Import</span>
+          </button>
+          <button
             onClick={() => setShowSemesterModal(true)}
             style={{
               background: 'var(--surface-glass)',
-              border: '1px solid var(--primary-glow)',
-              color: 'var(--primary-light)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-main)',
               padding: '10px 16px',
               borderRadius: '8px',
               cursor: 'pointer',
@@ -252,7 +273,7 @@ function Calendar() {
               gap: '8px'
             }}
           >
-            <span>🎓</span> Semester Setup
+            <span>🎓</span> <span className="hide-mobile">Semester Setup</span>
           </button>
           <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '10px' }}>
             <button

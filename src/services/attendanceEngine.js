@@ -11,7 +11,7 @@ class AttendanceEngine {
    * FIX: Ensures that events are generated for the ENTIRE semester range
    * independently of when a subject was added to the system.
    */
-  static generateCalendarEventsFromTimetable(timetableData, subjects, semesterSettings = {}) {
+  static generateCalendarEventsFromTimetable(timetableData, subjects, semesterSettings = {}, attendanceSettings = {}) {
     const events = [];
     const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
@@ -81,7 +81,7 @@ class AttendanceEngine {
             subjectName: subjectData.name,
             subjectCode: subject?.subjectCode || '',
             color: subjectData.color || '#8b5cf6',
-            criteria: subjectData.criteria || 75,
+            criteria: subjectData.criteria || attendanceSettings?.defaultTarget || 75,
             attendance: null,
             isRecurring: true
           });
@@ -105,7 +105,7 @@ class AttendanceEngine {
             subjectName: subjectData.name,
             subjectCode: subject?.subjectCode || '',
             color: subjectData.color || '#8b5cf6',
-            criteria: subjectData.criteria || 75,
+            criteria: subjectData.criteria || attendanceSettings?.defaultTarget || 75,
             attendance: null,
             isRecurring: false,
             isWorkingSaturday: true
@@ -121,13 +121,13 @@ class AttendanceEngine {
   /**
    * Calculate semester-wide metrics for a subject
    */
-  static calculateSemesterSubjectMetrics(subjectName, semesterSettings, timetableData, calendarEvents, attendanceData, subjects = []) {
+  static calculateSemesterSubjectMetrics(subjectName, semesterSettings, timetableData, calendarEvents, attendanceData, subjects = [], attendanceSettings = {}) {
     if (!subjectName || !Array.isArray(calendarEvents)) {
       return { present: 0, total: 0, absent: 0, percentage: 0, bunkableNow: 0, mustAttend: 0 };
     }
 
     const subject = (subjects || []).find(s => s.name === subjectName);
-    const stats = this.calculateSubjectStats(subjectName, calendarEvents, attendanceData, subjects);
+    const stats = this.calculateSubjectStats(subjectName, calendarEvents, attendanceData, subjects, attendanceSettings);
     
     // Total planned classes in the entire semester for this subject
     const subjectEvents = calendarEvents.filter(e => e.subjectName === subjectName);
@@ -137,7 +137,7 @@ class AttendanceEngine {
     const today = this.formatDate(new Date());
     const remainingClasses = subjectEvents.filter(e => e.date >= today && !this.getAttendanceState(e.id, attendanceData)).length;
     
-    const target = Number(subject?.criteria) || 75;
+    const target = Number(subject?.criteria) || attendanceSettings?.defaultTarget || 75;
     const conducted = Number(stats.total) || 0;
     const present = Number(stats.present) || 0;
 
@@ -235,7 +235,7 @@ class AttendanceEngine {
   /**
    * Calculate attendance statistics for a subject
    */
-  static calculateSubjectStats(subjectName, calendarEvents, attendanceData, subjects = []) {
+  static calculateSubjectStats(subjectName, calendarEvents, attendanceData, subjects = [], attendanceSettings = {}) {
     if (!subjectName || !Array.isArray(calendarEvents)) {
       return { subjectName: subjectName || 'Unknown', present: 0, absent: 0, off: 0, unmarked: 0, total: 0, percentage: 0, status: 'critical' };
     }
@@ -296,14 +296,14 @@ class AttendanceEngine {
       unmarked,
       total,
       percentage,
-      status: percentage >= (subject?.criteria || 75) ? 'safe' : percentage >= 65 ? 'warning' : 'critical'
+      status: percentage >= (subject?.criteria || attendanceSettings?.defaultTarget || 75) ? 'safe' : percentage >= (attendanceSettings?.criticalLevel || 65) ? 'warning' : 'critical'
     };
   }
 
   /**
    * Calculate overall attendance statistics
    */
-  static calculateOverallStats(subjects, calendarEvents, attendanceData) {
+  static calculateOverallStats(subjects, calendarEvents, attendanceData, attendanceSettings = {}) {
     let totalPresent = 0;
     let totalAbsent = 0;
     let totalOff = 0;
@@ -313,7 +313,7 @@ class AttendanceEngine {
     let criticalSubjects = 0;
 
     const subjectStats = (subjects || []).map(subject => {
-      const stats = this.calculateSubjectStats(subject.name, calendarEvents, attendanceData, subjects);
+      const stats = this.calculateSubjectStats(subject.name, calendarEvents, attendanceData, subjects, attendanceSettings);
 
       totalPresent += stats.present;
       totalAbsent += stats.absent;
@@ -341,7 +341,7 @@ class AttendanceEngine {
       safeSubjects,
       warningSubjects,
       criticalSubjects,
-      status: overallPercentage >= 75 ? 'safe' : overallPercentage >= 65 ? 'warning' : 'critical'
+      status: overallPercentage >= (attendanceSettings?.defaultTarget || 75) ? 'safe' : overallPercentage >= (attendanceSettings?.criticalLevel || 65) ? 'warning' : 'critical'
     };
   }
 
@@ -481,8 +481,8 @@ class AttendanceEngine {
   /**
    * Export attendance data as CSV
    */
-  static exportAsCSV(subjects, calendarEvents, attendanceData) {
-    const stats = this.calculateOverallStats(subjects, calendarEvents, attendanceData);
+  static exportAsCSV(subjects, calendarEvents, attendanceData, attendanceSettings = {}) {
+    const stats = this.calculateOverallStats(subjects, calendarEvents, attendanceData, attendanceSettings);
     let csv = 'Subject,Present,Absent,Off,Unmarked,Total,Percentage,Status\n';
 
     stats.subjectStats.forEach(stat => {
@@ -529,7 +529,7 @@ class AttendanceEngine {
   /**
    * Get impact of today's attendance on safety windows
    */
-  static getDailyAttendanceImpact(subjects, calendarEvents, attendanceData) {
+  static getDailyAttendanceImpact(subjects, calendarEvents, attendanceData, attendanceSettings = {}) {
     const today = this.formatDate(new Date());
     const todayClasses = this.getEventsForDate(today, calendarEvents);
     
@@ -537,7 +537,7 @@ class AttendanceEngine {
 
     const subjectsInvolved = [...new Set(todayClasses.map(c => c.subjectName))];
     const impact = subjectsInvolved.map(subName => {
-      const metrics = this.calculateSemesterSubjectMetrics(subName, {}, {}, calendarEvents, attendanceData, subjects);
+      const metrics = this.calculateSemesterSubjectMetrics(subName, {}, {}, calendarEvents, attendanceData, subjects, attendanceSettings);
       return {
         subject: subName,
         safeBunks: metrics.bunkableNow,
@@ -555,10 +555,10 @@ class AttendanceEngine {
   /**
    * Get insights based on attendance - OVERHAULED FOR RETENTION
    */
-  static generateInsights(subjects = [], calendarEvents = [], attendanceData = {}) {
+  static generateInsights(subjects = [], calendarEvents = [], attendanceData = {}, attendanceSettings = {}) {
     if (!Array.isArray(subjects) || !Array.isArray(calendarEvents)) return [];
 
-    const stats = this.calculateOverallStats(subjects, calendarEvents, attendanceData);
+    const stats = this.calculateOverallStats(subjects, calendarEvents, attendanceData, attendanceSettings);
     const insights = [];
 
     // 1. STREAK INSIGHT (Engagement)
@@ -599,7 +599,7 @@ class AttendanceEngine {
     // 3. CRITICAL SUBJECTS (Actionable)
     (stats.subjectStats || []).forEach(stat => {
       if (stat && stat.status === 'critical') {
-        const target = 75;
+        const target = attendanceSettings?.defaultTarget || 75;
         const total = stat.total || 0;
         const present = stat.present || 0;
         const needed = Math.ceil((target * total - 100 * present) / (100 - target));
@@ -610,7 +610,7 @@ class AttendanceEngine {
           subject: stat.subjectName || 'Unknown',
           title: 'Risk Alert ⚠',
           icon: '⚠',
-          message: `${stat.subjectName} needs ${finalNeeded} more classes to hit 75%.`,
+          message: `${stat.subjectName} needs ${finalNeeded} more classes to hit ${target}%.`,
           priority: 'high'
         });
       }

@@ -15,7 +15,8 @@ function BunkCalculator() {
     subjects, 
     semesterStats, 
     subscription, 
-    fullSync 
+    fullSync,
+    attendanceSettings
   } = useAppStore();
 
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
@@ -41,7 +42,7 @@ function BunkCalculator() {
   const selectedSubject = subjects.find(s => s.id === selectedSubjectId);
 
   const getStatusColor = (percentage) => {
-    if (percentage >= 75) return 'var(--success)';
+    if (percentage >= (attendanceSettings?.defaultTarget || 75)) return 'var(--success)';
     if (percentage >= 65) return 'var(--warning)';
     return 'var(--danger)';
   };
@@ -105,9 +106,31 @@ function BunkCalculator() {
         }
       `}</style>
       <header className="bunk-calculator-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px' }}>Bunk Calculator</h2>
-          <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Precision attendance planning.</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>Bunk Calculator</h2>
+            <button
+              onClick={() => navigate('/guide')}
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                background: 'rgba(236, 72, 153, 0.1)',
+                border: '1px solid rgba(236, 72, 153, 0.3)',
+                color: '#ec4899',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: '800'
+              }}
+              title="How Bunk Calculator works"
+            >
+              ?
+            </button>
+          </div>
+          <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: 0 }}>Precision attendance planning.</p>
         </div>
         <motion.div 
           whileHover={{ scale: 1.05 }}
@@ -238,7 +261,7 @@ function BunkCalculator() {
                   <div style={{ fontSize: '36px', fontWeight: '950', color: (selectedStats?.bunkableNow || 0) > 0 ? 'var(--success)' : 'var(--danger)', letterSpacing: '-1px' }}>
                     {selectedStats?.bunkableNow || 0} <span style={{ fontSize: '16px', fontWeight: '700', letterSpacing: '0' }}>Classes</span>
                   </div>
-                  <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '6px', fontWeight: '600' }}>Until you hit {selectedSubject?.criteria || 75}%</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '6px', fontWeight: '600' }}>Until you hit {selectedSubject?.criteria || attendanceSettings?.defaultTarget || 75}%</div>
                 </div>
               </div>
 
@@ -286,7 +309,7 @@ function BunkCalculator() {
               )}
 
               {/* Recovery Insight Block */}
-              {(selectedStats?.percentage || 0) < (selectedSubject?.criteria || 75) && (
+              {(selectedStats?.percentage || 0) < (selectedSubject?.criteria || attendanceSettings?.defaultTarget || 75) && (
                 <motion.div 
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -306,7 +329,7 @@ function BunkCalculator() {
                     <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--warning)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Recovery Roadmap</h4>
                   </div>
                   <p style={{ fontSize: '15px', color: 'var(--text-main)', margin: 0, lineHeight: 1.5, fontWeight: '600' }}>
-                    Attend <span style={{ color: 'var(--warning)', fontSize: '18px', fontWeight: '900' }}>{selectedStats?.mustAttend || 0} consecutive classes</span> to reach {selectedSubject?.criteria || 75}%.
+                    Attend <span style={{ color: 'var(--warning)', fontSize: '18px', fontWeight: '900' }}>{selectedStats?.mustAttend || 0} consecutive classes</span> to reach {selectedSubject?.criteria || attendanceSettings?.defaultTarget || 75}%.
                   </p>
                   <div style={{ fontSize: '12px', color: 'var(--text-dim)', fontStyle: 'italic' }}>
                     Target Completion: {new Date(new Date().setDate(new Date().getDate() + ((selectedStats?.mustAttend || 1) * 1.5))).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -337,7 +360,7 @@ function BunkCalculator() {
                   <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0' }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '14px', color: 'var(--text-main)', fontWeight: '700' }}>Semester Target Goal:</span>
-                    <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--primary-light)', padding: '4px 10px', background: 'var(--primary-glow)', borderRadius: '8px' }}>{selectedSubject?.criteria || 75}%</span>
+                    <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--primary-light)', padding: '4px 10px', background: 'var(--primary-glow)', borderRadius: '8px' }}>{selectedSubject?.criteria || attendanceSettings?.defaultTarget || 75}%</span>
                   </div>
                 </div>
               </div>
@@ -376,7 +399,7 @@ function BunkCalculator() {
       >
         <div style={{ fontSize: '28px' }}>💡</div>
         <p style={{ fontSize: '14px', color: 'var(--text-dim)', lineHeight: 1.6, margin: 0 }}>
-          <strong style={{ color: 'var(--success)' }}>Pro Tip:</strong> Use the Bunk Calculator to decide which classes are safe to skip for events or projects without dropping below your {selectedSubject?.criteria || 75}% threshold.
+          <strong style={{ color: 'var(--success)' }}>Pro Tip:</strong> Use the Bunk Calculator to decide which classes are safe to skip for events or projects without dropping below your {attendanceSettings?.defaultTarget || 75}% threshold.
         </p>
       </motion.div>
     </motion.div>

@@ -10,11 +10,12 @@ function MobileNav() {
 
   const navItems = [
     { icon: '🏠', label: 'Home', path: '/' },
-    { icon: '🕒', label: 'Schedule', path: '/timetable' },
     { icon: '📅', label: 'Calendar', path: '/calendar' },
+    { icon: '🕒', label: 'Schedule', path: '/timetable' },
     { icon: '📚', label: 'Subjects', path: '/subjects' },
+    { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🏖️', label: 'Bunks', path: '/bunk-calculator' },
-    { icon: '✨', label: 'About', path: '/about' },
+    { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '⚙️', label: 'Settings', path: '/settings' },
   ];
 

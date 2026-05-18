@@ -16,6 +16,7 @@ import AiSemesterImport from './pages/AiSemesterImport';
 import BunkCalculator from './pages/BunkCalculator';
 import Community from './community/Community';
 import Referral from './pages/Referral';
+import Guide from './pages/Guide';
 import useAppStore from './store/appStore';
 import { motion } from 'framer-motion';
 import GlobalToast from './components/GlobalToast';
@@ -223,6 +224,7 @@ function App() {
         <Route path="/bunk-calculator" element={<SafeRoute><BunkCalculator /></SafeRoute>} />
         <Route path="/community" element={<SafeRoute><Community /></SafeRoute>} />
         <Route path="/referral" element={<SafeRoute><Referral /></SafeRoute>} />
+        <Route path="/guide" element={<SafeRoute><Guide /></SafeRoute>} />
       </Routes>
     </BrowserRouter>
   );

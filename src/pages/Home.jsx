@@ -62,6 +62,7 @@ function Home() {
   const isAuthLoading = useAppStore(state => state.isAuthLoading);
   const dashboardStats = useAppStore(state => state.dashboardStats);
   const insights = useAppStore(state => state.insights);
+  const attendanceSettings = useAppStore(state => state.attendanceSettings);
   const subscription = useAppStore(state => state.subscription);
   const setAuthModalOpen = useAppStore(state => state.setAuthModalOpen);
   const fullSync = useAppStore(state => state.fullSync);
@@ -93,12 +94,44 @@ function Home() {
 
   if (dashboardStats.totalSubjects === 0 && !isAuthLoading && user) {
      return (
-       <div className="home-view" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-         <StatSkeleton />
-         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-           <div style={{ height: '120px', background: 'var(--surface-glass)', borderRadius: '20px', border: '1px solid var(--border)' }} />
-           <div style={{ height: '120px', background: 'var(--surface-glass)', borderRadius: '20px', border: '1px solid var(--border)' }} />
-         </div>
+       <div className="home-view" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+         <motion.div
+           initial={{ opacity: 0, scale: 0.9 }}
+           animate={{ opacity: 1, scale: 1 }}
+           style={{
+             textAlign: 'center',
+             background: 'var(--surface-glass)',
+             border: '1px solid var(--border)',
+             borderRadius: '32px',
+             padding: '48px 24px',
+             maxWidth: '400px',
+             width: '100%',
+             boxShadow: 'var(--shadow-lg)'
+           }}
+         >
+           <div style={{ fontSize: '64px', marginBottom: '16px' }}>🚀</div>
+           <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>No attendance data yet.</h2>
+           <p style={{ color: 'var(--text-dim)', fontSize: '15px', lineHeight: 1.5, marginBottom: '32px' }}>
+             Sync your Pod.ai account to instantly track your attendance and calculate safe bunks.
+           </p>
+           <button
+             onClick={() => navigate('/pod')}
+             style={{
+               background: 'var(--primary)',
+               color: 'white',
+               border: 'none',
+               padding: '16px 32px',
+               borderRadius: '16px',
+               fontWeight: '800',
+               fontSize: '16px',
+               cursor: 'pointer',
+               boxShadow: '0 10px 30px var(--primary-glow)',
+               width: '100%'
+             }}
+           >
+             Sync Pod.ai Now →
+           </button>
+         </motion.div>
        </div>
      );
   }
@@ -327,7 +360,7 @@ function Home() {
              </div>
 
              {/* Social Proof */}
-             {dashboardStats.overallPercentage >= 75 && (
+             {dashboardStats.overallPercentage >= (attendanceSettings?.defaultTarget || 75) && (
                <div style={{ 
                  fontSize: '11px', 
                  color: 'var(--primary-light)', 
@@ -547,7 +580,7 @@ function Home() {
             <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Safe to Skip</span>
           </div>
           <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: 'var(--success)', marginBottom: '8px' }}>{(getSafeSubjects() || []).length}</div>
-          <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Subjects you can safely skip while staying above 75%</div>
+          <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Subjects you can safely skip while staying above {attendanceSettings?.defaultTarget || 75}%</div>
         </motion.div>
         
         {subscription?.status === 'active' ? (
@@ -566,7 +599,7 @@ function Home() {
               <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--primary-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Prediction</span>
             </div>
             <div className="pred-value" style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>
-              {dashboardStats.overallPercentage > 85 ? 'Excellent' : dashboardStats.overallPercentage > 75 ? 'Stable' : 'Risk'}
+              {dashboardStats.overallPercentage > 85 ? 'Excellent' : dashboardStats.overallPercentage >= (attendanceSettings?.defaultTarget || 75) ? 'Stable' : 'Risk'}
             </div>
             <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>AI expects your attendance to reach <span style={{ color: 'var(--success)', fontWeight: '700' }}>{(dashboardStats.overallPercentage + 2.5).toFixed(1)}%</span> by end of month.</div>
           </motion.div>

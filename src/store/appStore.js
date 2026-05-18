@@ -27,6 +27,20 @@ const useAppStore = create(
           workingSaturdays: [], // Array of { id, date, name }
         },
         
+        // ─── GLOBAL ATTENDANCE SETTINGS ──────────────────────────────────────
+        attendanceSettings: {
+          defaultTarget: 75,
+          warningLevel: 80,
+          criticalLevel: 65,
+        },
+        setAttendanceSettings: (settings) => {
+          set((state) => ({
+            attendanceSettings: { ...state.attendanceSettings, ...settings }
+          }));
+          get().fullSync();
+          get().pushToCloud();
+        },
+        
         theme: 'default',
         setTheme: (themeName) => {
           console.log(`🎨 [ThemeEngine] Switching to: ${themeName}`);
@@ -758,9 +772,9 @@ const useAppStore = create(
         },
 
         syncTimetableToCalendar: () => {
-          const { timetable, subjects, semesterSettings } = get();
+          const { timetable, subjects, semesterSettings, attendanceSettings } = get();
           
-          const events = AttendanceEngine.generateCalendarEventsFromTimetable(timetable, subjects, semesterSettings);
+          const events = AttendanceEngine.generateCalendarEventsFromTimetable(timetable, subjects, semesterSettings, attendanceSettings);
           set({ calendarEvents: events });
         },
 
@@ -768,7 +782,7 @@ const useAppStore = create(
         semesterStats: {},
         
         updateSemesterStats: () => {
-          const { subjects, semesterSettings, timetable, calendarEvents, attendanceData } = get();
+          const { subjects, semesterSettings, timetable, calendarEvents, attendanceData, attendanceSettings } = get();
           
           const stats = {};
           subjects.forEach(subject => {
@@ -778,7 +792,8 @@ const useAppStore = create(
               timetable,
               calendarEvents,
               attendanceData,
-              subjects
+              subjects,
+              attendanceSettings
             );
           });
           
@@ -885,11 +900,11 @@ const useAppStore = create(
         },
         
         updateDashboardStats: () => {
-          const { subjects, calendarEvents, attendanceData } = get();
+          const { subjects, calendarEvents, attendanceData, attendanceSettings } = get();
           
           const stats = calculateAttendanceStats(subjects, calendarEvents, attendanceData);
           const attendanceStreak = AttendanceEngine.calculateAttendanceStreak(attendanceData);
-          const dailyImpact = AttendanceEngine.getDailyAttendanceImpact(subjects, calendarEvents, attendanceData);
+          const dailyImpact = AttendanceEngine.getDailyAttendanceImpact(subjects, calendarEvents, attendanceData, attendanceSettings);
 
           // Get today's schedule
           const today = AttendanceEngine.formatDate(new Date());
@@ -905,15 +920,15 @@ const useAppStore = create(
               overallPercentage: stats.overallPercentage,
               safeSubjects: subjects.filter(s => {
                 const sStats = get().subjectStats[s.id];
-                return sStats && sStats.percentage >= 75;
+                return sStats && sStats.percentage >= (s.criteria || attendanceSettings?.defaultTarget || 75);
               }).length,
               criticalSubjects: subjects.filter(s => {
                 const sStats = get().subjectStats[s.id];
-                return sStats && sStats.percentage < 65;
+                return sStats && sStats.percentage < (attendanceSettings?.criticalLevel || 65);
               }).length,
               warningSubjects: subjects.filter(s => {
                 const sStats = get().subjectStats[s.id];
-                return sStats && sStats.percentage >= 65 && sStats.percentage < 75;
+                return sStats && sStats.percentage >= (attendanceSettings?.criticalLevel || 65) && sStats.percentage < (s.criteria || attendanceSettings?.defaultTarget || 75);
               }).length,
               present: stats.totalPresent,
               missed: stats.totalClasses - stats.totalPresent,
@@ -930,9 +945,9 @@ const useAppStore = create(
         insights: [],
         
         generateInsights: () => {
-          const { subjects, calendarEvents, attendanceData } = get();
+          const { subjects, calendarEvents, attendanceData, attendanceSettings } = get();
           
-          const insights = AttendanceEngine.generateInsights(subjects, calendarEvents, attendanceData);
+          const insights = AttendanceEngine.generateInsights(subjects, calendarEvents, attendanceData, attendanceSettings);
           set({ insights });
         },
 

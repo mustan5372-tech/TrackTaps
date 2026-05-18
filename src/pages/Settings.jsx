@@ -58,8 +58,43 @@ function Settings() {
     theme,
     setTheme,
     setAuthModalOpen,
-    referralData
+    referralData,
+    attendanceSettings,
+    setAttendanceSettings
   } = useAppStore();
+
+  const [localCriteria, setLocalCriteria] = useState({
+    defaultTarget: attendanceSettings?.defaultTarget || 75,
+    warningLevel: attendanceSettings?.warningLevel || 80,
+    criticalLevel: attendanceSettings?.criticalLevel || 65
+  });
+
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+
+  useEffect(() => {
+    if (attendanceSettings) {
+      setLocalCriteria({
+        defaultTarget: attendanceSettings.defaultTarget,
+        warningLevel: attendanceSettings.warningLevel,
+        criticalLevel: attendanceSettings.criticalLevel
+      });
+    }
+  }, [attendanceSettings]);
+
+  const hasCriteriaChanged = () => {
+    if (!attendanceSettings) return false;
+    return (
+      localCriteria.defaultTarget !== attendanceSettings.defaultTarget ||
+      localCriteria.warningLevel !== attendanceSettings.warningLevel ||
+      localCriteria.criticalLevel !== attendanceSettings.criticalLevel
+    );
+  };
+
+  const handleSaveCriteria = () => {
+    setAttendanceSettings(localCriteria);
+    setShowSaveSuccess(true);
+    setTimeout(() => setShowSaveSuccess(false), 3000);
+  };
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('tracktaps_settings') || '{}');
@@ -402,47 +437,96 @@ function Settings() {
 
 
         {/* Attendance Criteria */}
-        <div className="dashboard-card">
-          <div className="card-header">
+        <div className="dashboard-card" style={{ position: 'relative' }}>
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span className="card-title">📊 Attendance Criteria</span>
+            <AnimatePresence>
+              {hasCriteriaChanged() && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={handleSaveCriteria}
+                  style={{
+                    background: 'var(--primary)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 16px',
+                    borderRadius: '100px',
+                    fontWeight: '800',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px var(--primary-glow)'
+                  }}
+                >
+                  Save Changes
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
+          
+          <AnimatePresence>
+            {showSaveSuccess && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  margin: '0 20px',
+                  padding: '8px 12px',
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  borderRadius: '8px',
+                  color: '#10b981',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                ✅ Attendance criteria updated successfully.
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="criteria-grid" style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
             <div>
               <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
-                Default Target: {settings.defaultCriteria}%
+                Default Target: {localCriteria.defaultTarget}%
               </label>
               <input
                 type="range"
                 min="50"
                 max="100"
-                value={settings.defaultCriteria}
-                onChange={(e) => handleChange('defaultCriteria', parseInt(e.target.value))}
+                value={localCriteria.defaultTarget}
+                onChange={(e) => setLocalCriteria({ ...localCriteria, defaultTarget: parseInt(e.target.value) })}
                 style={{ width: '100%', accentColor: 'var(--primary)', cursor: 'pointer' }}
               />
             </div>
             <div>
               <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
-                Warning Level: {settings.warningThreshold}%
+                Warning Level: {localCriteria.warningLevel}%
               </label>
               <input
                 type="range"
                 min="50"
                 max="100"
-                value={settings.warningThreshold}
-                onChange={(e) => handleChange('warningThreshold', parseInt(e.target.value))}
+                value={localCriteria.warningLevel}
+                onChange={(e) => setLocalCriteria({ ...localCriteria, warningLevel: parseInt(e.target.value) })}
                 style={{ width: '100%', accentColor: '#f59e0b', cursor: 'pointer' }}
               />
             </div>
             <div>
               <label style={{ color: 'var(--text-dim)', fontSize: '13px', display: 'block', marginBottom: '8px' }}>
-                Critical Level: {settings.criticalThreshold}%
+                Critical Level: {localCriteria.criticalLevel}%
               </label>
               <input
                 type="range"
                 min="50"
                 max="100"
-                value={settings.criticalThreshold}
-                onChange={(e) => handleChange('criticalThreshold', parseInt(e.target.value))}
+                value={localCriteria.criticalLevel}
+                onChange={(e) => setLocalCriteria({ ...localCriteria, criticalLevel: parseInt(e.target.value) })}
                 style={{ width: '100%', accentColor: '#ef4444', cursor: 'pointer' }}
               />
             </div>
@@ -849,31 +933,6 @@ function Settings() {
             </button>
           </div>
         </div>
-          {subscription?.status === 'active' && (
-            <div 
-              onClick={() => navigate('/ai-import')}
-              style={{ 
-                marginTop: '24px', 
-                padding: '16px', 
-                background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(15, 23, 42, 0.4) 100%)', 
-                borderRadius: '16px', 
-                border: '1px solid var(--primary-glow)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '20px' }}>✨</span>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>Beta: AI Semester Import</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Auto-detect holidays from your college calendar.</div>
-                </div>
-              </div>
-              <span style={{ fontSize: '12px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', padding: '4px 10px', borderRadius: '100px', fontWeight: '800' }}>EXPERIMENTAL</span>
-            </div>
-          )}
         </div>
       </div>
     );

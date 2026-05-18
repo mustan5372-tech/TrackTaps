@@ -14,10 +14,9 @@ function Sidebar() {
     { icon: '📅', label: 'Calendar', path: '/calendar' },
     { icon: '🕒', label: 'Timetable', path: '/timetable' },
     { icon: '📚', label: 'Subjects', path: '/subjects' },
-    {icon: '📈', label: 'Insights', path: '/insights' },
+    { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🏖️', label: 'Bunk Calculator', path: '/bunk-calculator' },
-    { icon: '📜', label: 'History', path: '/history' },
-    { icon: '✨', label: 'About', path: '/about' },
+    { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '⚙️', label: 'Settings', path: '/settings' },
   ];
 
