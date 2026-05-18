@@ -239,6 +239,7 @@ const useAppStore = create(
           set({ isAuthLoading: true, isSigningOut: true });
           try {
             await authService.logout();
+            get().clearAppData();
             set({ user: null, role: 'USER', subscription: { plan: 'free', status: 'inactive' }, isAuthLoading: false, isSigningOut: false });
           } catch (error) {
             set({ isAuthLoading: false, isSigningOut: false });
@@ -1375,9 +1376,67 @@ const useAppStore = create(
             attendanceData: {},
             history: [],
             subjectStats: {},
-            insights: []
+            insights: [],
+            dashboardStats: {
+              totalSubjects: 0,
+              overallPercentage: 0,
+              safeSubjects: 0,
+              criticalSubjects: 0,
+              warningSubjects: 0,
+              present: 0,
+              missed: 0,
+              total: 0,
+              streak: 0,
+              attendanceStreak: 0,
+              dailyImpact: null,
+              todaySchedule: []
+            },
+            semesterSettings: {
+              startDate: new Date().toISOString().split('T')[0],
+              endDate: new Date(new Date().setMonth(new Date().getMonth() + 4)).toISOString().split('T')[0],
+              minRequirement: 75,
+              workingDays: [1, 2, 3, 4, 5],
+              holidays: [],
+              examPeriods: [],
+              workingSaturdays: [],
+            },
+            attendanceSettings: {
+              defaultTarget: 75,
+              warningLevel: 80,
+              criticalLevel: 65,
+            },
+            referralData: {
+              referralId: null,
+              referralCode: null,
+              invitedBy: null,
+              referrals: [],
+              claimedRewards: [],
+              totalValidReferrals: 0,
+              analytics: {
+                totalInvitesShared: 0,
+                totalSignups: 0,
+                activeUsers: 0,
+                validReferrals: 0
+              },
+              campaignActive: true,
+              campaignEndDate: '2026-12-31',
+              referralCampaignCompleted: false,
+              referralRewardClaimed: false
+            },
+            podaiSyncStatus: {
+              connected: false,
+              lastSync: null,
+              syncing: false,
+              error: null
+            },
+            lastCloudSync: null
           });
-          get().fullSync();
+          
+          // Clear any persistent local theme configs
+          localStorage.removeItem('tracktaps_theme');
+          try {
+            sessionStorage.clear();
+          } catch (e) {}
         }
       }),
       {

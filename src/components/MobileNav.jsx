@@ -8,7 +8,7 @@ function MobileNav() {
   const location = useLocation();
   const { user, role } = useAppStore();
 
-  const navItems = [
+  const navItems = user ? [
     { icon: '🏠', label: 'Home', path: '/' },
     { icon: '📅', label: 'Calendar', path: '/calendar' },
     { icon: '🕒', label: 'Schedule', path: '/timetable' },
@@ -18,6 +18,9 @@ function MobileNav() {
     { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '📖', label: 'Guide', path: '/guide' },
     { icon: '⚙️', label: 'Settings', path: '/settings' },
+  ] : [
+    { icon: '🏠', label: 'Home', path: '/' },
+    { icon: '📖', label: 'Guide', path: '/guide' },
   ];
 
   // ROLE-BASED ACCESS: Show Admin for Owner and Core Members

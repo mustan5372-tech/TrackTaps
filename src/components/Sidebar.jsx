@@ -9,7 +9,7 @@ function Sidebar() {
   const { user, role, subscription } = useAppStore();
 
   // Basic navigation items always visible to logged-in users
-  const navItems = [
+  const navItems = user ? [
     { icon: '🏠', label: 'Home', path: '/' },
     { icon: '📅', label: 'Calendar', path: '/calendar' },
     { icon: '🕒', label: 'Timetable', path: '/timetable' },
@@ -19,6 +19,9 @@ function Sidebar() {
     { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '📖', label: 'Guide Center', path: '/guide' },
     { icon: '⚙️', label: 'Settings', path: '/settings' },
+  ] : [
+    { icon: '🏠', label: 'Home', path: '/' },
+    { icon: '📖', label: 'Guide Center', path: '/guide' },
   ];
 
   // ROLE-BASED ACCESS: Show Admin Panel for Owner and Core Members

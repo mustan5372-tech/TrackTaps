@@ -72,9 +72,174 @@ function Home() {
   const semesterStats = useAppStore(state => state.semesterStats);
   const referralData = useAppStore(state => state.referralData);
 
-  // Non-logged-in landing page (no Google login - auth handled elsewhere)
+  // Non-logged-in landing page (Guest mode UI with premium onboarding cards)
   if (!user && !isAuthLoading) {
-    // ... (Landing page code remains same)
+    return (
+      <div className="main-content guest-landing" style={{ display: 'flex', flexDirection: 'column', gap: '32px', position: 'relative', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
+        
+        {/* Background Ambient Glows */}
+        <div style={{ position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none', overflow: 'hidden' }}>
+          <div style={{
+            position: 'absolute',
+            top: '-10%',
+            right: '-10%',
+            width: '70vw',
+            height: '70vw',
+            background: 'radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)',
+            opacity: 0.1,
+            filter: 'blur(80px)'
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: '10%',
+            left: '-10%',
+            width: '60vw',
+            height: '60vw',
+            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
+            opacity: 0.1,
+            filter: 'blur(60px)'
+          }} />
+        </div>
+
+        {/* Hero Welcome Header Card */}
+        <motion.div 
+          variants={fadeInUp}
+          initial="initial"
+          animate="animate"
+          className="dashboard-card hero-welcome-card"
+          style={{
+            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            padding: '40px 24px',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px'
+          }}
+        >
+          <div style={{ fontSize: '48px' }}>👋</div>
+          <h1 style={{ margin: 0, fontWeight: '900', color: 'var(--text-main)' }}>Welcome to TrackTaps</h1>
+          <p style={{ color: 'var(--text-dim)', fontSize: '15px', maxWidth: '580px', margin: '0 auto', lineHeight: '1.6' }}>
+            Login to securely sync your college attendance portal, plan skips with our Smart Bunk Calculator, receive AI-driven strategy insights, and compete on the premium campus leaderboard.
+          </p>
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setAuthModalOpen(true)}
+            style={{
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
+              color: 'white',
+              border: 'none',
+              padding: '12px 32px',
+              borderRadius: '100px',
+              fontWeight: '800',
+              fontSize: '14px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px var(--primary-glow)',
+              marginTop: '16px',
+              letterSpacing: '0.02em'
+            }}
+          >
+            Get Started & Sync Now 🚀
+          </motion.button>
+        </motion.div>
+
+        {/* Core Value Proposition Cards Grid */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: '850', color: 'var(--text-main)', textAlign: 'center' }}>
+            ⚡ Why TrackTaps?
+          </h2>
+          
+          <div className="dashboard-grid" style={{ width: '100%' }}>
+            
+            {/* Card 1: Pod.ai Direct Sync */}
+            <motion.div 
+              whileHover={{ y: -6 }}
+              className="dashboard-card"
+              style={{ padding: '24px', background: 'var(--surface-glass)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}
+            >
+              <div style={{ fontSize: '28px' }}>🔄</div>
+              <h3 style={{ margin: 0, color: 'var(--text-main)', fontWeight: '750' }}>Pod.ai Direct Sync</h3>
+              <p style={{ margin: 0, color: 'var(--text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                Securely fetch your actual class list, attendance status, and teaching slots on-device. No manual logs needed.
+              </p>
+            </motion.div>
+
+            {/* Card 2: Smart Bunk Calculator */}
+            <motion.div 
+              whileHover={{ y: -6 }}
+              className="dashboard-card"
+              style={{ padding: '24px', background: 'var(--surface-glass)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}
+            >
+              <div style={{ fontSize: '28px' }}>🏖️</div>
+              <h3 style={{ margin: 0, color: 'var(--text-main)', fontWeight: '750' }}>Smart Bunk Calculator</h3>
+              <p style={{ margin: 0, color: 'var(--text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                Skip classes safely. Find out exactly how many lectures you can bunk while keeping your percentage above the criteria.
+              </p>
+            </motion.div>
+
+            {/* Card 3: AI Strategic Insights */}
+            <motion.div 
+              whileHover={{ y: -6 }}
+              className="dashboard-card"
+              style={{ padding: '24px', background: 'var(--surface-glass)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}
+            >
+              <div style={{ fontSize: '28px' }}>📈</div>
+              <h3 style={{ margin: 0, color: 'var(--text-main)', fontWeight: '750' }}>AI Insights Strategy</h3>
+              <p style={{ margin: 0, color: 'var(--text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                Get dynamic analytics, risk level indicators, and personal action strategies based on your daily schedule and goals.
+              </p>
+            </motion.div>
+
+          </div>
+        </div>
+
+        {/* Call to Action Footer Widget */}
+        <motion.div 
+          variants={fadeInUp}
+          initial="initial"
+          animate="animate"
+          className="dashboard-card"
+          style={{
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%)',
+            border: '1px solid var(--primary-glow)',
+            padding: '24px',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--primary-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            🎁 LIMITED Referral Campaign Active
+          </span>
+          <h3 style={{ margin: 0, color: 'var(--text-main)', fontWeight: '800' }}>Invite Classmates & Get 15 Days of Premium Plus Free</h3>
+          <p style={{ margin: '0 0 12px', color: 'var(--text-dim)', fontSize: '13px' }}>
+            Unlock advanced visual themes, manual sync overrides, priority AI predictions, and customized schedule formats instantly.
+          </p>
+          <button
+            onClick={() => setAuthModalOpen(true)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              color: 'var(--text-main)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              padding: '8px 24px',
+              borderRadius: '100px',
+              fontSize: '13px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Create Free Account ⚡
+          </button>
+        </motion.div>
+
+      </div>
+    );
   }
 
   const getTotalBunkable = () => {

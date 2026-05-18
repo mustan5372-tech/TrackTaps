@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AppShell from './components/AppShell';
 import Home from './pages/Home';
 import Calendar from './pages/Calendar';
@@ -26,13 +26,28 @@ import DownloadAPK from './components/DownloadAPK';
 import ErrorBoundary from './components/ErrorBoundary';
 import OfflineBanner from './components/OfflineBanner';
 
-const SafeRoute = ({ children }) => (
-  <AppShell>
-    <ErrorBoundary>
-      {children}
-    </ErrorBoundary>
-  </AppShell>
-);
+const SafeRoute = ({ children }) => {
+  const { user, isAuthLoading } = useAppStore();
+  const location = useLocation();
+  
+  if (isAuthLoading) {
+    return null;
+  }
+  
+  const isPublicPage = location.pathname === '/' || location.pathname === '/guide';
+  
+  if (!user && !isPublicPage) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return (
+    <AppShell>
+      <ErrorBoundary>
+        {children}
+      </ErrorBoundary>
+    </AppShell>
+  );
+};
 
 function App() {
   const { initAuth, isAuthLoading, isRestoringSession, isSigningOut, isAuthModalOpen, setAuthModalOpen } = useAppStore();
