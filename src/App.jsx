@@ -35,7 +35,7 @@ const SafeRoute = ({ children }) => (
 );
 
 function App() {
-  const { initAuth, isAuthLoading, isRestoringSession, isAuthModalOpen, setAuthModalOpen } = useAppStore();
+  const { initAuth, isAuthLoading, isRestoringSession, isSigningOut, isAuthModalOpen, setAuthModalOpen } = useAppStore();
   const [isStaging, setIsStaging] = React.useState(false);
   const [swUpdateAvailable, setSwUpdateAvailable] = React.useState(false);
 
@@ -177,7 +177,7 @@ function App() {
               textAlign: 'center'
             }}
           >
-            {isRestoringSession ? 'Restoring Session' : 'Initializing Ecosystem'}
+            {isSigningOut ? 'Signing out...' : isRestoringSession ? 'Restoring Session' : 'Initializing Ecosystem'}
           </motion.span>
         </div>
       </div>

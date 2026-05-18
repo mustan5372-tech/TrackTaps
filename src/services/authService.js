@@ -221,6 +221,14 @@ const authService = {
 
   logout: async () => {
     try {
+      if (isNativeAPK()) {
+        try {
+          const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+          await GoogleAuth.signOut().catch(e => console.log("ℹ️ [Auth] GoogleAuth signOut skip or already signed out:", e.message));
+        } catch (e) {
+          console.warn("⚠️ [Auth] Non-critical native GoogleAuth signOut warning:", e);
+        }
+      }
       await signOut(auth);
     } catch (error) {
       console.error("Logout error:", error);

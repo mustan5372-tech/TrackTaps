@@ -197,6 +197,7 @@ const useAppStore = create(
 
         isAuthLoading: true, 
         isRestoringSession: false, 
+        isSigningOut: false,
         isAuthModalOpen: false,
         isOffline: !navigator.onLine,
         pendingCloudSync: false,
@@ -235,10 +236,12 @@ const useAppStore = create(
         },
 
         logout: async () => {
+          set({ isAuthLoading: true, isSigningOut: true });
           try {
             await authService.logout();
-            set({ user: null, role: 'USER', subscription: { plan: 'free', status: 'inactive' } });
+            set({ user: null, role: 'USER', subscription: { plan: 'free', status: 'inactive' }, isAuthLoading: false, isSigningOut: false });
           } catch (error) {
+            set({ isAuthLoading: false, isSigningOut: false });
             console.error("Logout failed:", error);
             throw error;
           }
