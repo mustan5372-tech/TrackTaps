@@ -74,9 +74,20 @@ const authService = {
         try { 
           await GoogleAuth.initialize({
             clientId: '273530797417-bd8fuigvtn5pteccivud773ijo8s9ioe.apps.googleusercontent.com',
+            scopes: ['profile', 'email'],
+            forceCodeForRefreshToken: true
           }).catch(e => console.log("ℹ️ [Auth] GoogleAuth already initialized or skip: ", e.message)); 
         } catch (e) {
           console.warn("⚠️ [Auth] Non-critical initialization warning:", e);
+        }
+
+        // PROACTIVE DISCONNECT: Completely flush Google Play Services session cache before sign-in to guarantee account chooser popup
+        try {
+          await GoogleAuth.signOut().catch(() => {});
+          await GoogleAuth.disconnect().catch(e => console.log("ℹ️ [Auth] Session pre-cleanup skip:", e.message));
+          console.log("🧹 [Auth] Native pre-signIn session successfully flushed!");
+        } catch (e) {
+          console.warn("⚠️ [Auth] Non-critical native session pre-cleanup failure:", e);
         }
 
         const nativeUser = await GoogleAuth.signIn();

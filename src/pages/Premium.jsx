@@ -248,7 +248,7 @@ function Premium() {
   return (
     <div className="premium-view" style={{ 
       padding: '40px 24px', 
-      minHeight: '100vh',
+      minHeight: '100dvh',
       background: 'radial-gradient(circle at top right, var(--primary-glow), transparent 800px)',
       color: 'var(--text-main)',
       paddingBottom: '120px'

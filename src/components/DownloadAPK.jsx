@@ -13,6 +13,8 @@ const DownloadAPK = () => {
     { sender: 'ai', text: '👋 Hello! I am the TrackTaps AI assistant. Ask me anything about your attendance buffer, skip safety, or semester goals!' }
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
   const chatEndRef = useRef(null);
 
   const location = useLocation();
@@ -45,7 +47,21 @@ const DownloadAPK = () => {
     else if (ua.includes('iphone') || ua.includes('ipad')) setActiveTab('ios');
     else setActiveTab('windows');
 
-    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 60) {
+        setIsVisible(false);
+        setIsMenuOpen(false);
+      } else {
+        setIsVisible(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -108,20 +124,25 @@ const DownloadAPK = () => {
 
   return (
     <>
-      {/* Floating AI Orb Button */}
-      <div 
-        className="floating-ai-orb-container"
-        style={{
-          position: 'fixed',
-          bottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom, 16px))' : '30px',
-          right: isMobile ? '16px' : '30px',
-          zIndex: 9999,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-end',
-          gap: '12px'
-        }}
-      >
+      <AnimatePresence>
+        {isVisible && !isChatOpen && !isOpen && (
+          <motion.div 
+            initial={{ scale: 0, opacity: 0, y: 30 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0, opacity: 0, y: 30 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 260 }}
+            className="floating-ai-orb-container"
+            style={{
+              position: 'fixed',
+              bottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom, 16px))' : '30px',
+              right: isMobile ? '16px' : '30px',
+              zIndex: 9999,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              gap: '12px'
+            }}
+          >
         {/* Floating Quick Tools Glass Panel */}
         <AnimatePresence>
           {isMenuOpen && (
@@ -228,7 +249,9 @@ const DownloadAPK = () => {
             }}
           />
         </motion.div>
-      </div>
+      </motion.div>
+    )}
+  </AnimatePresence>
 
       {/* Conversational Assistant chat drawer */}
       <AnimatePresence>

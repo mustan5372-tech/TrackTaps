@@ -264,6 +264,7 @@ body {
         margin-left: 0;
         height: auto;
         min-height: 100vh;
+        min-height: 100dvh;
         /* Padding to account for fixed bottom nav + breathing room */
         padding-bottom: calc(100px + env(safe-area-inset-bottom, 20px));
     }

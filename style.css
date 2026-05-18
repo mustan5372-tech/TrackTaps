@@ -4409,3 +4409,9 @@ body.native-app .mobile-nav {
     border-radius: 4px;
 }
 
+@media (max-height: 500px) {
+    .floating-ai-orb-container {
+        display: none !important;
+    }
+}
+
