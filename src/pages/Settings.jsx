@@ -344,7 +344,15 @@ function Settings() {
                       <p style={{ color: 'var(--text-muted)', fontSize: '12px', margin: 0 }}>ID: {user.uid.substring(0, 12)}...</p>
                     </div>
                     <button
-                      onClick={logout}
+                      onClick={async () => {
+                        try {
+                          await logout();
+                          // Navigate to home/guest view after logout — SafeRoute handles the rest
+                          navigate('/', { replace: true });
+                        } catch (e) {
+                          console.error('Logout handler error:', e);
+                        }
+                      }}
                       style={{ 
                         background: 'rgba(239, 68, 68, 0.1)', 
                         border: '1px solid rgba(239, 68, 68, 0.2)', 

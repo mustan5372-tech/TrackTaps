@@ -241,20 +241,71 @@ const authService = {
 
   logout: async () => {
     try {
+      // 1. NATIVE APK: Disconnect Google Auth completely
       if (isNativeAPK()) {
         try {
           const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
-          // Disconnect completely revokes the authorization and removes token caching to force account picker popup next time
+          // signOut clears the current session
           await GoogleAuth.signOut().catch(() => {});
+          // disconnect completely revokes authorization — forces account chooser next time
           await GoogleAuth.disconnect().catch(e => console.log("ℹ️ [Auth] GoogleAuth disconnect skip or already disconnected:", e.message));
           console.log("✅ [Auth] Native Google Auth disconnected and session cleared");
         } catch (e) {
           console.warn("⚠️ [Auth] Non-critical native GoogleAuth signout/disconnect warning:", e);
         }
+
+        // Clear WebView cookies/cache for Google domains (APK-specific)
+        try {
+          if (window.Capacitor?.Plugins?.CookieManager) {
+            await window.Capacitor.Plugins.CookieManager.clearAllCookies().catch(() => {});
+          }
+        } catch (e) {
+          console.warn("⚠️ [Auth] WebView cookie clear non-critical:", e);
+        }
+      } else {
+        // 2. WEB: Revoke Google access token to prevent auto-selection
+        try {
+          const currentUser = auth.currentUser;
+          if (currentUser) {
+            // Find Google provider data and revoke the token
+            const googleProviderData = currentUser.providerData?.find(p => p.providerId === 'google.com');
+            if (googleProviderData) {
+              // Attempt to revoke the Google OAuth token
+              const accessToken = await currentUser.getIdToken().catch(() => null);
+              if (accessToken) {
+                // Fire-and-forget revocation request to Google
+                fetch(`https://accounts.google.com/o/oauth2/revoke?token=${accessToken}`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                }).catch(() => {});
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("⚠️ [Auth] Google token revocation non-critical:", e);
+        }
       }
+
+      // 3. Clear all auth-related local storage
+      try {
+        // Pod.ai tokens
+        localStorage.removeItem('pod_auth_token');
+        localStorage.removeItem('pod_username');
+        // Referral cache (per-user keys will remain but are harmless)
+        // Onboarding state — keep it so user doesn't re-see onboarding
+        // Theme — already cleared by clearAppData
+      } catch (e) {
+        console.warn("⚠️ [Auth] localStorage cleanup non-critical:", e);
+      }
+
+      // 4. Firebase sign out (must be last — triggers onAuthStateChanged)
       await signOut(auth);
+      
+      console.log("✅ [Auth] Complete logout with full session cleanup");
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("❌ [Auth] Logout error:", error);
+      // Still try Firebase signOut even if other steps failed
+      try { await signOut(auth); } catch (e) {}
       throw error;
     }
   },

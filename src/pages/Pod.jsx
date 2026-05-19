@@ -330,6 +330,7 @@ export default function Pod() {
     return (
       <div style={{
         minHeight: '100vh',
+        minHeight: '100dvh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -460,7 +461,8 @@ export default function Pod() {
   return (
     <div style={{ 
       background: 'var(--surface)', 
-      height: '100vh', 
+      height: '100vh',
+      height: '100dvh', 
       color: 'var(--text-main)', 
       display: 'flex', 
       flexDirection: 'column',

@@ -3,13 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useAppStore from '../store/appStore';
 
 function TermsModal() {
-  const { user, termsAccepted, termsVersion, acceptTerms } = useAppStore();
+  const { user, termsAccepted, termsVersion, acceptTerms, CURRENT_TERMS_VERSION, isAuthLoading, isSigningOut } = useAppStore();
   const [agreed, setAgreed] = useState(false);
   const [marketing, setMarketing] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Determine if modal should show: user is logged in, but terms is not yet accepted/version incorrect
-  const shouldShow = !!user && (!termsAccepted || termsVersion !== 'v1.0');
+  // Determine if modal should show:
+  // 1. User MUST be logged in (not guest)
+  // 2. Auth must NOT be in a loading/signing-out transition
+  // 3. Terms must not be accepted OR version must be outdated
+  const currentVersion = CURRENT_TERMS_VERSION || 'v1.0';
+  const shouldShow = !!user && !isAuthLoading && !isSigningOut && (!termsAccepted || termsVersion !== currentVersion);
 
   const handleAccept = async () => {
     if (!agreed) return;

@@ -136,7 +136,9 @@ function App() {
     return (
       <div style={{
         height: '100vh',
+        height: '100dvh',
         width: '100vw',
+        width: '100dvw',
         background: 'var(--bg-primary)',
         display: 'flex',
         flexDirection: 'column',

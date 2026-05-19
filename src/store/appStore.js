@@ -199,8 +199,9 @@ const useAppStore = create(
         isRestoringSession: false, 
         isSigningOut: false,
         isAuthModalOpen: false,
-        termsAccepted: true, // Default to true for guest sessions
+        termsAccepted: false, // Will be loaded from cloud/persist on login
         termsVersion: '',
+        CURRENT_TERMS_VERSION: 'v1.0', // Centralized terms version constant
         isOffline: !navigator.onLine,
         pendingCloudSync: false,
         
@@ -219,36 +220,49 @@ const useAppStore = create(
           const user = get().user;
           if (!user) return;
           
+          const currentVersion = get().CURRENT_TERMS_VERSION;
+          
+          // Immediately update local state
           set({ 
             termsAccepted: true, 
-            termsVersion: 'v1.0' 
+            termsVersion: currentVersion 
           });
           
+          // Persist to Firestore as a dedicated write (not via pushToCloud which may be premium-gated)
           try {
-            await syncService.saveToCloud(user.uid, {
+            const userRef = doc(db, 'users', user.uid);
+            await setDoc(userRef, {
               termsAccepted: true,
               termsAcceptedAt: new Date().toISOString(),
               privacyAccepted: true,
-              termsVersion: 'v1.0',
+              termsVersion: currentVersion,
               marketingConsent
-            });
-            console.log("📜 [Terms] Accepted successfully!");
+            }, { merge: true });
+            console.log("📜 [Terms] Accepted and persisted to Firestore successfully!");
           } catch (e) {
-            console.error("Failed to persist terms acceptance:", e);
+            console.error("❌ [Terms] Failed to persist terms acceptance to Firestore:", e);
+            // Local state is already set, so the modal won't reappear this session
+            // It will be retried on next login via handleUserAuthenticated
           }
         },
 
-        login: async () => {
+         login: async () => {
           set({ isAuthLoading: true });
           try {
             const user = await authService.loginWithGoogle();
             if (user) {
               console.log("👤 [AppStore] Login Success:", user.email);
-              // Set user and clear loading immediately to show dashboard
-              set({ user, isAuthLoading: false, isAuthModalOpen: false });
               
-              // Restore data in background so UI isn't blocked
-              get().pullFromCloud().catch(err => console.error("Cloud restore failed:", err));
+              // Restore data from cloud first so it is available before isAuthLoading becomes false
+              try {
+                console.log("📥 [AuthStore] Restoring cloud backup during login...");
+                await get().pullFromCloud();
+              } catch (err) {
+                console.error("Cloud restore failed during login:", err);
+              }
+
+              // Set user, clear loading, and close auth modal atomically
+              set({ user, isAuthLoading: false, isAuthModalOpen: false });
             } else {
               set({ isAuthLoading: false });
             }
@@ -261,15 +275,55 @@ const useAppStore = create(
         },
 
         logout: async () => {
-          set({ isAuthLoading: true, isSigningOut: true });
+          // CRITICAL: Do NOT set isAuthLoading=true here.
+          // Setting isAuthLoading=true shows the splash screen, which in APK WebView
+          // can cause the app to appear "closed" or trigger a blank screen crash.
+          // Instead, we clear state atomically and let the router handle the redirect.
+          set({ isSigningOut: true });
           try {
+            // 1. Stop any background sync timers
+            if (window.podaiSyncTimer) {
+              clearInterval(window.podaiSyncTimer);
+              window.podaiSyncTimer = null;
+            }
+
+            // 2. Sign out from Firebase + Native Google
             await authService.logout();
+            
+            // 3. Clear WebView/browser auth caches for clean re-login
+            try {
+              // Clear any IndexedDB Firebase persistence caches
+              const databases = window.indexedDB?.databases ? await window.indexedDB.databases() : [];
+              for (const dbInfo of databases) {
+                if (dbInfo.name && (dbInfo.name.includes('firebaseLocalStorage') || dbInfo.name.includes('firebase-heartbeat'))) {
+                  window.indexedDB.deleteDatabase(dbInfo.name);
+                }
+              }
+            } catch (cacheErr) {
+              console.warn("⚠️ [Auth] Cache cleanup non-critical failure:", cacheErr);
+            }
+            
+            // 4. Clear all app data (subjects, attendance, etc.)
             get().clearAppData();
-            set({ user: null, role: 'USER', subscription: { plan: 'free', status: 'inactive' }, isAuthLoading: false, isSigningOut: false });
+            
+            // 5. ATOMIC state reset — sets user=null which triggers SafeRoute redirect to /
+            // Do NOT set isAuthLoading=true at any point during logout
+            set({ 
+              user: null, 
+              role: 'USER', 
+              subscription: { plan: 'free', status: 'inactive', expiryDate: null, paymentId: null, features: { aiUsageLimit: 5, aiRequestsToday: 0, aiImportLimit: 1, aiImportsToday: 0, lastAiImportDate: null, hasBadge: false, hasGlow: false, theme: 'default' } }, 
+              isAuthLoading: false, 
+              isSigningOut: false,
+              termsAccepted: false,
+              termsVersion: ''
+            });
+            
+            console.log("✅ [Auth] Logout complete. User is now in guest mode.");
           } catch (error) {
+            // Even on error, ensure we don't leave the app in a broken state
             set({ isAuthLoading: false, isSigningOut: false });
-            console.error("Logout failed:", error);
-            throw error;
+            console.error("❌ [Auth] Logout failed:", error);
+            // Don't throw — swallow the error so the app remains stable
           }
         },
 
@@ -308,8 +362,14 @@ const useAppStore = create(
               console.log("👤 [AuthStore] Active Session Found:", user.email);
               await get().handleUserAuthenticated(user);
             } else {
+              // If we are currently signing out, the logout() method already
+              // handles all state cleanup atomically. Don't duplicate it here.
+              if (get().isSigningOut) {
+                console.log("👤 [AuthStore] onAuthChange fired during active logout — skipping (handled by logout())");
+                return;
+              }
               console.log("👤 [AuthStore] No Active Session");
-              set({ user: null, role: 'USER', isAuthLoading: false, isRestoringSession: false });
+              set({ user: null, role: 'USER', isAuthLoading: false, isRestoringSession: false, termsAccepted: false, termsVersion: '' });
             }
           });
 
@@ -392,14 +452,42 @@ const useAppStore = create(
             const cloudTermsAccepted = cloudData?.termsAccepted || false;
             const cloudTermsVersion = cloudData?.termsVersion || '';
 
-            set({ 
-              user, 
+            // Construct atomic state update object
+            const atomicStateUpdate = {
+              user,
               isAuthLoading: false,
               role: updatedRole,
               subscription: updatedSub,
               termsAccepted: cloudTermsAccepted,
               termsVersion: cloudTermsVersion
-            });
+            };
+
+            // If local subjects are empty, merge cloud data atomically to prevent blank screen flash / UI race conditions
+            const currentSubjects = get().subjects || [];
+            if (currentSubjects.length === 0 && cloudData && (cloudData.subjects || cloudData.timetable)) {
+              console.log("📥 [AuthStore] Merging cloud data atomically into initial state...");
+              atomicStateUpdate.subjects = cloudData.subjects || [];
+              atomicStateUpdate.timetable = cloudData.timetable || {};
+              atomicStateUpdate.calendarEvents = cloudData.calendarEvents || [];
+              atomicStateUpdate.attendanceData = cloudData.attendanceData || {};
+              atomicStateUpdate.history = cloudData.history || [];
+              atomicStateUpdate.lastCloudSync = cloudData.lastSynced || new Date().toISOString();
+            }
+
+            // Sync referral data atomically if present
+            if (cloudData && cloudData.referralData) {
+              console.log("💎 [Referral] Syncing permanent identity from cloud atomically...");
+              atomicStateUpdate.referralData = {
+                ...get().referralData,
+                ...cloudData.referralData
+              };
+            }
+
+            // Trigger atomic state update
+            set(atomicStateUpdate);
+
+            // Trigger full sync calculations post-atomic update
+            get().fullSync();
 
             // 📊 Track Analytics Conversions in Background
             try {
@@ -412,34 +500,8 @@ const useAppStore = create(
               }).catch(() => {});
             } catch (e) {}
 
-            // 🔍 ALWAYS SYNC REFERRAL IDENTITY (PRODUCTION CRITICAL)
-            if (cloudData && cloudData.referralData) {
-              console.log("💎 [Referral] Syncing permanent identity from cloud...");
-              set(state => ({
-                referralData: {
-                  ...state.referralData,
-                  ...cloudData.referralData
-                }
-              }));
-            }
-
             // BULLETPROOF REFERRAL INITIALIZATION (ENSURES PERMANENCE)
             await get().ensureReferralData();
-
-            // Only pull other data automatically if local state is empty
-            const { subjects } = get();
-            if (subjects.length === 0 && cloudData && (cloudData.subjects || cloudData.timetable)) {
-              set({
-                subjects: cloudData.subjects || [],
-                timetable: cloudData.timetable || {},
-                calendarEvents: cloudData.calendarEvents || [],
-                attendanceData: cloudData.attendanceData || {},
-                history: cloudData.history || [],
-                lastCloudSync: cloudData.lastSynced || new Date().toISOString()
-              });
-
-              get().fullSync();
-            }
 
             // GROWTH PHASE: Track Referral if new user
             const inviteCode = sessionStorage.getItem('tracktaps_invited_by');
@@ -1477,7 +1539,7 @@ const useAppStore = create(
               syncing: false,
               error: null
             },
-            termsAccepted: true,
+            termsAccepted: false,
             termsVersion: '',
             lastCloudSync: null
           });
@@ -1503,7 +1565,10 @@ const useAppStore = create(
           user: state.user,
           role: state.role,
           lastCloudSync: state.lastCloudSync,
-          subscription: state.subscription
+          subscription: state.subscription,
+          // CRITICAL: Persist terms acceptance so modal doesn't reappear on reload
+          termsAccepted: state.termsAccepted,
+          termsVersion: state.termsVersion
         })
       }
     )
