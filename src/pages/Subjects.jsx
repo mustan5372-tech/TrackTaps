@@ -186,13 +186,6 @@ const SubjectCard = React.memo(({
 
 function Subjects() {
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
-  const [editingIdx, setEditingIdx] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    criteria: attendanceSettings?.defaultTarget || 75
-  });
-
   const {
     subjects,
     subjectStats,
@@ -205,6 +198,13 @@ function Subjects() {
     fullSync,
     isSyncing
   } = useAppStore();
+
+  const [showModal, setShowModal] = useState(false);
+  const [editingIdx, setEditingIdx] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    criteria: attendanceSettings?.defaultTarget || 75
+  });
 
   const [isAiLoading, setIsAiLoading] = useState(false);
   const isPremium = subscription?.status === 'active';

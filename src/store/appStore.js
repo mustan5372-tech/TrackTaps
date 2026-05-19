@@ -449,8 +449,38 @@ const useAppStore = create(
               updatedRole = 'USER';
             }
 
+            const localTermsAccepted = get().termsAccepted;
+            const localTermsVersion = get().termsVersion;
+            
             const cloudTermsAccepted = cloudData?.termsAccepted || false;
             const cloudTermsVersion = cloudData?.termsVersion || '';
+
+            // Double-layered merge: if accepted either locally or in cloud, mark as accepted
+            const resolvedTermsAccepted = localTermsAccepted || cloudTermsAccepted;
+            const resolvedTermsVersion = resolvedTermsAccepted 
+              ? (cloudTermsVersion || localTermsVersion || 'v1.0') 
+              : '';
+
+            // Self-healing back-sync: if accepted locally but cloud is missing it, push to Firestore
+            if (localTermsAccepted && !cloudTermsAccepted) {
+              const currentVersion = get().CURRENT_TERMS_VERSION || 'v1.0';
+              (async () => {
+                try {
+                  const { doc, setDoc } = await import('firebase/firestore');
+                  const { db } = await import('../services/firebase');
+                  const userRef = doc(db, 'users', user.uid);
+                  await setDoc(userRef, {
+                    termsAccepted: true,
+                    termsAcceptedAt: new Date().toISOString(),
+                    privacyAccepted: true,
+                    termsVersion: currentVersion
+                  }, { merge: true });
+                  console.log("📜 [Terms] Back-synced local terms acceptance to Firestore successfully!");
+                } catch (e) {
+                  console.warn("⚠️ [Terms] Failed to back-sync local terms to Firestore:", e);
+                }
+              })();
+            }
 
             // Construct atomic state update object
             const atomicStateUpdate = {
@@ -458,8 +488,8 @@ const useAppStore = create(
               isAuthLoading: false,
               role: updatedRole,
               subscription: updatedSub,
-              termsAccepted: cloudTermsAccepted,
-              termsVersion: cloudTermsVersion
+              termsAccepted: resolvedTermsAccepted,
+              termsVersion: resolvedTermsVersion
             };
 
             // If local subjects are empty, merge cloud data atomically to prevent blank screen flash / UI race conditions
