@@ -346,9 +346,10 @@ function Settings() {
                     <button
                       onClick={async () => {
                         try {
-                          await logout();
-                          // Navigate to home/guest view after logout — SafeRoute handles the rest
+                          // Navigate to home/guest view first so Settings unmounts cleanly
                           navigate('/', { replace: true });
+                          // Perform thorough state and session logout
+                          await logout();
                         } catch (e) {
                           console.error('Logout handler error:', e);
                         }

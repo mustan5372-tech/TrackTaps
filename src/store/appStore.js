@@ -275,39 +275,46 @@ const useAppStore = create(
         },
 
         logout: async () => {
-          // CRITICAL: Do NOT set isAuthLoading=true here.
-          // Setting isAuthLoading=true shows the splash screen, which in APK WebView
-          // can cause the app to appear "closed" or trigger a blank screen crash.
-          // Instead, we clear state atomically and let the router handle the redirect.
           set({ isSigningOut: true });
+          
+          // 1. Stop any background sync timers safely
           try {
-            // 1. Stop any background sync timers
             if (window.podaiSyncTimer) {
               clearInterval(window.podaiSyncTimer);
               window.podaiSyncTimer = null;
             }
+          } catch (e) {
+            console.warn("⚠️ [Logout] Timer clear failed:", e);
+          }
 
-            // 2. Sign out from Firebase + Native Google
+          // 2. Sign out from Firebase + Native Google
+          try {
             await authService.logout();
-            
-            // 3. Clear WebView/browser auth caches for clean re-login
-            try {
-              // Clear any IndexedDB Firebase persistence caches
-              const databases = window.indexedDB?.databases ? await window.indexedDB.databases() : [];
-              for (const dbInfo of databases) {
-                if (dbInfo.name && (dbInfo.name.includes('firebaseLocalStorage') || dbInfo.name.includes('firebase-heartbeat'))) {
-                  window.indexedDB.deleteDatabase(dbInfo.name);
-                }
-              }
-            } catch (cacheErr) {
-              console.warn("⚠️ [Auth] Cache cleanup non-critical failure:", cacheErr);
-            }
-            
-            // 4. Clear all app data (subjects, attendance, etc.)
+          } catch (e) {
+            console.error("❌ [Logout] authService.logout failed:", e);
+          }
+
+          // 3. Clear all app data (subjects, attendance, etc.)
+          try {
             get().clearAppData();
-            
-            // 5. ATOMIC state reset — sets user=null which triggers SafeRoute redirect to /
-            // Do NOT set isAuthLoading=true at any point during logout
+          } catch (e) {
+            console.error("❌ [Logout] clearAppData failed:", e);
+          }
+          
+          // 4. Clear all cached storage to secure authentication privacy
+          try {
+            const onboardingVal = localStorage.getItem('tracktaps_completed_tour');
+            localStorage.clear();
+            if (onboardingVal) {
+              localStorage.setItem('tracktaps_completed_tour', onboardingVal);
+            }
+          } catch (e) {
+            console.warn("⚠️ [Logout] localStorage clear non-critical:", e);
+          }
+
+          // 5. ATOMIC state reset — sets user=null which triggers SafeRoute redirect to /
+          // Do NOT set isAuthLoading=true at any point during logout to keep WebView stable
+          try {
             set({ 
               user: null, 
               role: 'USER', 
@@ -317,15 +324,13 @@ const useAppStore = create(
               termsAccepted: false,
               termsVersion: ''
             });
-            
             console.log("✅ [Auth] Logout complete. User is now in guest mode.");
-          } catch (error) {
-            // Even on error, ensure we don't leave the app in a broken state
+          } catch (e) {
+            console.error("❌ [Logout] Atomic state set failed:", e);
             set({ isAuthLoading: false, isSigningOut: false });
-            console.error("❌ [Auth] Logout failed:", error);
-            // Don't throw — swallow the error so the app remains stable
           }
         },
+
 
         initAuth: async () => {
           set({ isAuthLoading: true, isRestoringSession: true });
