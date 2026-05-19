@@ -275,7 +275,7 @@ function Admin() {
             paymentId: 'MANUAL_ADMIN_ASSIGNMENT',
             amountPaid: 0,
             paymentSource: 'admin',
-            assignedBy: user.email,
+            assignedBy: user?.email || 'admin',
             lastAssigned: new Date().toISOString()
           },
           role: customPlan.id === 'lifetime' ? 'ADMIN_OWNER' : 'PREMIUM'
@@ -576,7 +576,7 @@ function Admin() {
                               reportedUserId: u.uid,
                               reportedUserName: u.name,
                               reportedUserEmail: u.email,
-                              reportedBy: user.email,
+                              reportedBy: user?.email || 'admin',
                               reason
                             });
                             alert("✅ Report submitted to moderation queue.");
