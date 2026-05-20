@@ -74,7 +74,7 @@ function MobileNav() {
   ];
 
   // ROLE-BASED ACCESS: Show Admin Controls in More menu if authorized
-  const isAuthorized = role === 'admin' || role === 'core';
+  const isAuthorized = role === 'owner' || role === 'core_admin';
   if (isAuthorized) {
     moreItems.push({ icon: '🔐', label: 'Admin', path: '/admin' });
   }

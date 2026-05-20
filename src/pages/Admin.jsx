@@ -9,8 +9,8 @@ import syncService from '../services/syncService';
 function Admin() {
   const navigate = useNavigate();
   const { user, role, isAuthLoading } = useAppStore();
-  const isOwner = role === 'admin';
-  const isCore = role === 'core';
+  const isOwner = role === 'owner';
+  const isCore = role === 'core_admin';
   const canAccess = isOwner || isCore;
 
   // STRICT SECURITY: Role-based access control
@@ -190,8 +190,8 @@ function Admin() {
 
         const planName = planMap[sub.planType] || planMap[sub.plan] || sub.planType || sub.plan || 'Free';
 
-        const userRole = data.role === 'admin' ? 'OWNER' : 
-                         data.role === 'core' ? 'CORE ADMIN' : 
+        const userRole = (data.role === 'owner' || data.role === 'admin') ? 'OWNER' : 
+                         (data.role === 'core_admin' || data.role === 'core') ? 'CORE ADMIN' : 
                          (sub.status === 'active' ? 'PREMIUM' : 'USER');
 
         userList.push({
@@ -278,7 +278,7 @@ function Admin() {
             assignedBy: user?.email || 'admin',
             lastAssigned: new Date().toISOString()
           },
-          role: customPlan.id === 'lifetime' ? 'admin' : 'user'
+          role: customPlan.id === 'lifetime' ? 'owner' : 'user'
         });
         alert(`✅ ${targetUser.name}'s plan updated to ${customPlan.name}!`);
       } else if (action === 'remove_premium') {

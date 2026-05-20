@@ -317,7 +317,7 @@ const useAppStore = create(
           try {
             set({ 
               user: null, 
-              role: 'USER', 
+              role: 'user', 
               subscription: { plan: 'free', status: 'inactive', expiryDate: null, paymentId: null, features: { aiUsageLimit: 5, aiRequestsToday: 0, aiImportLimit: 1, aiImportsToday: 0, lastAiImportDate: null, hasBadge: false, hasGlow: false, theme: 'default' } }, 
               isAuthLoading: false, 
               isSigningOut: false,
@@ -374,7 +374,7 @@ const useAppStore = create(
                 return;
               }
               console.log("👤 [AuthStore] No Active Session");
-              set({ user: null, role: 'USER', isAuthLoading: false, isRestoringSession: false, termsAccepted: false, termsVersion: '' });
+              set({ user: null, role: 'user', isAuthLoading: false, isRestoringSession: false, termsAccepted: false, termsVersion: '' });
             }
           });
 
@@ -408,15 +408,29 @@ const useAppStore = create(
 
             // ROLE IDENTIFICATION
             // Roles are now fetched dynamically from Firestore database
-            const dbRole = cloudData?.role || 'user';
+            let dbRole = cloudData?.role || 'user';
             
+            // SECURITY PATCH: Auto-elevate authorized emails to proper roles immediately
+            const ownerEmails = ['tracktaps@gmail.com', 'mustan5372@gmail.com'];
+            const coreEmails = ['purandarydv23@gmail.com', 'pgxdh42@gmail.com'];
+            
+            if (ownerEmails.includes(user.email)) {
+              dbRole = 'owner';
+            } else if (coreEmails.includes(user.email)) {
+              dbRole = 'core_admin';
+            } else if (dbRole === 'admin') {
+              dbRole = 'owner'; // Migrate legacy role
+            } else if (dbRole === 'core') {
+              dbRole = 'core_admin'; // Migrate legacy role
+            }
+
             const cloudSub = cloudData?.subscription || { plan: 'free', status: 'inactive' };
             
             // STRICT SECURITY: Determine subscription and role
             let updatedSub = { ...get().subscription };
-            let updatedRole = dbRole; // Uses 'admin', 'core', or 'user' from DB
+            let updatedRole = dbRole; // Uses 'owner', 'core_admin', or 'user'
             
-            if (dbRole === 'admin' || dbRole === 'core') {
+            if (dbRole === 'owner' || dbRole === 'core_admin') {
               updatedSub = {
                 ...updatedSub,
                 plan: 'plus',
@@ -692,7 +706,7 @@ const useAppStore = create(
                 hasGlow: subData.status === 'active'
               }
             },
-            role: subData.status === 'active' ? 'PREMIUM' : 'USER'
+            role: subData.status === 'active' ? 'user' : 'user'
           });
           
           if (subData.status === 'active') {
