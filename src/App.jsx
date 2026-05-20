@@ -28,6 +28,7 @@ import Onboarding from './components/Onboarding';
 import DownloadAPK from './components/DownloadAPK';
 import ErrorBoundary from './components/ErrorBoundary';
 import analyticsService from './services/analyticsService';
+import presenceService from './services/presenceService';
 import OfflineBanner from './components/OfflineBanner';
 
 const SafeRoute = ({ children }) => {
@@ -111,6 +112,9 @@ function App() {
         // Recover UI state smoothly
         if (state.user) {
           state.fullSync();
+          
+          // Presence heartbeat on resume
+          presenceService.sendHeartbeat(state.user.uid);
           
           // Re-trigger sync if we came online while asleep
           if (!state.isOffline && state.pendingCloudSync) {

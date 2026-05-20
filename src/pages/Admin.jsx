@@ -200,7 +200,9 @@ function Admin() {
           email: data.email || (data.phoneNumber ? `Phone: ${data.phoneNumber}` : 'No email'),
           role: userRole,
           plan: planName,
-          status: data.banned ? 'Banned' : (sub.status === 'active' ? 'Active' : 'Inactive'),
+          status: data.banned ? 'Banned' : (sub.status === 'active' ? 'Premium' : 'Free'),
+          activityStatus: data.banned ? 'banned' : (data.isOnline ? 'online' : (data.lastSeen ? 'offline' : 'unknown')),
+          lastSeen: data.lastSeen || null,
           expiry: sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString() : '-',
           rawExpiry: sub.expiryDate || null,
           amountPaid: sub.amountPaid || 0,
@@ -497,7 +499,10 @@ function Admin() {
                   </td>
                   <td data-label="Plan" style={{ padding: '16px', fontSize: '14px', textAlign: 'left' }}>{u.plan}</td>
                   <td data-label="Status" style={{ padding: '16px', textAlign: 'left' }}>
-                    <span style={{ color: u.status === 'Active' ? '#10b981' : 'var(--text-muted)', fontSize: '14px' }}>● {u.status}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ color: u.status === 'Premium' ? '#d946ef' : u.status === 'Banned' ? '#ef4444' : '#10b981', fontSize: '12px', fontWeight: '700' }}>{u.status}</span>
+                      <span style={{ fontSize: '11px', color: u.activityStatus === 'online' ? '#10b981' : u.activityStatus === 'offline' ? 'var(--text-muted)' : '#64748b' }}>{u.activityStatus === 'online' ? '🟢 Online' : u.activityStatus === 'offline' ? '⚫ Offline' : '—'}</span>
+                    </div>
                   </td>
                   {isOwner && <td data-label="Expiry" style={{ padding: '16px', fontSize: '14px', color: 'var(--text-dim)', textAlign: 'left' }}>{u.expiry}</td>}
                   {isOwner && (

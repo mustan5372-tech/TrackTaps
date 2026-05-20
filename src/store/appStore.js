@@ -8,6 +8,7 @@ import { applyTheme } from '../services/themeEngine';
 import { calculateAttendanceStats } from '../utils/attendanceUtils';
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
+import presenceService from '../services/presenceService';
 
 /**
  * Centralized App Store using Zustand
@@ -277,6 +278,16 @@ const useAppStore = create(
         logout: async () => {
           set({ isSigningOut: true });
           
+          // 0. Stop presence heartbeat immediately
+          try {
+            const currentUser = get().user;
+            if (currentUser) {
+              await presenceService.goOffline(currentUser.uid);
+            }
+          } catch (e) {
+            console.warn("⚠️ [Logout] Presence offline failed:", e);
+          }
+
           // 1. Stop any background sync timers safely
           try {
             if (window.podaiSyncTimer) {
@@ -411,8 +422,8 @@ const useAppStore = create(
             let dbRole = cloudData?.role || 'user';
             
             // SECURITY PATCH: Auto-elevate authorized emails to proper roles immediately
-            const ownerEmails = ['tracktaps@gmail.com', 'mustan5372@gmail.com'];
-            const coreEmails = ['purandarydv23@gmail.com', 'pgxdh42@gmail.com'];
+            const ownerEmails = ['tracktaps@gmail.com'];
+            const coreEmails = ['mustan5372@gmail.com', 'purandarydv23@gmail.com', 'pgxdh42@gmail.com'];
             
             if (ownerEmails.includes(user.email)) {
               dbRole = 'owner';
@@ -572,6 +583,14 @@ const useAppStore = create(
             
             // Background push to ensure cloud has latest profile info
             get().pushToCloud();
+
+            // START PRESENCE TRACKING
+            try {
+              presenceService.goOnline(user.uid);
+              presenceService.setupLifecycleListeners(user.uid);
+            } catch (e) {
+              console.warn('⚠️ [Presence] Setup failed:', e);
+            }
           } catch (error) {
             console.error("Auth user processing failed:", error);
             set({ user, isAuthLoading: false }); // Still set user so app is usable
