@@ -25,7 +25,7 @@ function Sidebar() {
   ];
 
   // ROLE-BASED ACCESS: Show Admin Panel for Owner and Core Members
-  const isAuthorized = !!user && (role === 'ADMIN_OWNER' || role === 'CORE_MEMBER' || user?.email === 'mustan5372@gmail.com');
+  const isAuthorized = !!user && (role === 'admin' || role === 'core');
   
   if (isAuthorized) {
     // Insert Admin Panel before Settings for easy access

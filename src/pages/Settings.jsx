@@ -177,6 +177,10 @@ function Settings() {
     setPodaiMessage('Pod.ai integration is now available at /pod');
   };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="settings-view">
       <header className="view-header">

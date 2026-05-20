@@ -157,7 +157,7 @@ const useAppStore = create(
 
         // ─── AUTHENTICATION ──────────────────────────────────────────────────
         user: null,
-        role: 'USER', // 'USER', 'PREMIUM', 'ADMIN_OWNER'
+        role: 'user', // 'user', 'core', 'admin'
         subscription: {
           plan: 'free', // 'free' or 'plus'
           status: 'inactive',
@@ -407,17 +407,16 @@ const useAppStore = create(
             }
 
             // ROLE IDENTIFICATION
-            const isOwner = user.email === 'mustan5372@gmail.com';
-            const CORE_ADMINS = ['purandarydv23@gmail.com', 'pgxdh42@gmail.com'];
-            const isCoreAdmin = CORE_ADMINS.includes(user.email);
-
+            // Roles are now fetched dynamically from Firestore database
+            const dbRole = cloudData?.role || 'user';
+            
             const cloudSub = cloudData?.subscription || { plan: 'free', status: 'inactive' };
             
             // STRICT SECURITY: Determine subscription and role
             let updatedSub = { ...get().subscription };
-            let updatedRole = 'USER';
+            let updatedRole = dbRole; // Uses 'admin', 'core', or 'user' from DB
             
-            if (isOwner) {
+            if (dbRole === 'admin' || dbRole === 'core') {
               updatedSub = {
                 ...updatedSub,
                 plan: 'plus',
@@ -425,19 +424,9 @@ const useAppStore = create(
                 status: 'active',
                 expiryDate: '2099-12-31'
               };
-              updatedRole = 'ADMIN_OWNER';
-            } else if (isCoreAdmin) {
-              updatedSub = {
-                ...updatedSub,
-                plan: 'plus',
-                planType: 'lifetime',
-                status: 'active',
-                expiryDate: '2099-12-31'
-              };
-              updatedRole = 'CORE_ADMIN';
             } else if (cloudSub && cloudSub.status === 'active') {
               updatedSub = { ...updatedSub, ...cloudSub };
-              updatedRole = 'PREMIUM';
+              // Keeps updatedRole as 'user' but updates subscription
             } else {
               updatedSub = { 
                 ...updatedSub, 
@@ -451,8 +440,8 @@ const useAppStore = create(
                   hasGlow: false
                 }
               };
-              updatedRole = 'USER';
             }
+
 
             const localTermsAccepted = get().termsAccepted;
             const localTermsVersion = get().termsVersion;

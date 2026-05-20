@@ -74,7 +74,7 @@ function MobileNav() {
   ];
 
   // ROLE-BASED ACCESS: Show Admin Controls in More menu if authorized
-  const isAuthorized = role === 'ADMIN_OWNER' || role === 'CORE_MEMBER' || user?.email === 'mustan5372@gmail.com';
+  const isAuthorized = role === 'admin' || role === 'core';
   if (isAuthorized) {
     moreItems.push({ icon: '🔐', label: 'Admin', path: '/admin' });
   }

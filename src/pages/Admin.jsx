@@ -9,8 +9,8 @@ import syncService from '../services/syncService';
 function Admin() {
   const navigate = useNavigate();
   const { user, role, isAuthLoading } = useAppStore();
-  const isOwner = role === 'ADMIN_OWNER';
-  const isCore = role === 'CORE_ADMIN';
+  const isOwner = role === 'admin';
+  const isCore = role === 'core';
   const canAccess = isOwner || isCore;
 
   // STRICT SECURITY: Role-based access control
@@ -190,8 +190,8 @@ function Admin() {
 
         const planName = planMap[sub.planType] || planMap[sub.plan] || sub.planType || sub.plan || 'Free';
 
-        const userRole = data.role === 'ADMIN_OWNER' ? 'OWNER' : 
-                         data.role === 'CORE_ADMIN' ? 'CORE ADMIN' : 
+        const userRole = data.role === 'admin' ? 'OWNER' : 
+                         data.role === 'core' ? 'CORE ADMIN' : 
                          (sub.status === 'active' ? 'PREMIUM' : 'USER');
 
         userList.push({
@@ -278,13 +278,13 @@ function Admin() {
             assignedBy: user?.email || 'admin',
             lastAssigned: new Date().toISOString()
           },
-          role: customPlan.id === 'lifetime' ? 'ADMIN_OWNER' : 'PREMIUM'
+          role: customPlan.id === 'lifetime' ? 'admin' : 'user'
         });
         alert(`✅ ${targetUser.name}'s plan updated to ${customPlan.name}!`);
       } else if (action === 'remove_premium') {
         await updateDoc(userRef, {
           subscription: { plan: 'free', status: 'inactive' },
-          role: 'USER'
+          role: 'user'
         });
         alert(`📉 ${targetUser.name} downgraded to Free.`);
       } else if (action === 'mark_paid') {
@@ -801,9 +801,9 @@ function Admin() {
           .admin-table-container tr { display: block; }
           .admin-table-container thead tr { position: absolute; top: -9999px; left: -9999px; }
           .admin-table-container tr { margin-bottom: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05) !important; padding: 12px; }
-          .admin-table-container td { border: none !important; position: relative; padding: 10px 12px !important; display: flex; justify-content: space-between; align-items: center; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.02) !important; }
+          .admin-table-container td { border: none !important; position: relative; padding: 12px 14px !important; display: flex; justify-content: space-between; align-items: center; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.02) !important; word-break: break-word; }
           .admin-table-container td:last-child { border-bottom: none !important; }
-          .admin-table-container td::before { content: attr(data-label); position: relative; font-weight: 700; color: var(--text-muted); font-size: 11px; text-transform: uppercase; text-align: left; margin-right: 12px; }
+          .admin-table-container td::before { content: attr(data-label); position: relative; font-weight: 700; color: var(--text-muted); font-size: 11px; text-transform: uppercase; text-align: left; margin-right: 12px; flex-shrink: 0; }
           .admin-table-container td[data-label="Actions"] { flex-direction: column; align-items: flex-start; margin-top: 8px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 16px !important; }
           .admin-table-container td[data-label="Actions"]::before { margin-bottom: 12px; }
           .report-card { flex-direction: column; align-items: flex-start !important; gap: 16px; }
