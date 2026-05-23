@@ -134,6 +134,19 @@ const useAppStore = create(
           get().pushToCloud();
         },
 
+        toggleExamConductClasses: (id) => {
+          set((state) => ({
+            semesterSettings: {
+              ...state.semesterSettings,
+              examPeriods: state.semesterSettings.examPeriods.map(e =>
+                e.id === id ? { ...e, conductClasses: !!e.conductClasses ? false : true } : e
+              )
+            }
+          }));
+          get().fullSync();
+          get().pushToCloud();
+        },
+
         addWorkingSaturday: (saturday) => {
           set((state) => ({
             semesterSettings: {

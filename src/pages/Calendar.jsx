@@ -31,6 +31,7 @@ function Calendar() {
     removeHoliday,
     addExamPeriod,
     removeExamPeriod,
+    toggleExamConductClasses,
     addWorkingSaturday,
     removeWorkingSaturday
   } = useAppStore();
@@ -1233,14 +1234,74 @@ function Calendar() {
                   + Add Exam
                 </button>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {!semesterSettings?.examPeriods || semesterSettings.examPeriods.length === 0 ? (
                   <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No exams defined.</p>
                 ) : semesterSettings.examPeriods.map(e => (
-                  <div key={e.id} style={{ background: 'rgba(15, 23, 42, 0.9)', border: '1px solid #ef444450', padding: '8px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: '600', color: '#fca5a5' }}>{e.name}</span>
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{e.startDate} to {e.endDate}</span>
-                    <button onClick={() => removeExamPeriod(e.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                  <div 
+                    key={e.id} 
+                    style={{ 
+                      width: '100%',
+                      background: 'rgba(15, 23, 42, 0.6)', 
+                      border: '1px solid rgba(255, 255, 255, 0.05)', 
+                      padding: '12px 16px', 
+                      borderRadius: '14px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between',
+                      gap: '12px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>{e.name}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        📅 {AttendanceEngine.formatDateForDisplay(e.startDate)} to {AttendanceEngine.formatDateForDisplay(e.endDate)}
+                      </div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <button
+                        onClick={() => toggleExamConductClasses(e.id)}
+                        style={{
+                          background: e.conductClasses ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                          border: `1px solid ${e.conductClasses ? 'var(--success)' : '#ef444450'}`,
+                          color: e.conductClasses ? 'var(--success)' : '#fca5a5',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.2s',
+                          boxShadow: e.conductClasses ? '0 0 8px rgba(16, 185, 129, 0.2)' : 'none'
+                        }}
+                      >
+                        <span>{e.conductClasses ? '📚 Classes Conducted' : '🛑 Classes Suspended'}</span>
+                        <span style={{ fontSize: '9px', opacity: 0.6 }}>(Toggle)</span>
+                      </button>
+
+                      <button 
+                        onClick={() => removeExamPeriod(e.id)} 
+                        style={{ 
+                          background: 'rgba(255, 255, 255, 0.03)', 
+                          border: '1px solid rgba(255, 255, 255, 0.05)', 
+                          color: '#ef4444', 
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '50%',
+                          cursor: 'pointer', 
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '16px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

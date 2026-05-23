@@ -60,8 +60,9 @@ class AttendanceEngine {
         // 1. Skip Holidays
         const isHoliday = holidays.some(h => h.date === dateStr);
         
-        // 2. Skip Exam Periods
+        // 2. Skip Exam Periods (unless the university rules state that classes are conducted)
         const isExamPeriod = examPeriods.some(p => {
+          if (p.conductClasses) return false;
           const pStart = this.parseDate(p.startDate);
           const pEnd = this.parseDate(p.endDate);
           return currentDate >= pStart && currentDate <= pEnd;
