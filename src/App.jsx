@@ -108,6 +108,9 @@ function App() {
             state.pushToCloud();
           }
         }
+      } else if (document.visibilityState === 'hidden') {
+        console.log("📱 [App] Backgrounded. Triggering background push-tray alert...");
+        notificationService.triggerBackgroundExitAlert();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);

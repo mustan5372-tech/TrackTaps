@@ -2,7 +2,7 @@ import useAppStore from '../store/appStore';
 
 /**
  * Lightweight Notification Architecture for TrackTaps
- * Handles in-app toasts, native Web Notifications, and transactional alerts
+ * Handles in-app toasts, native Web Notifications, and background exit alerts
  */
 const notificationService = {
   // Show a standard toast notification and optional native Web Notification
@@ -32,7 +32,7 @@ const notificationService = {
           if (permission === 'granted') {
             console.log('🔔 [NotificationService] Native permission granted!');
             notificationService.notify(
-              "✨ Notifications enabled successfully! You'll receive real-time academic alerts.",
+              "✨ Notifications enabled! You will now receive background academic alerts.",
               'success',
               'TrackTaps Notifications'
             );
@@ -44,7 +44,66 @@ const notificationService = {
     }
   },
 
-  // Trigger smart retention alerts based on premium status
+  // Triggered when user exits/minimizes the app to the background (Like Instagram / WhatsApp)
+  triggerBackgroundExitAlert: () => {
+    const state = useAppStore.getState();
+    if (!state.user) return;
+
+    const isPremium = state.subscription?.status === 'active';
+    const overall = state.dashboardStats?.overallPercentage || 0;
+
+    // Check if permission is granted
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      if (isPremium) {
+        // Premium: Schedule detailed background alert for Risked Classes
+        const subjects = state.subjects || [];
+        const criticalList = subjects.filter(sub => {
+          const threshold = state.attendanceSettings?.criticalLevel || 65;
+          const total = sub.attended + sub.absent;
+          if (total === 0) return false;
+          const pct = (sub.attended / total) * 100;
+          return pct < threshold;
+        });
+
+        if (criticalList.length > 0) {
+          const riskedNames = criticalList.map(s => s.name).slice(0, 2).join(', ');
+          try {
+            new Notification('🚨 Risked Class Warning', {
+              body: `TrackTaps is in the background, but your attendance is critical in [${riskedNames}]. Keep tracking to stay safe!`,
+              icon: '/assets/icon-B5Otw8hD.png',
+              tag: 'risked-alert',
+              requireInteraction: true
+            });
+          } catch (err) {
+            console.error('Failed to trigger background notification:', err);
+          }
+        } else {
+          try {
+            new Notification('🛡️ TrackTaps Active', {
+              body: `Your attendance is safe at ${overall}%. We will continue monitoring in the background!`,
+              icon: '/assets/icon-B5Otw8hD.png',
+              tag: 'safe-alert'
+            });
+          } catch (err) {
+            console.error('Failed to trigger background notification:', err);
+          }
+        }
+      } else {
+        // Normal/Free user: Basic attendance score in background tray and Upsell
+        try {
+          new Notification('📊 TrackTaps Score', {
+            body: `Current Score: ${overall}%. Upgrade to Premium now for WhatsApp-style real-time background warnings on risked classes!`,
+            icon: '/assets/icon-B5Otw8hD.png',
+            tag: 'free-alert'
+          });
+        } catch (err) {
+          console.error('Failed to trigger background notification:', err);
+        }
+      }
+    }
+  },
+
+  // Trigger smart retention alerts inside the app
   triggerRetentionAlert: () => {
     const state = useAppStore.getState();
     if (!state.user) return;
@@ -52,16 +111,14 @@ const notificationService = {
     const isPremium = state.subscription?.status === 'active';
     const overall = state.dashboardStats?.overallPercentage || 0;
     
-    // Check if permission is default and ask for it
+    // Check if permission is default and ask for it on startup
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
       notificationService.requestPermission();
     }
 
     if (isPremium) {
-      // 1. Premium User: Highly customized, detailed alerts for Risked Classes
       const criticalCount = state.dashboardStats?.criticalSubjects || 0;
       const subjects = state.subjects || [];
-      
       const criticalList = subjects.filter(sub => {
         const threshold = state.attendanceSettings?.criticalLevel || 65;
         const total = sub.attended + sub.absent;
@@ -82,7 +139,6 @@ const notificationService = {
         notificationService.notify(message, 'success', '🛡️ TrackTaps Protected');
       }
     } else {
-      // 2. Normal/Free User: Basic overall score and standard Premium Upsell
       const message = `📊 Attendance Score: Your overall score is currently ${overall}%. Upgrade to Premium now to get alerts for risked classes and smart bunk predictions!`;
       notificationService.notify(message, 'info', '📊 TrackTaps Update');
     }
