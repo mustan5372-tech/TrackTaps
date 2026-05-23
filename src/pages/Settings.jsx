@@ -209,6 +209,35 @@ function Settings() {
           from { transform: translateX(100%); opacity: 0; }
           to { transform: translateX(0); opacity: 1; }
         }
+        
+        /* Responsive Helper Classes for Settings Mobile UI Fit */
+        .profile-card {
+          padding: 24px;
+        }
+        .profile-header {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin-bottom: 8px;
+        }
+        .profile-details-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+          gap: 16px;
+          margin-top: 8px;
+        }
+        .theme-card {
+          padding: 16px;
+          border-radius: 16px;
+        }
+        .billing-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+          gap: 12px;
+        }
+        
         @media (max-width: 768px) {
           .settings-view {
             padding: 8px 0 120px 0 !important;
@@ -221,11 +250,13 @@ function Settings() {
           }
           .settings-grid {
             grid-template-columns: 1fr !important;
-            padding: 0 16px !important;
+            padding: 0 12px !important;
             gap: 16px !important;
+            width: 100% !important;
+            max-width: 100% !important;
           }
           .dashboard-card {
-            padding: 20px !important;
+            padding: 16px !important;
             border-radius: var(--card-radius) !important;
           }
           .criteria-grid {
@@ -234,7 +265,7 @@ function Settings() {
           }
           .theme-grid {
             grid-template-columns: repeat(2, 1fr) !important;
-            gap: 12px !important;
+            gap: 10px !important;
           }
           .account-actions {
             grid-template-columns: 1fr !important;
@@ -243,6 +274,37 @@ function Settings() {
           .timetable-settings-grid {
              grid-template-columns: 1fr !important;
              gap: 16px !important;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .profile-card {
+            padding: 16px !important;
+          }
+          .profile-header {
+            flex-direction: column !important;
+            align-items: center !important;
+            text-align: center !important;
+            gap: 12px !important;
+          }
+          .profile-header button {
+            width: 100% !important;
+            margin-top: 4px !important;
+          }
+          .profile-details-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+          .theme-card {
+            padding: 12px !important;
+          }
+          .billing-row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            text-align: center !important;
+          }
+          .billing-row button {
+            width: 100% !important;
           }
         }
       `}</style>
@@ -310,16 +372,15 @@ function Settings() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {/* User Identity Details Card */}
-                <div style={{ 
+                <div className="profile-card" style={{ 
                   background: 'rgba(255, 255, 255, 0.03)', 
                   border: '1px solid rgba(255, 255, 255, 0.05)', 
-                  padding: '24px', 
                   borderRadius: '16px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '16px'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+                  <div className="profile-header">
                     <div style={{ position: 'relative' }}>
                       <img 
                         src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=random`} 
@@ -373,10 +434,10 @@ function Settings() {
                     </button>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '8px' }}>
+                  <div className="profile-details-grid">
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Email Address</label>
-                      <p style={{ fontSize: '13px', color: 'var(--text-main)', margin: 0, fontWeight: '500' }}>{user.email || 'Not provided'}</p>
+                      <p style={{ fontSize: '13px', color: 'var(--text-main)', margin: 0, fontWeight: '500', wordBreak: 'break-all' }}>{user.email || 'Not provided'}</p>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Phone Number</label>
@@ -597,11 +658,10 @@ function Settings() {
                         navigate('/premium');
                       }
                     }}
+                    className="theme-card"
                     style={{
                       background: t.bg,
                       border: isActive ? `2px solid ${t.primary}` : '1px solid var(--border)',
-                      borderRadius: '16px',
-                      padding: '16px',
                       cursor: 'pointer',
                       position: 'relative',
                       display: 'flex',
@@ -695,7 +755,7 @@ function Settings() {
             )}
           </div>
           <div style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div className="billing-row">
               <div>
                 <p style={{ margin: 0, fontSize: '14px', fontWeight: '600' }}>
                   Current Plan: <span style={{ color: subscription?.plan === 'plus' ? 'var(--primary-light)' : 'var(--text-dim)' }}>
