@@ -4,15 +4,10 @@ import { motion } from 'framer-motion';
 import useAppStore from '../store/appStore';
 
 function MobileHeader() {
-  const { user, login, subscription, podaiSyncStatus, setAuthModalOpen } = useAppStore();
+  const { user, login, subscription, podaiSyncStatus, setAuthModalOpen, setApkModalOpen } = useAppStore();
   
-  const downloadFile = () => {
-    const link = document.createElement('a');
-    link.href = '/TrackTaps.apk';
-    link.download = 'TrackTaps.apk';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const isNativeAPK = () => {
+    return !!(window.Capacitor && window.Capacitor.isNativePlatform());
   };
 
   const isPremium = subscription?.status === 'active';
@@ -34,30 +29,32 @@ function MobileHeader() {
         />
       </div>
       
-      {/* CENTER: APK Button (Enabled) */}
+      {/* CENTER: APK Button (Enabled only for Web browser) */}
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={downloadFile}
-          style={{
-            background: 'rgba(139, 92, 246, 0.15)',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
-            color: 'var(--primary-light)',
-            padding: '6px 12px',
-            borderRadius: '100px',
-            fontSize: '9px',
-            fontWeight: '900',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            cursor: 'pointer',
-            boxShadow: '0 0 10px rgba(139, 92, 246, 0.1)',
-            letterSpacing: '0.05em'
-          }}
-        >
-          <span style={{ fontSize: '11px' }}>📱</span> 
-          <span>GET APK</span>
-        </motion.button>
+        {!isNativeAPK() && (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setApkModalOpen(true)}
+            style={{
+              background: 'rgba(139, 92, 246, 0.15)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              color: 'var(--primary-light)',
+              padding: '6px 12px',
+              borderRadius: '100px',
+              fontSize: '9px',
+              fontWeight: '900',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              boxShadow: '0 0 10px rgba(139, 92, 246, 0.1)',
+              letterSpacing: '0.05em'
+            }}
+          >
+            <span style={{ fontSize: '11px' }}>📱</span> 
+            <span>GET APK</span>
+          </motion.button>
+        )}
       </div>
  
       {/* RIGHT: Login Button or Premium Status */}

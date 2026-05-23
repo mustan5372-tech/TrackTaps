@@ -4,7 +4,21 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 
 const DownloadAPK = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const {
+    subjects,
+    dashboardStats,
+    getSafeSubjects,
+    getCriticalSubjects,
+    attendanceSettings,
+    subscription,
+    fullSync,
+    isApkModalOpen,
+    setApkModalOpen
+  } = useAppStore();
+
+  const isOpen = isApkModalOpen;
+  const setIsOpen = setApkModalOpen;
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('android');
@@ -20,20 +34,31 @@ const DownloadAPK = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const {
-    subjects,
-    dashboardStats,
-    getSafeSubjects,
-    getCriticalSubjects,
-    attendanceSettings,
-    subscription,
-    fullSync
-  } = useAppStore();
+  const [apkSize, setApkSize] = useState('61.3 MB');
 
   // Helper to detect if we are in the native APK
   const isNativeAPK = () => {
     return !!(window.Capacitor && window.Capacitor.isNativePlatform());
   };
+
+  useEffect(() => {
+    const fetchApkSize = async () => {
+      try {
+        const response = await fetch('/TrackTaps.apk', { method: 'HEAD' });
+        const contentLength = response.headers.get('content-length');
+        if (contentLength) {
+          const bytes = parseInt(contentLength, 10);
+          if (!isNaN(bytes) && bytes > 0) {
+            const mb = (bytes / (1024 * 1024)).toFixed(1);
+            setApkSize(`${mb} MB`);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch dynamic APK size, using fallback:', err);
+      }
+    };
+    fetchApkSize();
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -484,7 +509,7 @@ const DownloadAPK = () => {
                           boxShadow: '0 8px 20px var(--primary-glow)'
                         }}
                       >
-                        Download APK (7.6 MB)
+                        Download APK ({apkSize})
                       </button>
                     </motion.div>
                   )}

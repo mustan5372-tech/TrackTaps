@@ -200,6 +200,7 @@ const useAppStore = create(
         isRestoringSession: false, 
         isSigningOut: false,
         isAuthModalOpen: false,
+        isApkModalOpen: false,
         termsAccepted: false, // Will be loaded from cloud/persist on login
         termsVersion: '',
         CURRENT_TERMS_VERSION: 'v1.0', // Centralized terms version constant
@@ -215,6 +216,7 @@ const useAppStore = create(
         },
         
         setAuthModalOpen: (isOpen) => set({ isAuthModalOpen: isOpen }),
+        setApkModalOpen: (isOpen) => set({ isApkModalOpen: isOpen }),
         setUser: (user) => set({ user, isAuthLoading: false, isRestoringSession: false }),
 
         acceptTerms: async (marketingConsent = false) => {
