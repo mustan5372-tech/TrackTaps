@@ -20,20 +20,22 @@ export default function GlobalToast() {
             background: toast.type === 'error' ? 'rgba(239, 68, 68, 0.95)' : 'rgba(15, 23, 42, 0.95)',
             backdropFilter: 'blur(12px)',
             border: `1px solid ${toast.type === 'error' ? 'rgba(239, 68, 68, 0.3)' : 'var(--primary-glow)'}`,
-            padding: '12px 24px',
+            padding: '12px 20px',
             borderRadius: '16px',
             color: 'var(--text-main)',
-            fontSize: '14px',
+            fontSize: '13px',
             fontWeight: '600',
             boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--primary-glow)',
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
-            whiteSpace: 'nowrap'
+            maxWidth: 'calc(100vw - 32px)',
+            width: 'max-content',
+            boxSizing: 'border-box'
           }}
         >
           <span>{toast.type === 'error' ? '⚠️' : '✨'}</span>
-          {toast.message}
+          <span style={{ textAlign: 'left', lineHeight: 1.4 }}>{toast.message}</span>
         </motion.div>
       )}
     </AnimatePresence>
