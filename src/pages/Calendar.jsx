@@ -14,6 +14,17 @@ function Calendar() {
   const [selectedDates, setSelectedDates] = useState([]); // Array of dateStr
   const [selectionAnchor, setSelectionAnchor] = useState(null);
 
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileDevice('ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Get data from Zustand store
   const {
     calendarEvents,
@@ -62,12 +73,21 @@ function Calendar() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
   };
 
-  const handleDateClick = (day) => {
+  const handleDateClick = (day, e) => {
     const dateStr = AttendanceEngine.formatDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
     );
 
-    if (isSelectMode) {
+    const isCtrlPressed = e && (e.ctrlKey || e.metaKey);
+
+    if (isCtrlPressed) {
+      if (!isSelectMode) {
+        setIsSelectMode(true);
+        setSelectedDates([dateStr]);
+      } else {
+        toggleDateSelection(dateStr);
+      }
+    } else if (isSelectMode) {
       toggleDateSelection(dateStr);
     } else {
       setSelectedDate(dateStr);
@@ -75,6 +95,9 @@ function Calendar() {
   };
 
   const handleDateLongPress = (day) => {
+    // Only trigger long press multi-select on mobile touch devices
+    if (!isMobileDevice) return;
+
     const dateStr = AttendanceEngine.formatDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
     );
@@ -236,7 +259,10 @@ function Calendar() {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '24px 20px 8px 20px'
+        padding: '24px 20px 8px 20px',
+        maxWidth: '800px',
+        width: 'calc(100% - 40px)',
+        margin: '0 auto 8px auto'
       }}>
         <h2 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>{monthYear}</h2>
         
@@ -293,7 +319,10 @@ function Calendar() {
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
         gap: '12px',
-        padding: '0 20px'
+        padding: '0 20px',
+        maxWidth: '800px',
+        width: 'calc(100% - 40px)',
+        margin: '0 auto 8px auto'
       }}>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -342,6 +371,31 @@ function Calendar() {
         </motion.button>
       </div>
 
+      {/* Dynamic Selector Assistance Tip */}
+      <div style={{
+        textAlign: 'center',
+        padding: '0 20px',
+        maxWidth: '800px',
+        width: 'calc(100% - 40px)',
+        margin: '4px auto 12px auto'
+      }}>
+        <span style={{
+          fontSize: '12px',
+          fontWeight: '700',
+          color: 'var(--primary-light)',
+          background: 'rgba(139, 92, 246, 0.05)',
+          border: '1px solid rgba(139, 92, 246, 0.15)',
+          padding: '8px 18px',
+          borderRadius: '24px',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.15)'
+        }}>
+          💡 Tip: {isMobileDevice ? 'Long-press a day to select multiple days' : 'Hold Ctrl + Click to select multiple days'}
+        </span>
+      </div>
+
       {/* User Guidance Banner */}
       {(!semesterSettings.startDate || !semesterSettings.endDate) && (
         <div style={{
@@ -349,7 +403,9 @@ function Calendar() {
           border: '1px solid rgba(245, 158, 11, 0.2)',
           borderRadius: '16px',
           padding: '16px 20px',
-          margin: '0 20px',
+          maxWidth: '800px',
+          width: 'calc(100% - 40px)',
+          margin: '0 auto 16px auto',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -390,7 +446,9 @@ function Calendar() {
             border: '1px solid var(--primary-glow)',
             borderRadius: '16px',
             padding: '16px 24px',
-            margin: '0 20px',
+            maxWidth: '800px',
+            width: 'calc(100% - 40px)',
+            margin: '0 auto 16px auto',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -424,7 +482,9 @@ function Calendar() {
         border: '1px solid rgba(139, 92, 246, 0.1)',
         borderRadius: '24px',
         padding: '20px',
-        margin: '0 20px'
+        maxWidth: '800px',
+        width: 'calc(100% - 40px)',
+        margin: '0 auto 16px auto'
       }}>
         {/* Weekday Headers */}
         <div className="calendar-weekday-headers" style={{
@@ -495,7 +555,7 @@ function Calendar() {
                   window.datePressTimer = timer;
                 }}
                 onTouchEnd={() => clearTimeout(window.datePressTimer)}
-                onClick={() => handleDateClick(day)}
+                onClick={(e) => handleDateClick(day, e)}
                 style={{
                   aspectRatio: '1',
                   borderRadius: '50%',
@@ -616,7 +676,9 @@ function Calendar() {
             border: '1px solid var(--border)',
             borderRadius: '24px',
             padding: '24px',
-            margin: '0 20px',
+            maxWidth: '800px',
+            width: 'calc(100% - 40px)',
+            margin: '0 auto 24px auto',
             boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
             display: 'flex',
             flexDirection: 'column',
