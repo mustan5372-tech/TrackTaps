@@ -17,8 +17,8 @@ const PLANS = [
   {
     id: 'half_yearly',
     name: 'Super Saver',
-    price: 5,
-    priceInPaise: 500,
+    price: 9,
+    priceInPaise: 900,
     durationDays: 180,
     description: 'Most popular for focused students',
     color: '#d946ef',
@@ -28,8 +28,8 @@ const PLANS = [
   {
     id: 'yearly',
     name: 'Mega Saver',
-    price: 9,
-    priceInPaise: 900,
+    price: 18,
+    priceInPaise: 1800,
     durationDays: 365,
     description: 'Best value for academic excellence',
     color: '#f59e0b',

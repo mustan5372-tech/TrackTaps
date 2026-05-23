@@ -437,6 +437,63 @@ const useAppStore = create(
 
             const cloudSub = cloudData?.subscription || { plan: 'free', status: 'inactive' };
             
+            // Auto-Expiry and Expiring Warnings Checks
+            let finalSub = { ...cloudSub };
+            let showExpiryWarning = false;
+            let showExpiredWarning = false;
+            let expiryWarningDate = '';
+
+            if (finalSub.status === 'active' && finalSub.expiryDate) {
+              const now = new Date();
+              const expiry = new Date(finalSub.expiryDate);
+              
+              if (now >= expiry) {
+                console.log("📉 [Subscription] Premium expired! Auto-downgrading to Free plan...");
+                finalSub = {
+                  plan: 'free',
+                  status: 'inactive',
+                  expiryDate: null,
+                  paymentId: null,
+                  features: {
+                    aiUsageLimit: 5,
+                    aiRequestsToday: 0,
+                    aiImportLimit: 1,
+                    aiImportsToday: 0,
+                    lastAiImportDate: null,
+                    hasBadge: false,
+                    hasGlow: false,
+                    theme: 'default'
+                  }
+                };
+                showExpiredWarning = true;
+                
+                // Back-sync the auto-downgrade to Firestore immediately!
+                (async () => {
+                  try {
+                    const { doc, setDoc } = await import('firebase/firestore');
+                    const { db } = await import('../services/firebase');
+                    const userRef = doc(db, 'users', user.uid);
+                    await setDoc(userRef, {
+                      premium: false,
+                      subscription: finalSub,
+                      updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                    console.log("✅ [Subscription] Firestore auto-expiry sync completed!");
+                  } catch (e) {
+                    console.warn("⚠️ [Subscription] Firestore auto-expiry sync failed:", e);
+                  }
+                })();
+              } else {
+                // Check if expiring in less than 3 days
+                const diffTime = Math.abs(expiry - now);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays <= 3) {
+                  showExpiryWarning = true;
+                  expiryWarningDate = expiry.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+                }
+              }
+            }
+
             // STRICT SECURITY: Determine subscription and role
             let updatedSub = { ...get().subscription };
             let updatedRole = dbRole; // Uses 'owner', 'core_admin', or 'user'
@@ -449,8 +506,8 @@ const useAppStore = create(
                 status: 'active',
                 expiryDate: '2099-12-31'
               };
-            } else if (cloudSub && cloudSub.status === 'active') {
-              updatedSub = { ...updatedSub, ...cloudSub };
+            } else if (finalSub && finalSub.status === 'active') {
+              updatedSub = { ...updatedSub, ...finalSub };
               // Keeps updatedRole as 'user' but updates subscription
             } else {
               updatedSub = { 
@@ -537,6 +594,19 @@ const useAppStore = create(
 
             // Trigger full sync calculations post-atomic update
             get().fullSync();
+
+            // Trigger alerts after state has completed rendering
+            if (showExpiredWarning) {
+              setTimeout(() => {
+                get().showToast("❌ Your premium subscription has expired. Please renew it at the earliest to continue enjoying premium features!", "error");
+              }, 2500);
+            } else if (showExpiryWarning) {
+              setTimeout(() => {
+                import('../services/notificationService').then(m => {
+                  m.default.triggerExpiringAlert(expiryWarningDate);
+                }).catch(() => {});
+              }, 2500);
+            }
 
             // 📊 Track Analytics Conversions in Background
             try {

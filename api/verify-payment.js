@@ -29,8 +29,8 @@ const razorpay = new Razorpay({
 
 const PLAN_CONFIG = {
   'monthly': { days: 30, amount: 2, label: 'monthly' },
-  'half_yearly': { days: 180, amount: 5, label: 'half_yearly' },
-  'yearly': { days: 365, amount: 9, label: 'yearly' }
+  'half_yearly': { days: 180, amount: 9, label: 'half_yearly' },
+  'yearly': { days: 365, amount: 18, label: 'yearly' }
 };
 
 export default async function handler(req, res) {

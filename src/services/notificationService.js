@@ -173,6 +173,15 @@ const notificationService = {
     );
   },
 
+  // Triggered on premium subscription expiring soon
+  triggerExpiringAlert: (expiryDate) => {
+    notificationService.notify(
+      `⚠️ Your TrackTaps Plus subscription is expiring soon (on ${expiryDate}). Renew now for the best experience!`,
+      'warning',
+      'Premium Expiring Soon'
+    );
+  },
+
   // Future: Add logic for Email/WhatsApp/Push via API
   sendTransactionalAlert: async (userId, type, data) => {
     console.log(`📡 [NotificationService] Scheduling ${type} alert for user ${userId}`);
