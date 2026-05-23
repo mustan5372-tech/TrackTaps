@@ -27,17 +27,16 @@ function APKUpdateBanner() {
     checkAppVersion();
   }, []);
 
-  const handleUpdateClick = async () => {
+  const handleUpdateClick = () => {
     try {
       if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
-        const { Browser } = await import('@capacitor/browser');
-        await Browser.open({ url: 'https://www.tracktaps.online/TrackTaps.apk' });
+        // Open in external system default browser to trigger native file download manager directly
+        window.open('https://www.tracktaps.online/TrackTaps.apk', '_system');
       } else {
         window.open('https://www.tracktaps.online/TrackTaps.apk', '_blank');
       }
     } catch (err) {
-      console.error('Failed to launch native browser update link:', err);
-      // Fallback
+      console.error('Failed to launch system browser update link:', err);
       window.open('https://www.tracktaps.online/TrackTaps.apk', '_blank');
     }
   };

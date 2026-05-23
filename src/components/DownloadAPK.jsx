@@ -96,6 +96,10 @@ const DownloadAPK = () => {
   }, [chatMessages, isTyping]);
 
   const downloadAPK = () => {
+    if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
+      window.open('https://www.tracktaps.online/TrackTaps.apk', '_system');
+      return;
+    }
     const link = document.createElement('a');
     link.href = '/TrackTaps.apk';
     link.download = 'TrackTaps.apk';
