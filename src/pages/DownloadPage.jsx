@@ -21,13 +21,8 @@ function DownloadPage() {
   }, []);
 
   const triggerDownload = () => {
-    // Directly trigger the file download
-    const link = document.createElement('a');
-    link.href = '/TrackTaps.apk';
-    link.download = 'TrackTaps.apk';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Navigate directly to download stream, keeping user on the page
+    window.location.href = '/TrackTaps.apk';
   };
 
   return (
