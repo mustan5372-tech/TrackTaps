@@ -6,10 +6,21 @@ function NotificationPrompt() {
   const [supported, setSupported] = useState(false);
 
   // Check current permission state on startup and focus
-  const checkPermissionStatus = () => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      setSupported(true);
-      setPermission(Notification.permission);
+  const checkPermissionStatus = async () => {
+    if (typeof window !== 'undefined') {
+      if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        setSupported(true);
+        try {
+          const { PushNotifications } = await import('@capacitor/push-notifications');
+          const status = await PushNotifications.checkPermissions();
+          setPermission(status.receive === 'granted' ? 'granted' : status.receive === 'denied' ? 'denied' : 'default');
+        } catch (e) {
+          console.warn('Failed to check native Capacitor permissions:', e);
+        }
+      } else if ('Notification' in window) {
+        setSupported(true);
+        setPermission(Notification.permission);
+      }
     }
   };
 
@@ -25,6 +36,32 @@ function NotificationPrompt() {
 
   const handleRequestPermission = async () => {
     if (!supported) return;
+
+    if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
+      try {
+        const { PushNotifications } = await import('@capacitor/push-notifications');
+        const permissionStatus = await PushNotifications.requestPermissions();
+        console.log('🔔 [Native Notification] Permission request status:', permissionStatus);
+        
+        if (permissionStatus.receive === 'granted') {
+          setPermission('granted');
+          // Register native push listening tokens
+          await PushNotifications.register();
+          
+          if ('Notification' in window) {
+            new Notification("🛡️ TrackTaps Protected", {
+              body: "Native Android notifications are successfully enabled!",
+              icon: '/assets/icon-B5Otw8hD.png'
+            });
+          }
+        } else {
+          setPermission('denied');
+        }
+      } catch (err) {
+        console.error('Error requesting native Capacitor push notifications:', err);
+      }
+      return;
+    }
 
     try {
       const result = await Notification.requestPermission();
