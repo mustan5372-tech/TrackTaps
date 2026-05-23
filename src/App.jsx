@@ -26,6 +26,7 @@ import AuthModal from './components/AuthModal';
 import TermsModal from './components/TermsModal';
 import Onboarding from './components/Onboarding';
 import DownloadAPK from './components/DownloadAPK';
+import APKUpdateBanner from './components/APKUpdateBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import analyticsService from './services/analyticsService';
 import presenceService from './services/presenceService';
@@ -231,6 +232,7 @@ function App() {
         <Onboarding />
       </ErrorBoundary>
       <DownloadAPK />
+      <APKUpdateBanner />
       <AnimatePresence>
         {swUpdateAvailable && (
           <motion.div
