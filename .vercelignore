@@ -1,0 +1,24 @@
+# Ignore local build outputs
+dist/
+build/
+
+# Ignore system/dependency folders
+node_modules/
+.git/
+.vscode/
+
+# Ignore mobile native code and packages
+TrackTaps.apk
+TrackTapsNative/
+android/
+
+# Ignore media/promo files
+promo-video/
+*.png
+*.apk
+
+# Ignore local environment variables and scratch directories
+.env.local
+.env.development
+.env.production
+scratch/
