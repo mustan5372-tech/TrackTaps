@@ -30,6 +30,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import analyticsService from './services/analyticsService';
 import presenceService from './services/presenceService';
 import OfflineBanner from './components/OfflineBanner';
+import notificationService from './services/notificationService';
 
 const SafeRoute = ({ children }) => {
   const { user, isAuthLoading } = useAppStore();
@@ -86,21 +87,7 @@ function App() {
     
     // RETENTION PHASE 6: Smart Local Notifications
     setTimeout(() => {
-      const state = useAppStore.getState();
-      if (state.user && !state.isAuthLoading) {
-        // 1. Sync Reminder
-        const lastSync = state.lastCloudSync ? new Date(state.lastCloudSync) : null;
-        const hoursSinceSync = lastSync ? (new Date() - lastSync) / (1000 * 60 * 60) : 999;
-        
-        if (hoursSinceSync > 24) {
-          state.showToast("☁️ Backup Reminder: You haven't synced your data in 24h.", "info");
-        }
-
-        // 2. Risk Alert
-        if (state.dashboardStats.criticalSubjects > 0) {
-          state.showToast(`🚨 Attention: ${state.dashboardStats.criticalSubjects} subject(s) need immediate attention.`, "warning");
-        }
-      }
+      notificationService.triggerRetentionAlert();
     }, 4000); // Trigger 4s after launch to avoid clash
     
     // 📱 Resume Handling (APK & Backgrounding)
