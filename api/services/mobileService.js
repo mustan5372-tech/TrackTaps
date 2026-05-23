@@ -56,7 +56,7 @@ export const sendMobileConfirmation = async (phone, name, subscription) => {
   // 1. Check Twilio integration
   const client = getTwilioClient();
   if (client) {
-    const whatsappSender = process.env.TWILIO_SENDER_WHATSAPP; // e.g. whatsapp:+14155238886 (Twilio Sandbox)
+    const whatsappSender = process.env.TWILIO_SENDER_WHATSAPP || 'whatsapp:+14155238886'; // Default Twilio Sandbox WhatsApp number
     const smsSender = process.env.TWILIO_SENDER_SMS; // e.g. +1234567890
 
     // Send WhatsApp if configured
