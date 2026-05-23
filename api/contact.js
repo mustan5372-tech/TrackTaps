@@ -1,8 +1,9 @@
 /**
  * Serverless API handler for contact form submissions
- * Sends emails via Resend API
+ * Sends emails via Resend API or Gmail SMTP fallback
  * Deploy to Vercel
  */
+import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -46,18 +47,19 @@ export default async function handler(req, res) {
       });
     }
 
-    // Check if Resend API key is available
+    // Check if Email credentials are available
     const resendApiKey = process.env.RESEND_API_KEY;
+    const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
     const contactReceiverEmail = process.env.CONTACT_RECEIVER_EMAIL || 'tracktaps@gmail.com';
     
     console.log('🔍 Environment check:', {
-      hasApiKey: !!resendApiKey,
-      apiKeyPreview: resendApiKey ? resendApiKey.substring(0, 10) + '...' : 'MISSING',
+      hasResendApiKey: !!resendApiKey,
+      hasGmailAppPassword: !!gmailAppPassword,
       receiverEmail: contactReceiverEmail
     });
     
-    if (!resendApiKey) {
-      console.error('❌ RESEND_API_KEY not configured in environment variables');
+    if (!resendApiKey && !gmailAppPassword) {
+      console.error('❌ Neither RESEND_API_KEY nor GMAIL_APP_PASSWORD configured in environment variables');
       return res.status(500).json({ 
         success: false,
         message: 'Email service not configured. Please contact administrator.' 
@@ -196,7 +198,42 @@ export default async function handler(req, res) {
 </html>
     `;
 
-    // Send email via Resend API
+    // 1. SMTP / GMAIL SENDER MODE
+    // Triggered when GMAIL_APP_PASSWORD is set in Vercel settings
+    const gmailUser = process.env.GMAIL_USER || 'tracktaps@gmail.com';
+
+    if (gmailAppPassword) {
+      console.log(`📧 [ContactAPI] Attempting to deliver support ticket via Gmail SMTP (from ${gmailUser})`);
+      try {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: gmailUser,
+            pass: gmailAppPassword
+          }
+        });
+
+        const mailOptions = {
+          from: `"TrackTaps Support" <${gmailUser}>`,
+          to: contactReceiverEmail,
+          replyTo: email,
+          subject: `[${getCategoryLabel(category)}] ${subject}`,
+          html: emailContent
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('✅ [ContactAPI] Support email sent successfully via Gmail SMTP:', info.messageId);
+        return res.status(200).json({ 
+          success: true,
+          message: 'Email sent successfully',
+          id: info.messageId 
+        });
+      } catch (smtpError) {
+        console.error('❌ [ContactAPI] Gmail SMTP transport failed, checking fallback...', smtpError);
+      }
+    }
+
+    // 2. RESEND API FALLBACK MODE
     try {
       console.log('📤 Sending email via Resend API...');
       
