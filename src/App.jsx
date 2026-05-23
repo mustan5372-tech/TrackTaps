@@ -19,6 +19,7 @@ import Referral from './pages/Referral';
 import Guide from './pages/Guide';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
+import DownloadPage from './pages/DownloadPage';
 import useAppStore from './store/appStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import GlobalToast from './components/GlobalToast';
@@ -289,6 +290,7 @@ function App() {
       <TermsModal />
       
       <Routes>
+        <Route path="/download" element={<DownloadPage />} />
         <Route path="/pod" element={<ErrorBoundary><Pod /></ErrorBoundary>} />
         <Route path="/" element={<SafeRoute><Home /></SafeRoute>} />
         <Route path="/calendar" element={<SafeRoute><Calendar /></SafeRoute>} />

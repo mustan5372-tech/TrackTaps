@@ -97,7 +97,7 @@ const DownloadAPK = () => {
 
   const downloadAPK = () => {
     if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
-      window.open('https://www.tracktaps.online/TrackTaps.apk', '_system');
+      window.open('https://www.tracktaps.online/download', '_system');
       return;
     }
     const link = document.createElement('a');
