@@ -1,7 +1,8 @@
 /**
  * Email Service for TrackTaps
- * Sends transactional emails via Resend API
+ * Sends transactional emails via Gmail SMTP or Resend API fallback
  */
+import nodemailer from 'nodemailer';
 
 /**
  * Send a welcome email to new premium users
@@ -10,12 +11,6 @@
  * @param {object} subscription - Subscription details
  */
 export const sendPremiumWelcomeEmail = async (email, name, subscription) => {
-  const resendApiKey = process.env.RESEND_API_KEY;
-  if (!resendApiKey) {
-    console.error('❌ [EmailService] RESEND_API_KEY not configured');
-    return { success: false, error: 'Config missing' };
-  }
-
   const planName = subscription.planType === 'yearly' ? 'Mega Saver (Yearly)' : 
                    subscription.planType === 'half_yearly' ? 'Super Saver (6-Month)' : 'Starter (Monthly)';
 
@@ -95,6 +90,45 @@ export const sendPremiumWelcomeEmail = async (email, name, subscription) => {
 </html>
   `;
 
+  // 1. SMTP / GMAIL SENDER MODE
+  // Triggered when GMAIL_APP_PASSWORD is set in Vercel settings
+  const gmailUser = process.env.GMAIL_USER || 'tracktaps@gmail.com';
+  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+
+  if (gmailAppPassword) {
+    console.log(`📧 [EmailService] Attempting to deliver welcome email via Gmail SMTP (from ${gmailUser})`);
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: gmailUser,
+          pass: gmailAppPassword
+        }
+      });
+
+      const mailOptions = {
+        from: `"TrackTaps" <${gmailUser}>`,
+        to: email,
+        subject: '🚀 TrackTaps Premium Activated!',
+        html: emailContent
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      console.log('✅ [EmailService] Welcome email sent successfully via Gmail SMTP:', info.messageId);
+      return { success: true, id: info.messageId };
+    } catch (smtpError) {
+      console.error('❌ [EmailService] Gmail SMTP transport failed, checking fallback...', smtpError);
+    }
+  }
+
+  // 2. RESEND API FALLBACK MODE
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) {
+    console.error('❌ [EmailService] Configuration missing. Neither GMAIL_APP_PASSWORD nor RESEND_API_KEY is configured.');
+    return { success: false, error: 'Config missing' };
+  }
+
+  console.log(`📧 [EmailService] Falling back to Resend API for welcome email...`);
   try {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -103,7 +137,7 @@ export const sendPremiumWelcomeEmail = async (email, name, subscription) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'TrackTaps <onboarding@resend.dev>', // Use verified domain if you have one
+        from: 'TrackTaps <onboarding@resend.dev>',
         to: email,
         subject: '🚀 TrackTaps Premium Activated!',
         html: emailContent,
@@ -112,14 +146,14 @@ export const sendPremiumWelcomeEmail = async (email, name, subscription) => {
 
     const data = await response.json();
     if (response.ok) {
-      console.log('✅ [EmailService] Welcome email sent successfully:', data.id);
+      console.log('✅ [EmailService] Welcome email sent successfully via Resend API:', data.id);
       return { success: true, id: data.id };
     } else {
       console.error('❌ [EmailService] Resend API error:', data);
       return { success: false, error: data.message };
     }
   } catch (error) {
-    console.error('❌ [EmailService] Network error:', error);
+    console.error('❌ [EmailService] Network/Resend delivery error:', error);
     return { success: false, error: error.message };
   }
 };

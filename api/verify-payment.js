@@ -10,7 +10,9 @@ if (!admin.apps.length) {
       credential: admin.credential.cert({
         projectId: process.env.VITE_FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        privateKey: process.env.FIREBASE_PRIVATE_KEY
+          ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').replace(/^"+|"+$/g, '')
+          : undefined,
       }),
     });
   } catch (e) {
@@ -138,7 +140,6 @@ export default async function handler(req, res) {
         premiumExpiresAt: subscriptionData.expiryDate,
         paymentId: razorpay_payment_id,
         orderId: razorpay_order_id,
-        role: 'PREMIUM',
         subscription: subscriptionData,
         updatedAt: new Date().toISOString()
       }, { merge: true });

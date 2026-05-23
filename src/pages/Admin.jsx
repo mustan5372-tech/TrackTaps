@@ -170,10 +170,22 @@ function Admin() {
   const fetchAdminData = async () => {
     setLoading(true);
     try {
+      // 1. Fetch Users
       const querySnapshot = await getDocs(collection(db, "users"));
       const userList = [];
       let premiumCount = 0;
+
+      // 2. Fetch Payments for True Revenue Tracking
       let revenue = 0;
+      try {
+        const paymentsSnapshot = await getDocs(collection(db, "payments"));
+        paymentsSnapshot.forEach((doc) => {
+          const payData = doc.data();
+          revenue += (Number(payData.amount) || 0);
+        });
+      } catch (payErr) {
+        console.warn("⚠️ Failed to fetch payments collection:", payErr);
+      }
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
@@ -212,10 +224,6 @@ function Admin() {
 
         if (sub.status === 'active' && !data.banned) {
           premiumCount++;
-          // REVENUE RULE: Only count successful Razorpay payments towards total revenue
-          if (sub.paymentSource === 'razorpay') {
-            revenue += (Number(sub.amountPaid) || 0);
-          }
         }
       });
 
