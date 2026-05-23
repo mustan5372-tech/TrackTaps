@@ -39,9 +39,14 @@ function Sidebar() {
     }
   }
 
+  const isPremium = subscription?.status === 'active' || role === 'owner' || role === 'core_admin';
+
   return (
-    <aside className="sidebar" data-nosnippet>
-      <div className={`sidebar-branding ${subscription?.status === 'active' ? 'premium-glow' : ''}`}>
+    <aside className="sidebar" data-nosnippet style={{
+      borderRight: isPremium ? '1px solid rgba(234, 179, 8, 0.25)' : '1px solid var(--border)',
+      boxShadow: isPremium ? '5px 0 35px rgba(234, 179, 8, 0.05)' : 'none'
+    }}>
+      <div className={`sidebar-branding ${isPremium ? 'premium-glow' : ''}`}>
         <Link to="/" className="logo-link">
           <img 
             src={logo} 
@@ -51,7 +56,7 @@ function Sidebar() {
               width: '150px',
               height: 'auto',
               objectFit: 'contain',
-              filter: `drop-shadow(0 0 ${subscription?.status === 'active' ? '30px' : '20px'} var(--primary-glow))`,
+              filter: `drop-shadow(0 0 ${isPremium ? '30px' : '20px'} var(--primary-glow))`,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           />
@@ -59,31 +64,43 @@ function Sidebar() {
       </div>
 
       <nav className="nav-menu">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`nav-btn ${location.pathname === item.path ? 'active' : ''}`}
-          >
-            <span className="nav-icon" style={{ fontSize: '20px' }}>{item.icon}</span>
-            <span className="nav-label" style={{ fontSize: '15px', fontWeight: '600' }}>{item.label}</span>
-          </Link>
-        ))}
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`nav-btn ${isActive ? 'active' : ''}`}
+              style={isActive && isPremium ? {
+                background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(139, 92, 246, 0.25) 100%)',
+                borderLeft: '4px solid #f59e0b',
+                boxShadow: '0 4px 15px rgba(234, 179, 8, 0.1)'
+              } : {}}
+            >
+              <span className="nav-icon" style={{ fontSize: '20px' }}>{item.icon}</span>
+              <span className="nav-label" style={{ 
+                fontSize: '15px', 
+                fontWeight: '700', 
+                color: isActive && isPremium ? '#f59e0b' : 'inherit'
+              }}>{item.label}</span>
+            </Link>
+          );
+        })}
       </nav>
 
-      {subscription?.status === 'active' && (
+      {isPremium && (
         <div className="premium-sidebar-footer" style={{ padding: '24px', marginTop: 'auto' }}>
           <div style={{
-            background: 'var(--primary-glow)',
-            border: '1px solid var(--border)',
+            background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+            border: '1px solid rgba(234, 179, 8, 0.35)',
             borderRadius: '18px',
             padding: '16px',
             textAlign: 'center',
-            boxShadow: 'var(--shadow-premium)'
+            boxShadow: '0 4px 20px rgba(234, 179, 8, 0.15)'
           }}>
-            <div style={{ fontSize: '18px', marginBottom: '8px' }}>💎</div>
-            <span style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--primary-light)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '2px' }}>Premium Active</span>
-            <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '500' }}>Cloud Sync Enabled</span>
+            <div style={{ fontSize: '18px', marginBottom: '8px' }}>👑</div>
+            <span style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '2px' }}>ELITE MEMBER</span>
+            <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '500' }}>Cloud Sync Active</span>
           </div>
         </div>
       )}

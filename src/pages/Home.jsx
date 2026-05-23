@@ -64,6 +64,7 @@ function Home() {
   const insights = useAppStore(state => state.insights);
   const attendanceSettings = useAppStore(state => state.attendanceSettings);
   const subscription = useAppStore(state => state.subscription);
+  const role = useAppStore(state => state.role);
   const setAuthModalOpen = useAppStore(state => state.setAuthModalOpen);
   const fullSync = useAppStore(state => state.fullSync);
   const getSafeSubjects = useAppStore(state => state.getSafeSubjects);
@@ -71,6 +72,8 @@ function Home() {
   const getTodaySchedule = useAppStore(state => state.getTodaySchedule);
   const semesterStats = useAppStore(state => state.semesterStats);
   const referralData = useAppStore(state => state.referralData);
+
+  const isPremium = subscription?.status === 'active' || role === 'owner' || role === 'core_admin';
 
   // Non-logged-in landing page (Guest mode UI with premium onboarding cards)
   if (!user && !isAuthLoading) {
@@ -527,8 +530,10 @@ function Home() {
         variants={fadeInUp}
         className="dashboard-hero" 
         style={{
-          background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-glass) 100%)',
-          border: '1px solid var(--border)',
+          background: isPremium 
+            ? 'linear-gradient(135deg, rgba(234, 179, 8, 0.04) 0%, rgba(139, 92, 246, 0.05) 50%, var(--surface-glass) 100%)'
+            : 'linear-gradient(135deg, var(--surface) 0%, var(--surface-glass) 100%)',
+          border: isPremium ? '1.5px solid rgba(234, 179, 8, 0.45)' : '1px solid var(--border)',
           borderRadius: '24px',
           padding: '48px',
           display: 'flex',
@@ -536,11 +541,28 @@ function Home() {
           alignItems: 'center',
           gap: '40px',
           backdropFilter: window.innerWidth < 768 ? 'none' : 'blur(8px)',
-          boxShadow: 'var(--shadow-md)',
+          boxShadow: isPremium 
+            ? '0 20px 50px rgba(0,0,0,0.3), 0 0 30px rgba(234, 179, 8, 0.15)'
+            : 'var(--shadow-md)',
           willChange: 'transform, opacity'
         }}
       >
         <div className="hero-welcome" style={{ flex: 1 }}>
+          {isPremium && (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'linear-gradient(135deg, #ea580c 0%, #d97706 100%)',
+              padding: '5px 14px',
+              borderRadius: '100px',
+              boxShadow: '0 4px 15px rgba(234, 179, 8, 0.35)',
+              marginBottom: '16px'
+            }}>
+              <span style={{ fontSize: '12px' }}>👑</span>
+              <span style={{ fontSize: '9px', fontWeight: '900', color: 'white', letterSpacing: '0.15em', textTransform: 'uppercase' }}>TrackTaps Plus Member</span>
+            </div>
+          )}
           <motion.h2 
             initial={{ opacity: 0, x: -20, filter: 'blur(8px)' }}
             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
@@ -548,7 +570,7 @@ function Home() {
             id="hero-greeting" 
             style={{ fontSize: '32px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px', letterSpacing: '-0.02em' }}
           >
-            Welcome back, {user?.displayName?.split(' ')[0] || 'Scholar'} 👋
+            Welcome back, {user?.displayName?.split(' ')[0] || 'Scholar'}{isPremium ? ' 👑' : ' 👋'}
           </motion.h2>
           
           <motion.div
@@ -630,21 +652,38 @@ function Home() {
           whileHover={{ scale: 1.05, rotate: [0, 1, -1, 0] }}
           className="hero-overall-stats" 
           style={{
-            background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.1) 100%)',
-            border: '1px solid var(--primary-glow)',
+            background: isPremium 
+              ? 'linear-gradient(135deg, rgba(234, 179, 8, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%)' 
+              : 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(168, 85, 247, 0.1) 100%)',
+            border: isPremium ? '2px solid rgba(234, 179, 8, 0.5)' : '1px solid var(--primary-glow)',
             borderRadius: '20px',
             padding: '24px 32px',
             textAlign: 'center',
             minWidth: '200px',
-            boxShadow: '0 0 30px var(--primary-glow)'
+            boxShadow: isPremium ? '0 0 35px rgba(234, 179, 8, 0.35)' : '0 0 30px var(--primary-glow)'
           }}
         >
-          <span className="overall-percentage" id="hero-overall-perc" style={{ fontSize: '48px', fontWeight: '800', color: 'var(--primary-light)', display: 'block', lineHeight: 1 }}>{dashboardStats.overallPercentage}%</span>
+          <span className="overall-percentage" id="hero-overall-perc" style={{ 
+            fontSize: '48px', 
+            fontWeight: '900', 
+            color: isPremium ? '#f59e0b' : 'var(--primary-light)', 
+            display: 'block', 
+            lineHeight: 1,
+            textShadow: isPremium ? '0 0 15px rgba(234, 179, 8, 0.5)' : 'none'
+          }}>{dashboardStats.overallPercentage}%</span>
           <span className="overall-label" style={{ fontSize: '12px', color: 'var(--text-dim)', display: 'block', marginTop: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Attendance Score</span>
           
           {/* Mini Bunk Indicator */}
           <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '10px', color: 'var(--success)', fontWeight: '800', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+            <span style={{ 
+              fontSize: '10px', 
+              color: isPremium ? '#f59e0b' : 'var(--success)', 
+              fontWeight: '900', 
+              background: isPremium ? 'rgba(234, 179, 8, 0.15)' : 'rgba(16, 185, 129, 0.1)', 
+              padding: '4px 10px', 
+              borderRadius: '6px',
+              border: isPremium ? '1px solid rgba(234, 179, 8, 0.3)' : 'none'
+            }}>
               {getTotalBunkable()} SAFE BUNKS
             </span>
           </div>
@@ -855,15 +894,39 @@ function Home() {
             }}
             className="stat-pill" 
             style={{
-              background: 'var(--surface-glass)',
-              border: '1px solid var(--border)',
+              background: isPremium 
+                ? 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)'
+                : 'var(--surface-glass)',
+              border: isPremium ? `1px solid ${stat.color}40` : '1px solid var(--border)',
               borderRadius: '20px',
               padding: '24px',
               textAlign: 'center',
-              backdropFilter: 'blur(5px)'
+              backdropFilter: 'blur(5px)',
+              boxShadow: isPremium 
+                ? `0 8px 32px rgba(0, 0, 0, 0.2), 0 0 12px ${stat.color}15`
+                : 'none',
+              position: 'relative',
+              overflow: 'hidden'
             }}
           >
-            <span className="stat-pill-value" style={{ fontSize: '32px', fontWeight: '800', color: stat.color, display: 'block' }}>{stat.value}</span>
+            {isPremium && (
+              <div style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                fontSize: '12px',
+                opacity: 0.8
+              }}>
+                {stat.icon}
+              </div>
+            )}
+            <span className="stat-pill-value" style={{ 
+              fontSize: '32px', 
+              fontWeight: '900', 
+              color: stat.color, 
+              display: 'block',
+              textShadow: isPremium ? `0 0 10px ${stat.color}40` : 'none'
+            }}>{stat.value}</span>
             <span className="stat-pill-label" style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '8px', display: 'block', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</span>
           </motion.div>
         ))}
@@ -1008,25 +1071,26 @@ function Home() {
           <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Subjects you can safely skip while staying above {attendanceSettings?.defaultTarget || 75}%</div>
         </motion.div>
         
-        {subscription?.status === 'active' ? (
+        {isPremium ? (
           <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="prediction-card" style={{
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(15, 23, 42, 0.4) 100%)',
-            border: '1px solid var(--primary-glow)',
+            background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(139, 92, 246, 0.15) 100%)',
+            border: '1.5px solid rgba(234, 179, 8, 0.4)',
             borderRadius: '24px',
             padding: '28px',
             backdropFilter: 'blur(10px)',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            boxShadow: '0 8px 32px rgba(234, 179, 8, 0.1)'
           }}>
-            <div style={{ position: 'absolute', top: '-10px', right: '-10px', background: 'var(--warning)', color: 'white', fontSize: '10px', fontWeight: '900', padding: '4px 12px', borderRadius: '100px', transform: 'rotate(5deg)' }}>PLUS AI</div>
+            <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'linear-gradient(135deg, #ea580c 0%, #d97706 100%)', color: 'white', fontSize: '9px', fontWeight: '950', padding: '4px 10px', borderRadius: '100px', letterSpacing: '0.08em', boxShadow: '0 4px 10px rgba(234, 179, 8, 0.3)' }}>PLUS AI</div>
             <div className="pred-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
               <span className="pred-icon" style={{ fontSize: '28px' }}>🔮</span>
-              <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--primary-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Prediction</span>
+              <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Prediction</span>
             </div>
-            <div className="pred-value" style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>
+            <div className="pred-value" style={{ fontSize: '28px', fontWeight: '900', color: '#f59e0b', marginBottom: '8px', textShadow: '0 0 10px rgba(234, 179, 8, 0.3)' }}>
               {dashboardStats.overallPercentage > 85 ? 'Excellent' : dashboardStats.overallPercentage >= (attendanceSettings?.defaultTarget || 75) ? 'Stable' : 'Risk'}
             </div>
-            <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>AI expects your attendance to reach <span style={{ color: 'var(--success)', fontWeight: '700' }}>{(dashboardStats.overallPercentage + 2.5).toFixed(1)}%</span> by end of month.</div>
+            <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>AI expects your attendance to reach <span style={{ color: '#f59e0b', fontWeight: '800' }}>{(dashboardStats.overallPercentage + 2.5).toFixed(1)}%</span> by end of month.</div>
           </motion.div>
         ) : (
           <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="prediction-card" style={{
@@ -1051,37 +1115,43 @@ function Home() {
           whileHover={cardHover.hover} 
           className="prediction-card" 
           style={{
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.4) 100%)',
-            border: '1px solid rgba(245, 158, 11, 0.3)',
+            background: isPremium 
+              ? 'linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)'
+              : 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.4) 100%)',
+            border: isPremium ? '1.5px solid rgba(234, 179, 8, 0.4)' : '1px solid rgba(245, 158, 11, 0.3)',
             borderRadius: '24px',
             padding: '28px',
             backdropFilter: 'blur(10px)',
             cursor: 'pointer',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            boxShadow: isPremium ? '0 8px 32px rgba(234, 179, 8, 0.1)' : 'none'
           }}
         >
-          {subscription?.status !== 'active' && (
+          {!isPremium && (
             <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)', zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ background: 'var(--surface)', padding: '6px 14px', borderRadius: '100px', fontSize: '10px', fontWeight: '800', color: '#f59e0b', border: '1px solid #f59e0b', boxShadow: '0 0 20px rgba(245, 158, 11, 0.2)' }}>
                 PREMIUM
               </div>
             </div>
           )}
+          {isPremium && (
+            <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'linear-gradient(135deg, #ea580c 0%, #d97706 100%)', color: 'white', fontSize: '9px', fontWeight: '950', padding: '4px 10px', borderRadius: '100px', letterSpacing: '0.08em', boxShadow: '0 4px 10px rgba(234, 179, 8, 0.3)' }}>UNLOCKED</div>
+          )}
           <div className="pred-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <span className="pred-icon" style={{ fontSize: '28px' }}>🏖️</span>
-            <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: 'var(--warning)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <span className="pred-title" style={{ fontSize: '15px', fontWeight: '700', color: isPremium ? '#f59e0b' : 'var(--warning)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Bunk Calculator
             </span>
           </div>
-          <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: 'var(--warning)', marginBottom: '8px' }}>
+          <div className="pred-value" style={{ fontSize: '32px', fontWeight: '800', color: isPremium ? '#f59e0b' : 'var(--warning)', marginBottom: '8px', textShadow: isPremium ? '0 0 10px rgba(234, 179, 8, 0.3)' : 'none' }}>
             {getTotalBunkable()} <span style={{ fontSize: '14px', fontWeight: '600' }}>Safe Bunks</span>
           </div>
           <div className="pred-desc" style={{ fontSize: '13px', color: 'var(--text-dim)' }}>
             Plan your semester and skip classes safely.
           </div>
           <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
-             <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--warning)', textTransform: 'uppercase' }}>Open Calculator →</span>
+             <span style={{ fontSize: '11px', fontWeight: '800', color: isPremium ? '#f59e0b' : 'var(--warning)', textTransform: 'uppercase' }}>Open Calculator →</span>
           </div>
         </motion.div>
       </motion.div>
