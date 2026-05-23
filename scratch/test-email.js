@@ -6,7 +6,7 @@ const testName = 'Mustansir Sanawadwala';
 const testSubscription = {
   planType: 'yearly',
   expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-  amountPaid: 499
+  amountPaid: 18
 };
 
 console.log('🧪 Starting Email Test...');
