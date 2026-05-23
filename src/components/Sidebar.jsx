@@ -18,10 +18,12 @@ function Sidebar() {
     { icon: '🏖️', label: 'Bunk Calculator', path: '/bunk-calculator' },
     { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '📖', label: 'Guide Center', path: '/guide' },
+    { icon: 'ℹ️', label: 'About', path: '/about' },
     { icon: '⚙️', label: 'Settings', path: '/settings' },
   ] : [
     { icon: '🏠', label: 'Home', path: '/' },
     { icon: '📖', label: 'Guide Center', path: '/guide' },
+    { icon: 'ℹ️', label: 'About', path: '/about' },
   ];
 
   // ROLE-BASED ACCESS: Show Admin Panel for Owner and Core Members
