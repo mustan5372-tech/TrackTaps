@@ -38,6 +38,163 @@ const PLANS = [
   }
 ];
 
+const PrefillModal = ({ isOpen, onClose, plan, onProceed, name, setName, phone, setPhone }) => {
+  if (!isOpen || !plan) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      alert("Please enter your name.");
+      return;
+    }
+    if (!phone.trim()) {
+      alert("Please enter your mobile number.");
+      return;
+    }
+    onProceed(plan, name, phone);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1100,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.85)',
+        backdropFilter: 'blur(10px)',
+        padding: '20px'
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.95, y: 20, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        style={{
+          width: '100%',
+          maxWidth: '420px',
+          background: 'rgba(30, 30, 40, 0.75)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          padding: '30px',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+          color: 'white',
+          textAlign: 'left'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '800', letterSpacing: '-0.02em', background: 'linear-gradient(to right, #ffffff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Confirm Receipt Details
+            </h2>
+            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+              For premium WhatsApp & email delivery
+            </p>
+          </div>
+          <button 
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-muted)',
+              fontSize: '24px',
+              cursor: 'pointer',
+              padding: '4px',
+              lineHeight: '1'
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#a78bfa', marginBottom: '8px' }}>
+              Your Name
+            </label>
+            <input 
+              type="text" 
+              value={name} 
+              onChange={e => setName(e.target.value)} 
+              placeholder="Enter your name"
+              required
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                borderRadius: '12px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                fontSize: '15px',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#a78bfa', marginBottom: '8px' }}>
+              WhatsApp / Mobile Number
+            </label>
+            <input 
+              type="tel" 
+              value={phone} 
+              onChange={e => setPhone(e.target.value)} 
+              placeholder="e.g. +91 98765 43210"
+              required
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                borderRadius: '12px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                fontSize: '15px',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+                boxSizing: 'border-box'
+              }}
+            />
+            <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>
+              💬 Free WhatsApp and SMS confirmations will be dispatched here.
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            style={{
+              width: '100%',
+              padding: '16px',
+              borderRadius: '14px',
+              background: plan.color || 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              fontWeight: '800',
+              cursor: 'pointer',
+              fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              boxShadow: '0 8px 24px rgba(139, 92, 246, 0.2)',
+              boxSizing: 'border-box'
+            }}
+          >
+            <span>Proceed to Pay ₹${plan.price}</span>
+            <i className="fas fa-arrow-right" style={{ fontSize: '14px' }}></i>
+          </button>
+        </form>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const SuccessModal = ({ isOpen, onClose, planName }) => {
   if (!isOpen) return null;
 
@@ -142,12 +299,26 @@ function Premium() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [activatedPlan, setActivatedPlan] = useState('');
 
+  // Receipt Prefill States
+  const [showPrefillModal, setShowPrefillModal] = useState(false);
+  const [prefillName, setPrefillName] = useState('');
+  const [prefillPhone, setPrefillPhone] = useState('');
+  const [selectedPlanForPrefill, setSelectedPlanForPrefill] = useState(null);
+
   const handleUpgrade = async (plan) => {
     if (!user) {
       setAuthModalOpen(true);
       return;
     }
 
+    setPrefillName(user.displayName || '');
+    setPrefillPhone(user.phoneNumber || '');
+    setSelectedPlanForPrefill(plan);
+    setShowPrefillModal(true);
+  };
+
+  const executeCheckout = async (plan, customName, customPhone) => {
+    setShowPrefillModal(false);
     setLoading(true);
     setSelectedPlan(plan.id);
 
@@ -185,7 +356,9 @@ function Premium() {
                 razorpay_signature: response.razorpay_signature,
                 uid: user.uid,
                 planId: plan.id,
-                amount: plan.price
+                amount: plan.price,
+                name: customName,
+                phone: customPhone
               })
             });
 
@@ -214,7 +387,11 @@ function Premium() {
             setSelectedPlan(null);
           }
         },
-        prefill: { name: user.displayName, email: user.email },
+        prefill: { 
+          name: customName || user.displayName, 
+          email: user.email,
+          contact: customPhone || user.phoneNumber 
+        },
         theme: { color: plan.color },
         modal: {
           ondismiss: function() {
@@ -259,6 +436,18 @@ function Premium() {
             isOpen={showSuccess} 
             onClose={() => navigate('/')} 
             planName={activatedPlan} 
+          />
+        )}
+        {showPrefillModal && (
+          <PrefillModal
+            isOpen={showPrefillModal}
+            onClose={() => setShowPrefillModal(false)}
+            plan={selectedPlanForPrefill}
+            onProceed={executeCheckout}
+            name={prefillName}
+            setName={setPrefillName}
+            phone={prefillPhone}
+            setPhone={setPrefillPhone}
           />
         )}
       </AnimatePresence>
