@@ -160,31 +160,19 @@ export default async function handler(req, res) {
       
       console.log(`✅ [PaymentVerification] Premium Activated successfully for ${uid}. Expires: ${subscriptionData.expiryDate}`);
 
-      // --- Async Notifications (Email & Mobile WhatsApp/SMS) ---
+      // --- Async Notifications (Gmail SMTP Welcome Email Receipt) ---
       try {
         const userDoc = await userRef.get();
         const userData = userDoc.data() || {};
         
-        // Resolve email, name, and phone
+        // Resolve email & name
         const email = userData.email || req.body.email;
-        const resolvedName = req.body.name || userData.displayName || 'TrackTaps Explorer';
-        const resolvedPhone = req.body.phone || userData.phoneNumber;
+        const resolvedName = userData.displayName || 'TrackTaps Explorer';
 
-        // 1. Dispatch Email Receipt
+        // Dispatch Email Receipt (Kept 100% Intact)
         if (email) {
           sendPremiumWelcomeEmail(email, resolvedName, subscriptionData).catch(err => {
             console.error('❌ [PaymentVerification] Welcome Email failed:', err);
-          });
-        }
-
-        // 2. Dispatch Mobile WhatsApp/SMS
-        if (resolvedPhone) {
-          import('./services/mobileService.js').then(m => {
-            m.sendMobileConfirmation(resolvedPhone, resolvedName, subscriptionData).catch(err => {
-              console.error('❌ [PaymentVerification] Mobile Notification failed:', err);
-            });
-          }).catch(importErr => {
-            console.error('❌ [PaymentVerification] Failed to load mobileService:', importErr);
           });
         }
       } catch (notifyErr) {
