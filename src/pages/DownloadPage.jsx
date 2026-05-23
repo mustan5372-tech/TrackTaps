@@ -21,8 +21,8 @@ function DownloadPage() {
   }, []);
 
   const triggerDownload = () => {
-    // Navigate directly to download stream, keeping user on the page
-    window.location.href = '/TrackTaps.apk';
+    // Redirect directly to the robust GitHub raw CDN to trigger download instantly
+    window.location.href = 'https://github.com/mustan5372-tech/TrackTaps/raw/main/TrackTaps.apk';
   };
 
   return (
