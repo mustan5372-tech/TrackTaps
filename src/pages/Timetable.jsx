@@ -63,11 +63,11 @@ function Timetable() {
   );
 
   return (
-    <div className="timetable-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '120px' }}>
+    <div className="timetable-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '200px' }}>
       <style>{`
         @media (max-width: 768px) {
           .timetable-view {
-            padding: 8px 0 120px 0 !important;
+            padding: 8px 0 200px 0 !important;
           }
           .view-header {
             padding: 24px 20px !important;
@@ -81,6 +81,9 @@ function Timetable() {
           .timetable-grid-container {
             margin: 0 16px !important;
             padding: 16px 8px !important;
+            touch-action: pan-x pan-y !important;
+            -webkit-overflow-scrolling: touch !important;
+            overscroll-behavior: contain !important;
           }
         }
       `}</style>
@@ -96,7 +99,10 @@ function Timetable() {
         border: '1px solid var(--border)',
         borderRadius: '20px',
         padding: '24px',
-        overflow: 'auto'
+        overflow: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        touchAction: 'pan-x pan-y',
+        overscrollBehavior: 'contain'
       }}>
         <div style={{
           display: 'grid',

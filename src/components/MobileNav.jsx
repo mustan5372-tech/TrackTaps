@@ -169,7 +169,7 @@ function MobileNav() {
                 inset: 0,
                 background: 'rgba(2, 6, 23, 0.75)',
                 backdropFilter: 'blur(12px)',
-                zIndex: 99998,
+                zIndex: 100000,
               }}
             />
 
@@ -188,10 +188,11 @@ function MobileNav() {
                 borderTop: '1px solid rgba(139, 92, 246, 0.4)',
                 borderRadius: '24px 24px 0 0',
                 padding: '20px 20px calc(24px + env(safe-area-inset-bottom, 16px)) 20px',
-                zIndex: 99999,
+                zIndex: 100001,
                 boxShadow: '0 -15px 40px rgba(0,0,0,0.5)',
                 maxWidth: '600px',
-                margin: '0 auto'
+                margin: '0 auto',
+                pointerEvents: 'auto'
               }}
             >
               {/* Drag Handle Pill */}

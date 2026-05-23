@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import AttendanceEngine from '../services/attendanceEngine';
 import useAppStore from '../store/appStore';
@@ -15,6 +15,7 @@ function Calendar() {
   const [selectionAnchor, setSelectionAnchor] = useState(null);
 
   const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const selectedDateDetailRef = useRef(null);
   
   useEffect(() => {
     const checkMobile = () => {
@@ -91,6 +92,12 @@ function Calendar() {
       toggleDateSelection(dateStr);
     } else {
       setSelectedDate(dateStr);
+      // Auto-scroll to the detail section after a short delay for render
+      setTimeout(() => {
+        if (selectedDateDetailRef.current) {
+          selectedDateDetailRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 150);
     }
   };
 
@@ -204,7 +211,7 @@ function Calendar() {
       <style>{`
         @media (max-width: 768px) {
           .calendar-view {
-            padding: 8px 0 120px 0 !important;
+            padding: 8px 0 200px 0 !important;
             gap: 16px !important;
           }
           .view-header {
@@ -669,6 +676,7 @@ function Calendar() {
       {/* Quick Attendance Manager for Highlighted Date */}
       {selectedDate && (
         <motion.div
+          ref={selectedDateDetailRef}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           style={{
