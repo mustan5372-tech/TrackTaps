@@ -50,3 +50,47 @@ self.addEventListener('fetch', (event) => {
         })
     );
 });
+
+// Background Push Notification Event
+self.addEventListener('push', (event) => {
+    let data = { title: 'TrackTaps', body: 'New attendance update received!' };
+    if (event.data) {
+        try {
+            data = event.data.json();
+        } catch (e) {
+            data = { title: 'TrackTaps', body: event.data.text() };
+        }
+    }
+
+    const options = {
+        body: data.body,
+        icon: '/assets/icon-B5Otw8hD.png',
+        badge: '/assets/icon-B5Otw8hD.png',
+        vibrate: [100, 50, 100],
+        data: {
+            url: data.url || '/'
+        }
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, options)
+    );
+});
+
+// Notification Click Event
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            const destinationUrl = event.notification.data?.url || '/';
+            for (const client of clientList) {
+                if (client.url.includes(destinationUrl) && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(destinationUrl);
+            }
+        })
+    );
+});

@@ -31,6 +31,7 @@ import analyticsService from './services/analyticsService';
 import presenceService from './services/presenceService';
 import OfflineBanner from './components/OfflineBanner';
 import notificationService from './services/notificationService';
+import NotificationPrompt from './components/NotificationPrompt';
 
 const SafeRoute = ({ children }) => {
   const { user, isAuthLoading } = useAppStore();
@@ -223,6 +224,7 @@ function App() {
           Staging Build
         </div>
       )}
+      <NotificationPrompt />
       <OfflineBanner />
       <GlobalToast />
       <ErrorBoundary>
