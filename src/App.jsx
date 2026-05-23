@@ -1,25 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AppShell from './components/AppShell';
 import Home from './pages/Home';
-import Calendar from './pages/Calendar';
-import Timetable from './pages/Timetable';
-import Subjects from './pages/Subjects';
-import Insights from './pages/Insights';
-import History from './pages/History';
-import About from './pages/About';
-import Settings from './pages/Settings';
-import Pod from './pages/Pod';
-import Premium from './pages/Premium';
-import Admin from './pages/Admin';
-import AiSemesterImport from './pages/AiSemesterImport';
-import BunkCalculator from './pages/BunkCalculator';
-import Community from './community/Community';
-import Referral from './pages/Referral';
-import Guide from './pages/Guide';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import DownloadPage from './pages/DownloadPage';
+
+// Lazy load secondary pages to drastically reduce initial bundle size and load time
+const Calendar = lazy(() => import('./pages/Calendar'));
+const Timetable = lazy(() => import('./pages/Timetable'));
+const Subjects = lazy(() => import('./pages/Subjects'));
+const Insights = lazy(() => import('./pages/Insights'));
+const History = lazy(() => import('./pages/History'));
+const About = lazy(() => import('./pages/About'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Pod = lazy(() => import('./pages/Pod'));
+const Premium = lazy(() => import('./pages/Premium'));
+const Admin = lazy(() => import('./pages/Admin'));
+const AiSemesterImport = lazy(() => import('./pages/AiSemesterImport'));
+const BunkCalculator = lazy(() => import('./pages/BunkCalculator'));
+const Community = lazy(() => import('./community/Community'));
+const Referral = lazy(() => import('./pages/Referral'));
+const Guide = lazy(() => import('./pages/Guide'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const DownloadPage = lazy(() => import('./pages/DownloadPage'));
 import useAppStore from './store/appStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import GlobalToast from './components/GlobalToast';
@@ -289,27 +291,64 @@ function App() {
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
       <TermsModal />
       
-      <Routes>
-        <Route path="/download" element={<DownloadPage />} />
-        <Route path="/pod" element={<ErrorBoundary><Pod /></ErrorBoundary>} />
-        <Route path="/" element={<SafeRoute><Home /></SafeRoute>} />
-        <Route path="/calendar" element={<SafeRoute><Calendar /></SafeRoute>} />
-        <Route path="/timetable" element={<SafeRoute><Timetable /></SafeRoute>} />
-        <Route path="/subjects" element={<SafeRoute><Subjects /></SafeRoute>} />
-        <Route path="/insights" element={<SafeRoute><Insights /></SafeRoute>} />
-        <Route path="/history" element={<SafeRoute><History /></SafeRoute>} />
-        <Route path="/about" element={<SafeRoute><About /></SafeRoute>} />
-        <Route path="/settings" element={<SafeRoute><Settings /></SafeRoute>} />
-        <Route path="/premium" element={<SafeRoute><Premium /></SafeRoute>} />
-        <Route path="/admin" element={<SafeRoute><Admin /></SafeRoute>} />
-        <Route path="/ai-import" element={<SafeRoute><AiSemesterImport /></SafeRoute>} />
-        <Route path="/bunk-calculator" element={<SafeRoute><BunkCalculator /></SafeRoute>} />
-        <Route path="/community" element={<SafeRoute><Community /></SafeRoute>} />
-        <Route path="/referral" element={<SafeRoute><Referral /></SafeRoute>} />
-        <Route path="/guide" element={<SafeRoute><Guide /></SafeRoute>} />
-        <Route path="/terms" element={<SafeRoute><Terms /></SafeRoute>} />
-        <Route path="/privacy" element={<SafeRoute><Privacy /></SafeRoute>} />
-      </Routes>
+      <Suspense fallback={
+        <div style={{
+          height: '100vh',
+          width: '100vw',
+          background: 'var(--bg-primary)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '16px'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid rgba(255, 255, 255, 0.05)',
+            borderTopColor: 'var(--primary-light)',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+            boxShadow: '0 0 15px rgba(139, 92, 246, 0.3)'
+          }} />
+          <span style={{
+            fontSize: '11px',
+            color: 'var(--text-dim)',
+            fontWeight: '800',
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase'
+          }}>
+            Loading Portal...
+          </span>
+          <style>{`
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      }>
+        <Routes>
+          <Route path="/download" element={<DownloadPage />} />
+          <Route path="/pod" element={<ErrorBoundary><Pod /></ErrorBoundary>} />
+          <Route path="/" element={<SafeRoute><Home /></SafeRoute>} />
+          <Route path="/calendar" element={<SafeRoute><Calendar /></SafeRoute>} />
+          <Route path="/timetable" element={<SafeRoute><Timetable /></SafeRoute>} />
+          <Route path="/subjects" element={<SafeRoute><Subjects /></SafeRoute>} />
+          <Route path="/insights" element={<SafeRoute><Insights /></SafeRoute>} />
+          <Route path="/history" element={<SafeRoute><History /></SafeRoute>} />
+          <Route path="/about" element={<SafeRoute><About /></SafeRoute>} />
+          <Route path="/settings" element={<SafeRoute><Settings /></SafeRoute>} />
+          <Route path="/premium" element={<SafeRoute><Premium /></SafeRoute>} />
+          <Route path="/admin" element={<SafeRoute><Admin /></SafeRoute>} />
+          <Route path="/ai-import" element={<SafeRoute><AiSemesterImport /></SafeRoute>} />
+          <Route path="/bunk-calculator" element={<SafeRoute><BunkCalculator /></SafeRoute>} />
+          <Route path="/community" element={<SafeRoute><Community /></SafeRoute>} />
+          <Route path="/referral" element={<SafeRoute><Referral /></SafeRoute>} />
+          <Route path="/guide" element={<SafeRoute><Guide /></SafeRoute>} />
+          <Route path="/terms" element={<SafeRoute><Terms /></SafeRoute>} />
+          <Route path="/privacy" element={<SafeRoute><Privacy /></SafeRoute>} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

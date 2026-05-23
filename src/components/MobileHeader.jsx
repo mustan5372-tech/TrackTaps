@@ -69,11 +69,11 @@ function MobileHeader() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                background: isSyncing ? 'rgba(16, 185, 129, 0.15)' : 'rgba(139, 92, 246, 0.15)',
+                background: isSyncing ? 'rgba(16, 185, 129, 0.15)' : 'linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%)',
                 padding: '6px 12px',
                 borderRadius: '100px',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                boxShadow: isSyncing ? '0 0 10px rgba(16, 185, 129, 0.1)' : '0 0 10px rgba(139, 92, 246, 0.1)'
+                border: `1px solid ${isSyncing ? 'rgba(16, 185, 129, 0.3)' : 'rgba(234, 179, 8, 0.4)'}`,
+                boxShadow: isSyncing ? '0 0 10px rgba(16, 185, 129, 0.1)' : '0 0 12px rgba(234, 179, 8, 0.2)'
               }}
             >
               <motion.div
@@ -83,20 +83,40 @@ function MobileHeader() {
                   width: '6px',
                   height: '6px',
                   borderRadius: '50%',
-                  background: isSyncing ? '#10b981' : 'var(--primary-light)',
-                  boxShadow: isSyncing ? '0 0 8px #10b981' : '0 0 8px var(--primary-light)'
+                  background: isSyncing ? '#10b981' : '#f59e0b',
+                  boxShadow: isSyncing ? '0 0 8px #10b981' : '0 0 8px #f59e0b'
                 }}
               />
+              <span style={{ fontSize: '11px', display: 'flex', alignItems: 'center' }}>👑</span>
               <span style={{ 
                 fontSize: '10px', 
                 fontWeight: '900', 
-                color: isSyncing ? '#10b981' : 'var(--primary-light)',
-                letterSpacing: '0.05em'
+                color: isSyncing ? '#10b981' : '#f59e0b',
+                letterSpacing: '0.08em'
               }}>
-                {isSyncing ? 'SYNCING' : 'PLUS'}
+                {isSyncing ? 'SYNCING' : 'ELITE PLUS'}
               </span>
             </motion.div>
-          ) : null
+          ) : (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(255, 255, 255, 0.04)',
+              padding: '6px 12px',
+              borderRadius: '100px',
+              border: '1px solid rgba(255, 255, 255, 0.06)'
+            }}>
+              <span style={{ 
+                fontSize: '10px', 
+                fontWeight: '800', 
+                color: 'var(--text-dim)',
+                letterSpacing: '0.05em'
+              }}>
+                FREE TIER
+              </span>
+            </div>
+          )
         ) : (
           // If NOT logged in, show Login Button
           <motion.button
