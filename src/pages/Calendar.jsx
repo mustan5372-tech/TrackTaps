@@ -5,7 +5,7 @@ import useAppStore from '../store/appStore';
 
 function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 1)); // May 2026
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState('2026-05-25');
   const [showModal, setShowModal] = useState(false);
   const [showSemesterModal, setShowSemesterModal] = useState(false);
   
@@ -70,7 +70,6 @@ function Calendar() {
       toggleDateSelection(dateStr);
     } else {
       setSelectedDate(dateStr);
-      setShowModal(true);
     }
   };
 
@@ -132,6 +131,12 @@ function Calendar() {
     const dateStr = AttendanceEngine.formatDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
     );
+    
+    const holiday = semesterSettings?.holidays?.find(h => h.date === dateStr);
+    if (holiday) {
+      return { type: 'holiday', color: '#c084fc', label: holiday.name || 'Holiday' };
+    }
+    
     return AttendanceEngine.getDateVisualState(dateStr, calendarEvents, attendanceData);
   };
 
@@ -171,7 +176,7 @@ function Calendar() {
   }
 
   return (
-    <div className="calendar-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="calendar-view" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <style>{`
         @media (max-width: 768px) {
           .calendar-view {
@@ -179,43 +184,31 @@ function Calendar() {
             gap: 16px !important;
           }
           .view-header {
-            padding: 24px 20px !important;
+            padding: 24px 20px 8px 20px !important;
             background: var(--bg-primary) !important;
-            border-bottom: 1px solid var(--border) !important;
             margin-bottom: 0px !important;
           }
           .calendar-grid-container {
-            padding: 16px 8px !important;
-            border-radius: 0 !important;
-            border-left: none !important;
-            border-right: none !important;
+            padding: 16px 12px !important;
+            border-radius: 20px !important;
             background: transparent !important;
+            margin: 0 8px !important;
           }
           .calendar-weekday-headers {
-            gap: 4px !important;
+            gap: 6px !important;
             margin-bottom: 8px !important;
           }
           .calendar-weekday-headers > div {
-            padding: 4px !important;
             font-size: 10px !important;
+            padding: 4px 0 !important;
           }
           .calendar-days-grid {
-            gap: 4px !important;
+            gap: 8px !important;
           }
           .calendar-day-cell {
-            padding: 8px 4px !important;
-            min-height: 80px !important;
-            border-radius: 12px !important;
-          }
-          .calendar-day-number {
-            font-size: 16px !important;
-          }
-          .calendar-day-label {
-            font-size: 8px !important;
-            line-height: 1.1 !important;
-          }
-          .calendar-day-count {
-            font-size: 8px !important;
+            aspect-ratio: 1/1 !important;
+            border-radius: 50% !important;
+            padding: 4px !important;
           }
           .multi-select-toolbar {
              position: fixed !important;
@@ -234,90 +227,128 @@ function Calendar() {
              gap: 8px !important;
              width: 100% !important;
           }
-          .hide-mobile {
-             display: none !important;
-          }
         }
       `}</style>
-      {/* Header */}
-      <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>{monthYear}</h2>
-        <div style={{ display: 'flex', gap: '12px' }}>
+
+      {/* Modern Uncluttered Header */}
+      <header className="view-header" style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '24px 20px 8px 20px'
+      }}>
+        <h2 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>{monthYear}</h2>
+        
+        {/* Month Pagination Control */}
+        <div style={{
+          display: 'flex',
+          gap: '4px',
+          background: 'rgba(255,255,255,0.04)',
+          padding: '4px',
+          borderRadius: '12px',
+          border: '1px solid rgba(255,255,255,0.05)'
+        }}>
           <button
-            onClick={() => window.location.href = '/ai-import'}
+            onClick={handlePrevMonth}
             style={{
-              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%)',
-              border: '1px solid var(--primary-glow)',
-              color: 'var(--primary-light)',
-              padding: '10px 16px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: '800',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 0 15px rgba(168, 85, 247, 0.3)'
-            }}
-          >
-            <span>✨</span> <span className="hide-mobile">AI Import</span>
-          </button>
-          <button
-            onClick={() => setShowSemesterModal(true)}
-            style={{
-              background: 'var(--surface-glass)',
-              border: '1px solid var(--border)',
+              background: 'transparent',
+              border: 'none',
               color: 'var(--text-main)',
-              padding: '10px 16px',
+              padding: '6px 14px',
               borderRadius: '8px',
               cursor: 'pointer',
               fontWeight: '700',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
+              fontSize: '14px',
+              transition: 'background 0.2s'
             }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            <span>🎓</span> <span className="hide-mobile">Semester Setup</span>
+            ←
           </button>
-          <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '10px' }}>
-            <button
-              onClick={handlePrevMonth}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-main)',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '600'
-              }}
-            >
-              ←
-            </button>
-            <button
-              onClick={handleNextMonth}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-main)',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '600'
-              }}
-            >
-              →
-            </button>
-          </div>
+          <button
+            onClick={handleNextMonth}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-main)',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '700',
+              fontSize: '14px',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            →
+          </button>
         </div>
       </header>
+
+      {/* Relocated descriptive setup options in the calendar view for crystal-clear readability */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '12px',
+        padding: '0 20px'
+      }}>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => window.location.href = '/ai-import'}
+          style={{
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%)',
+            border: '1.5px solid var(--primary-glow)',
+            color: 'var(--primary-light)',
+            padding: '12px 16px',
+            borderRadius: '16px',
+            cursor: 'pointer',
+            fontWeight: '800',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            boxShadow: '0 4px 15px rgba(139, 92, 246, 0.15)'
+          }}
+        >
+          <span>✨ AI Import Timetable</span>
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setShowSemesterModal(true)}
+          style={{
+            background: 'var(--surface-glass)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-main)',
+            padding: '12px 16px',
+            borderRadius: '16px',
+            cursor: 'pointer',
+            fontWeight: '700',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          <span>🎓 Semester Setup</span>
+        </motion.button>
+      </div>
 
       {/* User Guidance Banner */}
       {(!semesterSettings.startDate || !semesterSettings.endDate) && (
         <div style={{
           background: 'rgba(245, 158, 11, 0.1)',
           border: '1px solid rgba(245, 158, 11, 0.2)',
-          borderRadius: '12px',
-          padding: '16px',
+          borderRadius: '16px',
+          padding: '16px 20px',
+          margin: '0 20px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -325,8 +356,8 @@ function Calendar() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '20px' }}>ℹ️</span>
-            <span style={{ color: '#f59e0b', fontSize: '14px', fontWeight: '500' }}>
-              Setup semester dates in Calendar to enable bunk predictions and planned class calculations.
+            <span style={{ color: '#f59e0b', fontSize: '13px', fontWeight: '600' }}>
+              Configure semester bounds to unlock automated attendance projections.
             </span>
           </div>
           <button 
@@ -336,13 +367,13 @@ function Calendar() {
               color: 'white',
               border: 'none',
               padding: '8px 16px',
-              borderRadius: '8px',
+              borderRadius: '10px',
               fontSize: '12px',
-              fontWeight: '700',
+              fontWeight: '800',
               cursor: 'pointer'
             }}
           >
-            Configure Now
+            Configure
           </button>
         </div>
       )}
@@ -358,6 +389,7 @@ function Calendar() {
             border: '1px solid var(--primary-glow)',
             borderRadius: '16px',
             padding: '16px 24px',
+            margin: '0 20px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -385,31 +417,32 @@ function Calendar() {
         </motion.div>
       )}
 
-      {/* Calendar Grid */}
+      {/* Calendar Grid Container */}
       <div className="calendar-grid-container" style={{
-        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%)',
-        border: '1px solid rgba(139, 92, 246, 0.15)',
-        borderRadius: '20px',
-        padding: '24px'
+        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(168, 85, 247, 0.02) 100%)',
+        border: '1px solid rgba(139, 92, 246, 0.1)',
+        borderRadius: '24px',
+        padding: '20px',
+        margin: '0 20px'
       }}>
         {/* Weekday Headers */}
         <div className="calendar-weekday-headers" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
-          gap: '12px',
-          marginBottom: '16px'
+          gap: '8px',
+          marginBottom: '12px'
         }}>
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
             <div
               key={day}
               style={{
                 textAlign: 'center',
-                fontSize: '12px',
-                fontWeight: '700',
+                fontSize: '11px',
+                fontWeight: '800',
                 color: 'var(--primary-light)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
-                padding: '12px'
+                padding: '6px 0'
               }}
             >
               {day}
@@ -421,13 +454,30 @@ function Calendar() {
         <div className="calendar-days-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
-          gap: '12px'
+          gap: '8px'
         }}>
           {days.map((day, idx) => {
             const dateStr = day ? AttendanceEngine.formatDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day)) : null;
             const visualState = day ? getDateVisualState(day) : null;
             const isToday = day && AttendanceEngine.isToday(dateStr);
-            const isSelected = selectedDates.includes(dateStr);
+            const isSelected = day && selectedDate === dateStr;
+
+            // Render empty cells for offsets with no borders to keep it perfectly clean
+            if (!day) {
+              return (
+                <div 
+                  key={idx} 
+                  style={{ 
+                    aspectRatio: '1', 
+                    background: 'transparent', 
+                    border: 'none' 
+                  }} 
+                />
+              );
+            }
+
+            const dateEvents = getEventsForDate(day);
+            const hasClasses = dateEvents.length > 0;
 
             return (
               <motion.div
@@ -443,72 +493,298 @@ function Calendar() {
                   window.datePressTimer = timer;
                 }}
                 onTouchEnd={() => clearTimeout(window.datePressTimer)}
-                onClick={() => day && handleDateClick(day)}
+                onClick={() => handleDateClick(day)}
                 style={{
-                  background: isSelected 
-                    ? 'var(--primary-glow)' 
-                    : visualState?.color ? `${visualState.color}15` : 'var(--surface-bright)',
+                  aspectRatio: '1',
+                  borderRadius: '50%',
+                  background: isSelected
+                    ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)'
+                    : isToday
+                    ? 'rgba(139, 92, 246, 0.15)'
+                    : visualState?.color
+                    ? `${visualState.color}15`
+                    : 'rgba(255, 255, 255, 0.02)',
                   border: isSelected
                     ? '2px solid var(--primary-light)'
                     : isToday
-                    ? '2px solid var(--primary-light)'
+                    ? '2px dashed var(--primary-light)'
                     : visualState?.color
-                    ? `2px solid ${visualState.color}40`
-                    : '1px solid var(--border)',
-                  borderRadius: '12px',
-                  padding: '12px',
-                  minHeight: '100px',
-                  cursor: day ? 'pointer' : 'default',
+                    ? `2.5px solid ${visualState.color}`
+                    : '1px solid rgba(255, 255, 255, 0.05)',
+                  cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  textAlign: 'center',
-                  transition: 'all 0.3s ease',
+                  transition: 'all 0.2s ease',
                   position: 'relative',
-                  overflow: 'hidden',
-                  boxShadow: isSelected ? '0 0 15px var(--primary-glow)' : 'none'
+                  boxShadow: isSelected 
+                    ? '0 0 15px var(--primary-glow)' 
+                    : visualState?.color
+                    ? `0 0 10px ${visualState.color}25`
+                    : 'none'
                 }}
               >
-                {day && isSelected && (
-                  <div style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '14px' }}>✅</div>
-                )}
-                {day && (
-                  <>
-                    <div className="calendar-day-number" style={{
-                      fontSize: '18px',
-                      fontWeight: '800',
-                      color: 'var(--text-main)',
-                      marginBottom: '4px'
-                    }}>
-                      {day}
-                    </div>
-                    {visualState && visualState.type !== 'empty' && (
-                      <div className="calendar-day-label" style={{
-                        fontSize: '11px',
-                        color: visualState.color,
-                        fontWeight: '600',
-                        marginBottom: '4px'
-                      }}>
-                        {visualState.label}
-                      </div>
+                <span style={{
+                  fontSize: '15px',
+                  fontWeight: '800',
+                  color: isSelected ? 'white' : 'var(--text-main)',
+                  lineHeight: 1
+                }}>
+                  {day}
+                </span>
+
+                {/* Elegant glowing class status indicator dots */}
+                {hasClasses && !isSelected && (
+                  <div style={{
+                    display: 'flex',
+                    gap: '3px',
+                    marginTop: '4px',
+                    justifyContent: 'center'
+                  }}>
+                    {dateEvents.slice(0, 3).map((event) => {
+                      const state = AttendanceEngine.getAttendanceState(event.id, attendanceData);
+                      const dotColor = AttendanceEngine.getStateColor(state);
+                      return (
+                        <div 
+                          key={event.id}
+                          style={{
+                            width: '5px',
+                            height: '5px',
+                            borderRadius: '50%',
+                            background: dotColor,
+                            boxShadow: `0 0 4px ${dotColor}`
+                          }}
+                        />
+                      );
+                    })}
+                    {dateEvents.length > 3 && (
+                      <div style={{
+                        width: '4px',
+                        height: '4px',
+                        borderRadius: '50%',
+                        background: 'var(--text-dim)'
+                      }} />
                     )}
-                    {getEventsForDate(day).length > 0 && (
-                      <div className="calendar-day-count" style={{
-                        fontSize: '10px',
-                        color: 'var(--text-dim)',
-                        marginTop: '4px'
-                      }}>
-                        {getEventsForDate(day).length} class{getEventsForDate(day).length !== 1 ? 'es' : ''}
-                      </div>
-                    )}
-                  </>
+                  </div>
                 )}
               </motion.div>
             );
           })}
         </div>
       </div>
+
+      {/* Quick Attendance Manager for Highlighted Date */}
+      {selectedDate && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-glass) 100%)',
+            border: '1px solid var(--border)',
+            borderRadius: '24px',
+            padding: '24px',
+            margin: '0 20px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}
+        >
+          {/* Section Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>
+                {AttendanceEngine.formatDateForDisplay(selectedDate)}
+              </h3>
+              <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: '2px 0 0 0' }}>
+                {AttendanceEngine.getDayName(selectedDate)} • Daily Schedule Tracker
+              </p>
+            </div>
+            
+            {/* Bulk options */}
+            {selectedDate && AttendanceEngine.getEventsForDate(selectedDate, calendarEvents).length > 0 && (
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  onClick={() => handleMarkAllForDate('present')}
+                  style={{ background: 'rgba(16, 185, 129, 0.15)', border: 'none', color: '#10b981', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  ✓ All Present
+                </button>
+                <button
+                  onClick={() => handleMarkAllForDate('absent')}
+                  style={{ background: 'rgba(239, 68, 68, 0.15)', border: 'none', color: '#ef4444', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  ✗ All Absent
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Events List */}
+          {selectedDate && AttendanceEngine.getEventsForDate(selectedDate, calendarEvents).length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {AttendanceEngine.getEventsForDate(selectedDate, calendarEvents).map((event) => {
+                const state = AttendanceEngine.getAttendanceState(event.id, attendanceData);
+                const color = AttendanceEngine.getStateColor(state);
+
+                return (
+                  <div
+                    key={event.id}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: `1px solid ${state ? `${color}40` : 'var(--border)'}`,
+                      borderRadius: '16px',
+                      padding: '14px 18px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '14px', marginBottom: '2px' }}>
+                        {event.subjectName}
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                        {event.timeSlot}
+                      </div>
+                    </div>
+
+                    {/* Compact Tracker Buttons */}
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        onClick={() => handleMarkAttendance(event.id, 'present')}
+                        style={{
+                          background: state === 'present' ? '#10b981' : 'rgba(16, 185, 129, 0.05)',
+                          color: state === 'present' ? 'white' : '#10b981',
+                          border: `1px solid ${state === 'present' ? '#10b981' : 'rgba(16, 185, 129, 0.2)'}`,
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => handleMarkAttendance(event.id, 'absent')}
+                        style={{
+                          background: state === 'absent' ? '#ef4444' : 'rgba(239, 68, 68, 0.05)',
+                          color: state === 'absent' ? 'white' : '#ef4444',
+                          border: `1px solid ${state === 'absent' ? '#ef4444' : 'rgba(239, 68, 68, 0.2)'}`,
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        ✗
+                      </button>
+                      <button
+                        onClick={() => handleMarkAttendance(event.id, 'off')}
+                        style={{
+                          background: state === 'off' ? 'var(--primary)' : 'rgba(139, 92, 246, 0.05)',
+                          color: state === 'off' ? 'white' : 'var(--primary-light)',
+                          border: `1px solid ${state === 'off' ? 'var(--primary)' : 'rgba(139, 92, 246, 0.2)'}`,
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        ◯
+                      </button>
+                      {state && (
+                        <button
+                          onClick={() => handleClearAttendance(event.id)}
+                          style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            color: 'var(--text-dim)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            padding: '0 8px',
+                            height: '32px',
+                            borderRadius: '8px',
+                            fontSize: '10px',
+                            fontWeight: '700',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (() => {
+            const isHoliday = semesterSettings?.holidays?.find(h => h.date === selectedDate);
+            if (isHoliday) {
+              return (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '24px',
+                  color: 'var(--text-dim)',
+                  background: 'rgba(192, 132, 252, 0.05)',
+                  borderRadius: '16px',
+                  border: '1.5px dashed #c084fc'
+                }}>
+                  <span style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>🎉</span>
+                  <p style={{ margin: '0 0 6px 0', color: '#c084fc', fontWeight: '800', fontSize: '16px' }}>
+                    {isHoliday.name}
+                  </p>
+                  <p style={{ fontSize: '12px', margin: 0, color: 'var(--text-dim)', lineHeight: 1.4 }}>
+                    Official Academic Holiday • Enjoy your day off!
+                  </p>
+                </div>
+              );
+            }
+            return (
+              <div style={{
+                textAlign: 'center',
+                padding: '24px',
+                color: 'var(--text-dim)',
+                background: 'rgba(255, 255, 255, 0.01)',
+                borderRadius: '16px',
+                border: '1px dashed var(--border)'
+              }}>
+                <span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>
+                  {selectedDate < semesterSettings.startDate || selectedDate > semesterSettings.endDate ? '📅' : '✨'}
+                </span>
+                <p style={{ margin: '0 0 4px 0', color: 'var(--text-main)', fontWeight: '700', fontSize: '14px' }}>
+                  {selectedDate < semesterSettings.startDate || selectedDate > semesterSettings.endDate 
+                    ? "Outside Semester Range" 
+                    : "No classes scheduled"}
+                </p>
+                <p style={{ fontSize: '12px', margin: 0, lineHeight: 1.4 }}>
+                  {selectedDate < semesterSettings.startDate || selectedDate > semesterSettings.endDate 
+                    ? "Adjust semester bounds in Semester Setup above."
+                    : "Enjoy your free day, or customize your timetable settings."}
+                </p>
+              </div>
+            );
+          })()}
+        </motion.div>
+      )}
 
       {/* Legend */}
       <div style={{
@@ -517,23 +793,24 @@ function Calendar() {
         justifyContent: 'center',
         flexWrap: 'wrap',
         padding: '16px',
+        margin: '0 20px 20px 20px',
         background: 'var(--primary-glow)',
-        borderRadius: '12px'
+        borderRadius: '16px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
-          <div style={{ width: '12px', height: '12px', background: 'var(--success)', borderRadius: '3px' }} />
+          <div style={{ width: '10px', height: '10px', background: 'var(--success)', borderRadius: '50%' }} />
           <span>Present</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
-          <div style={{ width: '12px', height: '12px', background: 'var(--danger)', borderRadius: '3px' }} />
+          <div style={{ width: '10px', height: '10px', background: 'var(--danger)', borderRadius: '50%' }} />
           <span>Absent</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
-          <div style={{ width: '12px', height: '12px', background: 'var(--primary)', borderRadius: '3px' }} />
+          <div style={{ width: '10px', height: '10px', background: 'var(--primary)', borderRadius: '50%' }} />
           <span>Off</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
-          <div style={{ width: '12px', height: '12px', background: 'var(--text-dim)', borderRadius: '3px' }} />
+          <div style={{ width: '10px', height: '10px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%' }} />
           <span>Unmarked</span>
         </div>
       </div>
