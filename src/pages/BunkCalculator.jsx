@@ -16,11 +16,14 @@ function BunkCalculator() {
     semesterStats, 
     subscription, 
     fullSync,
-    attendanceSettings
+    attendanceSettings,
+    calendarEvents,
+    semesterSettings
   } = useAppStore();
 
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
   const [isPremium, setIsPremium] = useState(false);
+  const [simulatedBunks, setSimulatedBunks] = useState(2);
 
   useEffect(() => {
     fullSync();
@@ -42,6 +45,47 @@ function BunkCalculator() {
 
   const selectedStats = semesterStats?.[selectedSubjectId];
   const selectedSubject = subjects.find(s => s.id === selectedSubjectId);
+
+  // Future Bunk Predictor Simulation Math
+  const todayStr = new Date().toISOString().split('T')[0];
+  const upcomingSubjectEvents = (calendarEvents || [])
+    .filter(e => e.subjectName === selectedSubject?.name && e.date >= todayStr)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const simulatedClasses = [];
+  for (let i = 0; i < simulatedBunks; i++) {
+    const event = upcomingSubjectEvents[i];
+    if (event) {
+      const holiday = semesterSettings?.holidays?.find(h => h.date === event.date);
+      simulatedClasses.push({
+        index: i + 1,
+        date: event.date,
+        holidayName: holiday ? holiday.name : null,
+        holidayType: holiday ? holiday.type : null,
+      });
+    } else {
+      const estimatedDate = new Date();
+      estimatedDate.setDate(estimatedDate.getDate() + (i + 1) * 2);
+      const estDateStr = estimatedDate.toISOString().split('T')[0];
+      const holiday = semesterSettings?.holidays?.find(h => h.date === estDateStr);
+      simulatedClasses.push({
+        index: i + 1,
+        date: estDateStr,
+        holidayName: holiday ? holiday.name : null,
+        holidayType: holiday ? holiday.type : null,
+        isEstimated: true
+      });
+    }
+  }
+
+  const actualSimulatedBunks = simulatedClasses.filter(c => !c.holidayName).length;
+  const simulatedTotal = (selectedStats?.total || 0) + actualSimulatedBunks;
+  const simulatedPresent = selectedStats?.present || 0;
+  const simulatedPercentage = simulatedTotal > 0 
+    ? Math.round((simulatedPresent / simulatedTotal) * 100) 
+    : 0;
+  const targetPct = selectedSubject?.criteria || attendanceSettings?.defaultTarget || 75;
+  const isSimulatedSafe = simulatedPercentage >= targetPct;
 
   const getStatusColor = (percentage) => {
     if (percentage >= (attendanceSettings?.defaultTarget || 75)) return 'var(--success)';
@@ -364,6 +408,178 @@ function BunkCalculator() {
                     <span style={{ fontSize: '14px', color: 'var(--text-main)', fontWeight: '700' }}>Semester Target Goal:</span>
                     <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--primary-light)', padding: '4px 10px', background: 'var(--primary-glow)', borderRadius: '8px' }}>{selectedSubject?.criteria || attendanceSettings?.defaultTarget || 75}%</span>
                   </div>
+                </div>
+              </div>
+
+              {/* Future Bunk Predictor AI Simulator */}
+              <div style={{ 
+                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)', 
+                borderRadius: '24px', 
+                padding: '28px', 
+                border: '1.5px dashed rgba(99, 102, 241, 0.4)', 
+                marginBottom: '32px', 
+                position: 'relative', 
+                overflow: 'hidden' 
+              }}>
+                <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '60px', opacity: 0.05 }}>🔮</div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                  <span style={{ fontSize: '22px' }}>🔮</span>
+                  <h4 style={{ fontSize: '14px', fontWeight: '900', color: '#818cf8', margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    Future Bunk Predictor
+                  </h4>
+                  <span style={{ fontSize: '10px', background: 'rgba(99, 102, 241, 0.2)', color: '#a5b4fc', padding: '2px 8px', borderRadius: '20px', fontWeight: '800' }}>AI SIMULATOR</span>
+                </div>
+
+                <p style={{ fontSize: '13px', color: 'var(--text-dim)', lineHeight: 1.5, margin: '0 0 24px 0' }}>
+                  Simulate skipping future classes. Our engine scans your academic calendar and holidays to predict the exact date impact and your final score.
+                </p>
+
+                {/* Counter Control */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '20px', border: '1px solid var(--border)', marginBottom: '28px' }}>
+                  <button 
+                    onClick={() => setSimulatedBunks(prev => Math.max(1, prev - 1))}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '12px',
+                      background: 'var(--surface-bright)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-main)',
+                      fontSize: '20px',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseOver={e => e.currentTarget.style.borderColor = '#818cf8'}
+                    onMouseOut={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                  >
+                    −
+                  </button>
+                  
+                  <div style={{ textAlign: 'center', minWidth: '100px' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '950', color: 'white', lineHeight: 1 }}>
+                      {simulatedBunks}
+                    </div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '4px', fontWeight: '800', letterSpacing: '0.05em' }}>
+                      {simulatedBunks === 1 ? 'Class to Skip' : 'Classes to Skip'}
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => setSimulatedBunks(prev => Math.min(10, prev + 1))}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '12px',
+                      background: 'var(--surface-bright)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-main)',
+                      fontSize: '20px',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseOver={e => e.currentTarget.style.borderColor = '#818cf8'}
+                    onMouseOut={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Simulation Output Card */}
+                <div style={{ 
+                  background: isSimulatedSafe ? 'rgba(16, 185, 129, 0.06)' : 'rgba(239, 68, 68, 0.06)', 
+                  border: `1.5px solid ${isSimulatedSafe ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`, 
+                  borderRadius: '20px', 
+                  padding: '20px',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '16px'
+                }}>
+                  <div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginBottom: '4px' }}>
+                      Predicted Attendance
+                    </div>
+                    <div style={{ fontSize: '26px', fontWeight: '950', color: isSimulatedSafe ? 'var(--success)' : 'var(--danger)', letterSpacing: '-0.5px' }}>
+                      {simulatedPercentage}%
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px', fontWeight: '600' }}>
+                      Drops from {selectedStats?.percentage || 0}% by {Math.max(0, (selectedStats?.percentage || 0) - simulatedPercentage)}%
+                    </div>
+                  </div>
+                  
+                  <div style={{ 
+                    background: isSimulatedSafe ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', 
+                    color: isSimulatedSafe ? '#34d399' : '#f87171',
+                    padding: '8px 16px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: '900',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    textAlign: 'center'
+                  }}>
+                    {isSimulatedSafe ? '🛡️ SAFE TO SKIP' : '⚠️ DROPS BELOW TARGET'}
+                  </div>
+                </div>
+
+                {/* Calendar & Holiday Timeline */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '850', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                    🗓️ Simulated Calendar Timeline
+                  </div>
+                  
+                  {simulatedClasses.map((cls) => (
+                    <div 
+                      key={cls.index} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between', 
+                        background: cls.holidayName ? 'rgba(139, 92, 246, 0.08)' : 'rgba(15, 23, 42, 0.3)', 
+                        padding: '12px 16px', 
+                        borderRadius: '14px', 
+                        border: `1px solid ${cls.holidayName ? 'rgba(139, 92, 246, 0.25)' : 'var(--border)'}` 
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontSize: '16px' }}>{cls.holidayName ? '🎉' : '📅'}</span>
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: '750', color: cls.holidayName ? '#a78bfa' : 'white' }}>
+                            Class {cls.index}: {new Date(cls.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                          </div>
+                          {cls.isEstimated && (
+                            <span style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Estimated Date</span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {cls.holidayName ? (
+                        <span style={{ fontSize: '11px', fontWeight: '800', color: '#a78bfa', background: 'rgba(139, 92, 246, 0.15)', padding: '4px 10px', borderRadius: '8px' }}>
+                          HOLIDAY: {cls.holidayName}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)' }}>
+                          Bunk Affected
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {actualSimulatedBunks === 0 && simulatedBunks > 0 && (
+                    <div style={{ fontSize: '12px', color: '#a78bfa', background: 'rgba(139, 92, 246, 0.1)', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(139, 92, 246, 0.2)', textAlign: 'center', fontWeight: '600' }}>
+                      ✨ Wow! All selected classes fall on official holidays. Your attendance won't be affected at all!
+                    </div>
+                  )}
                 </div>
               </div>
 
