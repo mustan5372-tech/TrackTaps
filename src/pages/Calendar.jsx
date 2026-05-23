@@ -462,6 +462,7 @@ function Calendar() {
             const visualState = day ? getDateVisualState(day) : null;
             const isToday = day && AttendanceEngine.isToday(dateStr);
             const isSelected = day && selectedDate === dateStr;
+            const isMultiSelected = day && isSelectMode && selectedDates.includes(dateStr);
 
             // Render empty cells for offsets with no borders to keep it perfectly clean
             if (!day) {
@@ -500,6 +501,8 @@ function Calendar() {
                   borderRadius: '50%',
                   background: isSelected
                     ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)'
+                    : isMultiSelected
+                    ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(168, 85, 247, 0.3) 100%)'
                     : isToday
                     ? 'rgba(139, 92, 246, 0.15)'
                     : visualState?.color
@@ -507,6 +510,8 @@ function Calendar() {
                     : 'rgba(255, 255, 255, 0.02)',
                   border: isSelected
                     ? '2px solid var(--primary-light)'
+                    : isMultiSelected
+                    ? '2.5px solid #a855f7'
                     : isToday
                     ? '2px dashed var(--primary-light)'
                     : visualState?.color
@@ -521,22 +526,48 @@ function Calendar() {
                   position: 'relative',
                   boxShadow: isSelected 
                     ? '0 0 15px var(--primary-glow)' 
+                    : isMultiSelected
+                    ? '0 0 12px rgba(168, 85, 247, 0.5)'
                     : visualState?.color
                     ? `0 0 10px ${visualState.color}25`
                     : 'none'
                 }}
               >
+                {/* Floating check badge for multi-select */}
+                {isMultiSelected && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    border: '1.5px solid white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '10px',
+                    fontWeight: '900',
+                    boxShadow: '0 2px 6px rgba(16, 185, 129, 0.4)',
+                    zIndex: 5
+                  }}>
+                    ✓
+                  </div>
+                )}
+
                 <span style={{
                   fontSize: '15px',
                   fontWeight: '800',
-                  color: isSelected ? 'white' : 'var(--text-main)',
+                  color: (isSelected || isMultiSelected) ? 'white' : 'var(--text-main)',
                   lineHeight: 1
                 }}>
                   {day}
                 </span>
 
                 {/* Elegant glowing class status indicator dots */}
-                {hasClasses && !isSelected && (
+                {hasClasses && !isSelected && !isMultiSelected && (
                   <div style={{
                     display: 'flex',
                     gap: '3px',
