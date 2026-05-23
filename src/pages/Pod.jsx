@@ -329,7 +329,6 @@ export default function Pod() {
   if (!isLoggedIn) {
     return (
       <div style={{
-        minHeight: '100vh',
         minHeight: '100dvh',
         display: 'flex',
         alignItems: 'center',
@@ -461,7 +460,6 @@ export default function Pod() {
   return (
     <div style={{ 
       background: 'var(--surface)', 
-      height: '100vh',
       height: '100dvh', 
       color: 'var(--text-main)', 
       display: 'flex', 
