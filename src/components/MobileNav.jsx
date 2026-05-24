@@ -77,13 +77,13 @@ function MobileNav() {
   const primaryItems = [
     { icon: '🏠', label: 'Home', path: '/' },
     { icon: '📅', label: 'Calendar', path: '/calendar' },
+    { icon: '🕒', label: 'Schedule', path: '/timetable' },
     { icon: '📚', label: 'Subjects', path: '/subjects' },
-    { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🌍', label: 'Community', path: '/community' },
   ];
 
   const moreItems = [
-    { icon: '🕒', label: 'Schedule', path: '/timetable' },
+    { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🏖️', label: 'Bunks', path: '/bunk-calculator' },
     { icon: '📖', label: 'Guide', path: '/guide' },
     { icon: '🎁', label: 'Referrals', path: '/referral' },

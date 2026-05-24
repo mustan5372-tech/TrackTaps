@@ -2,10 +2,10 @@ import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AppShell from './components/AppShell';
 import Home from './pages/Home';
+import Timetable from './pages/Timetable';
 
 // Lazy load secondary pages to drastically reduce initial bundle size and load time
 const Calendar = lazy(() => import('./pages/Calendar'));
-const Timetable = lazy(() => import('./pages/Timetable'));
 const Subjects = lazy(() => import('./pages/Subjects'));
 const Insights = lazy(() => import('./pages/Insights'));
 const History = lazy(() => import('./pages/History'));

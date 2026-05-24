@@ -74,6 +74,13 @@ const DownloadAPK = () => {
 
   }, []);
 
+  // 🧹 NAVIGATION CLEANUP: Automatically close floating menu, chat, and APK modals on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+    setIsChatOpen(false);
+    setApkModalOpen(false);
+  }, [location.pathname, setApkModalOpen]);
+
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
