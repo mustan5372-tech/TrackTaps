@@ -337,14 +337,16 @@ body {
     }
 
     .mobile-nav-btn .nav-label {
-        font-size: 9px;
-        opacity: 0.6;
-        font-weight: 700;
+        font-size: 8px;
+        opacity: 0.7;
+        font-weight: 800;
         white-space: nowrap;
-        overflow: visible;
+        text-overflow: ellipsis;
+        overflow: hidden;
         width: 100%;
+        max-width: 100%;
         text-align: center;
-        letter-spacing: -0.01em;
+        letter-spacing: -0.03em;
     }
 
     .mobile-nav-btn.active .nav-icon {

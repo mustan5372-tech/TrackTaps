@@ -76,13 +76,13 @@ function MobileNav() {
   // 2. AUTHENTICATED USER FLOW (4 Main Tabs + More Tab = 5 Total Bottom Tabs)
   const primaryItems = [
     { icon: '🏠', label: 'Home', path: '/' },
+    { icon: '☀️', label: 'Today', path: '/today' },
     { icon: '📅', label: 'Calendar', path: '/calendar' },
     { icon: '🕒', label: 'Schedule', path: '/timetable' },
-    { icon: '📚', label: 'Subjects', path: '/subjects' },
   ];
 
   const moreItems = [
-    { icon: '☀️', label: 'Today', path: '/today' },
+    { icon: '📚', label: 'Subjects', path: '/subjects' },
     { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🏖️', label: 'Bunks', path: '/bunk-calculator' },
@@ -117,7 +117,7 @@ function MobileNav() {
                 style={{ width: '100%', minWidth: '0' }}
               >
                 <span className="nav-icon">{item.icon}</span>
-                <span className="nav-label" style={{ fontSize: '8.5px' }}>{item.label}</span>
+                <span className="nav-label">{item.label}</span>
                 {location.pathname === item.path && (
                   <motion.div
                     layoutId="activeTab"
@@ -148,7 +148,7 @@ function MobileNav() {
               style={{ width: '100%', minWidth: '0', cursor: 'pointer' }}
             >
               <span className="nav-icon">☰</span>
-              <span className="nav-label" style={{ fontSize: '8.5px' }}>More</span>
+              <span className="nav-label">More</span>
               {isMoreActive && (
                 <motion.div
                   layoutId="activeTab"
