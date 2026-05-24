@@ -73,16 +73,16 @@ function MobileNav() {
     );
   }
 
-  // 2. AUTHENTICATED USER FLOW (5 Main Tabs + Interactive Bottom Sheet More Menu)
+  // 2. AUTHENTICATED USER FLOW (4 Main Tabs + More Tab = 5 Total Bottom Tabs)
   const primaryItems = [
     { icon: '🏠', label: 'Home', path: '/' },
     { icon: '📅', label: 'Calendar', path: '/calendar' },
     { icon: '🕒', label: 'Schedule', path: '/timetable' },
     { icon: '📚', label: 'Subjects', path: '/subjects' },
-    { icon: '🌍', label: 'Community', path: '/community' },
   ];
 
   const moreItems = [
+    { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🏖️', label: 'Bunks', path: '/bunk-calculator' },
     { icon: '📖', label: 'Guide', path: '/guide' },
