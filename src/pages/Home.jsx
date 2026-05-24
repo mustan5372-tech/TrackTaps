@@ -338,10 +338,10 @@ function Home() {
   }, [fullSync]);
 
   const shortcuts = [
+    { icon: '☀️', title: 'Today', path: '/today' },
     { icon: '📅', title: 'Calendar', path: '/calendar' },
     { icon: '🕒', title: 'Timetable', path: '/timetable' },
     { icon: '📚', title: 'Subjects', path: '/subjects' },
-    { icon: '💡', title: 'Insights', path: '/insights' },
   ];
 
   if (dashboardStats.totalSubjects === 0 && !isAuthLoading && user) {
@@ -1256,13 +1256,20 @@ function Home() {
           </div>
         </motion.div>
 
-        <motion.div variants={fadeInUp} whileHover={cardHover.hover} className="dashboard-card" style={{
-          background: 'var(--surface-glass)',
-          border: '1px solid var(--border)',
-          borderRadius: '24px',
-          padding: '32px',
-          backdropFilter: 'blur(10px)'
-        }}>
+        <motion.div 
+          onClick={() => navigate('/today')}
+          variants={fadeInUp} 
+          whileHover={{ ...cardHover.hover, scale: 1.02 }} 
+          className="dashboard-card" 
+          style={{
+            background: 'var(--surface-glass)',
+            border: '1px solid var(--border)',
+            borderRadius: '24px',
+            padding: '32px',
+            backdropFilter: 'blur(10px)',
+            cursor: 'pointer'
+          }}
+        >
           <div className="card-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span className="card-title" style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)' }}>Today's Schedule</span>
             <span style={{ fontSize: '12px', color: 'var(--primary-light)', fontWeight: '700', letterSpacing: '0.05em' }}>

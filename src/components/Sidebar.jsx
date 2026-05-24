@@ -11,6 +11,7 @@ function Sidebar() {
   // Basic navigation items always visible to logged-in users
   const navItems = user ? [
     { icon: '🏠', label: 'Home', path: '/' },
+    { icon: '☀️', label: 'Today', path: '/today' },
     { icon: '📅', label: 'Calendar', path: '/calendar' },
     { icon: '🕒', label: 'Timetable', path: '/timetable' },
     { icon: '📚', label: 'Subjects', path: '/subjects' },

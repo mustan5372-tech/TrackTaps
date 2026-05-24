@@ -82,6 +82,7 @@ function MobileNav() {
   ];
 
   const moreItems = [
+    { icon: '☀️', label: 'Today', path: '/today' },
     { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🏖️', label: 'Bunks', path: '/bunk-calculator' },

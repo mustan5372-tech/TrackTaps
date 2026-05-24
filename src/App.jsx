@@ -17,6 +17,7 @@ import AiSemesterImport from './pages/AiSemesterImport';
 import Community from './community/Community';
 import Referral from './pages/Referral';
 import Guide from './pages/Guide';
+import Today from './pages/Today';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import DownloadPage from './pages/DownloadPage';
@@ -329,6 +330,7 @@ function App() {
           <Route path="/download" element={<DownloadPage />} />
           <Route path="/pod" element={<ErrorBoundary><Pod /></ErrorBoundary>} />
           <Route path="/" element={<SafeRoute><Home /></SafeRoute>} />
+          <Route path="/today" element={<SafeRoute><Today /></SafeRoute>} />
           <Route path="/calendar" element={<SafeRoute><Calendar /></SafeRoute>} />
           <Route path="/timetable" element={<SafeRoute><Timetable /></SafeRoute>} />
           <Route path="/subjects" element={<SafeRoute><Subjects /></SafeRoute>} />
