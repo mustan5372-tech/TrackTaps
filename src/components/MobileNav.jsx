@@ -187,6 +187,7 @@ function MobileNav() {
                 background: 'rgba(2, 6, 23, 0.75)',
                 backdropFilter: 'blur(12px)',
                 zIndex: 100000,
+                pointerEvents: isMoreOpen ? 'auto' : 'none'
               }}
             />
 
@@ -209,7 +210,7 @@ function MobileNav() {
                 boxShadow: '0 -15px 40px rgba(0,0,0,0.5)',
                 maxWidth: '600px',
                 margin: '0 auto',
-                pointerEvents: 'auto'
+                pointerEvents: isMoreOpen ? 'auto' : 'none'
               }}
             >
               {/* Drag Handle Pill */}

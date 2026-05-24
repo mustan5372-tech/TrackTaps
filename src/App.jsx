@@ -3,11 +3,12 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import AppShell from './components/AppShell';
 import Home from './pages/Home';
 import Timetable from './pages/Timetable';
+import Insights from './pages/Insights';
+import BunkCalculator from './pages/BunkCalculator';
 
 // Lazy load secondary pages to drastically reduce initial bundle size and load time
 const Calendar = lazy(() => import('./pages/Calendar'));
 const Subjects = lazy(() => import('./pages/Subjects'));
-const Insights = lazy(() => import('./pages/Insights'));
 const History = lazy(() => import('./pages/History'));
 const About = lazy(() => import('./pages/About'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -15,7 +16,6 @@ const Pod = lazy(() => import('./pages/Pod'));
 const Premium = lazy(() => import('./pages/Premium'));
 const Admin = lazy(() => import('./pages/Admin'));
 const AiSemesterImport = lazy(() => import('./pages/AiSemesterImport'));
-const BunkCalculator = lazy(() => import('./pages/BunkCalculator'));
 const Community = lazy(() => import('./community/Community'));
 const Referral = lazy(() => import('./pages/Referral'));
 const Guide = lazy(() => import('./pages/Guide'));
