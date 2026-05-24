@@ -78,7 +78,7 @@ class AttendanceEngine {
             date: dateStr,
             dayOfWeek: dayNum,
             dayName: dayName,
-            timeSlot: timeSlot,
+            timeSlot: subjectData.label || timeSlot,
             subjectName: subjectData.name,
             subjectCode: subject?.subjectCode || '',
             color: subjectData.color || '#8b5cf6',
@@ -102,7 +102,7 @@ class AttendanceEngine {
             date: dateStr,
             dayOfWeek: 5, // Saturday
             dayName: 'SAT',
-            timeSlot: timeSlot,
+            timeSlot: subjectData.label || timeSlot,
             subjectName: subjectData.name,
             subjectCode: subject?.subjectCode || '',
             color: subjectData.color || '#8b5cf6',
