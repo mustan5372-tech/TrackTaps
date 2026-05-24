@@ -46,14 +46,14 @@ function Sidebar() {
       borderRight: isPremium ? '1px solid rgba(234, 179, 8, 0.25)' : '1px solid var(--border)',
       boxShadow: isPremium ? '5px 0 35px rgba(234, 179, 8, 0.05)' : 'none'
     }}>
-      <div className={`sidebar-branding ${isPremium ? 'premium-glow' : ''}`}>
-        <Link to="/" className="logo-link">
+      <div className={`sidebar-branding ${isPremium ? 'premium-glow' : ''}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: '20px' }}>
+        <Link to="/" className="logo-link" style={{ display: 'inline-block' }}>
           <img 
             src={logo} 
             alt="TrackTaps" 
             className="sidebar-logo"
             style={{
-              width: '150px',
+              width: '130px',
               height: 'auto',
               objectFit: 'contain',
               filter: `drop-shadow(0 0 ${isPremium ? '30px' : '20px'} var(--primary-glow))`,
@@ -61,6 +61,29 @@ function Sidebar() {
             }}
           />
         </Link>
+        <motion.button
+          whileHover={{ scale: 1.1, rotate: 180 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => window.location.reload()}
+          style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            color: 'var(--text-dim)',
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '14px',
+            cursor: 'pointer',
+            padding: 0,
+            marginLeft: '10px'
+          }}
+          title="Refresh App"
+        >
+          🔄
+        </motion.button>
       </div>
 
       <nav className="nav-menu">

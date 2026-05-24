@@ -88,10 +88,10 @@ function App() {
     // Initialize Auth
     const unsubscribePromise = initAuth();
     
-    // RETENTION PHASE 6: Smart Local Notifications
-    setTimeout(() => {
-      notificationService.triggerRetentionAlert();
-    }, 4000); // Trigger 4s after launch to avoid clash
+    // RETENTION PHASE 6: Smart Local Notifications (Disabled as per user request to remove unwanted launch popups)
+    // setTimeout(() => {
+    //   notificationService.triggerRetentionAlert();
+    // }, 4000);
     
     // 📱 Resume Handling (APK & Backgrounding)
     const handleVisibilityChange = () => {

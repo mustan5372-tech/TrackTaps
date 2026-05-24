@@ -15,8 +15,8 @@ function MobileHeader() {
 
   return (
     <header className="mobile-header" data-nosnippet>
-      {/* LEFT: Logo */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+      {/* LEFT: Logo & Refresh */}
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '10px' }}>
         <img 
           src={logo} 
           alt="TrackTaps" 
@@ -27,6 +27,27 @@ function MobileHeader() {
             filter: 'drop-shadow(0 0 10px rgba(139, 92, 246, 0.3))'
           }} 
         />
+        <motion.button
+          whileTap={{ scale: 0.85 }}
+          onClick={() => window.location.reload()}
+          style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            color: 'var(--text-dim)',
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '13px',
+            cursor: 'pointer',
+            padding: 0
+          }}
+          title="Refresh App"
+        >
+          🔄
+        </motion.button>
       </div>
       
       {/* CENTER: APK Button (Enabled only for Web browser) */}
