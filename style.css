@@ -4415,3 +4415,8 @@ body.native-app .mobile-nav {
     }
 }
 
+/* Hide floating orb and assistant buttons when bottom sheet is open */
+body.bottom-sheet-open .floating-ai-orb-container,
+body.bottom-sheet-open .download-apk-fab {
+    display: none !important;
+}

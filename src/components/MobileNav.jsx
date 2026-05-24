@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,6 +7,23 @@ function MobileNav() {
   const location = useLocation();
   const { user, role } = useAppStore();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+
+  // Automatically close bottom sheet whenever a tab or route is clicked
+  useEffect(() => {
+    setIsMoreOpen(false);
+  }, [location.pathname]);
+
+  // Sync body class for clean layout layering and hiding floating actions
+  useEffect(() => {
+    if (isMoreOpen) {
+      document.body.classList.add('bottom-sheet-open');
+    } else {
+      document.body.classList.remove('bottom-sheet-open');
+    }
+    return () => {
+      document.body.classList.remove('bottom-sheet-open');
+    };
+  }, [isMoreOpen]);
 
   // 1. GUEST USER FLOW (Only Home & Guide)
   if (!user) {
@@ -32,7 +49,7 @@ function MobileNav() {
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-label">{item.label}</span>
                 {location.pathname === item.path && (
-                  <motion.div 
+                  <motion.div
                     layoutId="activeTab"
                     className="active-indicator"
                     style={{
@@ -85,7 +102,7 @@ function MobileNav() {
     <>
       <nav className="mobile-nav" data-nosnippet>
         <div className="mobile-nav-scroll-container" style={{ width: '100%', justifyContent: 'space-between', padding: '0 8px' }}>
-          
+
           {/* Primary 5 Tabs */}
           {primaryItems.map((item) => (
             <Link
@@ -101,7 +118,7 @@ function MobileNav() {
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-label" style={{ fontSize: '8.5px' }}>{item.label}</span>
                 {location.pathname === item.path && (
-                  <motion.div 
+                  <motion.div
                     layoutId="activeTab"
                     className="active-indicator"
                     style={{
@@ -132,7 +149,7 @@ function MobileNav() {
               <span className="nav-icon">☰</span>
               <span className="nav-label" style={{ fontSize: '8.5px' }}>More</span>
               {isMoreActive && (
-                <motion.div 
+                <motion.div
                   layoutId="activeTab"
                   className="active-indicator"
                   style={{
@@ -196,18 +213,18 @@ function MobileNav() {
               }}
             >
               {/* Drag Handle Pill */}
-              <div 
+              <div
                 onClick={() => setIsMoreOpen(false)}
-                style={{ 
-                  width: '40px', 
-                  height: '4px', 
-                  background: 'rgba(255,255,255,0.2)', 
-                  borderRadius: '10px', 
+                style={{
+                  width: '40px',
+                  height: '4px',
+                  background: 'rgba(255,255,255,0.2)',
+                  borderRadius: '10px',
                   margin: '0 auto 20px',
-                  cursor: 'pointer' 
-                }} 
+                  cursor: 'pointer'
+                }}
               />
-              
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: '850', color: 'white', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span>🔮</span> Additional Features
@@ -232,7 +249,7 @@ function MobileNav() {
                   ✕
                 </button>
               </div>
-              
+
               {/* Features Grid */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 {moreItems.map((item) => (

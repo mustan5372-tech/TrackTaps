@@ -93,7 +93,6 @@ function Timetable() {
         <p style={{ fontSize: '13px', color: 'var(--text-dim)', margin: 0 }}>Manage your class timings.</p>
       </header>
 
-      {/* Timetable Grid */}
       <div className="timetable-grid-container" style={{
         background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-glass) 100%)',
         border: '1px solid var(--border)',
@@ -106,9 +105,9 @@ function Timetable() {
       }}>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: `80px repeat(7, 1fr)`,
+          gridTemplateColumns: `80px repeat(7, minmax(110px, 1fr))`,
           gap: '12px',
-          minWidth: '100%'
+          minWidth: '900px'
         }}>
           {/* Time column header */}
           <div style={{
