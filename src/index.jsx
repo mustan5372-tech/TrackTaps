@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import '../style.css';
+import './layout.css';
 
 // Register Service Worker for PWA Support
 if ('serviceWorker' in navigator) {
