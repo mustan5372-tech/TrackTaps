@@ -122,7 +122,7 @@ function Guide() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const WHATSAPP_LINK = "https://chat.whatsapp.com/FnqY8vehe4wLrRgK6MKVly";
-  const SUPPORT_EMAIL = "tracktapshelp@gmail.com";
+  const SUPPORT_EMAIL = "tracktaps@gmail.com";
 
   const handleOpenLink = async (url, type) => {
     setLoadingAction(type);
