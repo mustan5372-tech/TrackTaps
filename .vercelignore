@@ -8,13 +8,11 @@ node_modules/
 .vscode/
 
 # Ignore mobile native code and packages
-TrackTaps.apk
 TrackTapsNative/
 android/
 
 # Ignore media/promo files
 promo-video/
-*.apk
 
 # Ignore local environment variables and scratch directories
 .env.local
