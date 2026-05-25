@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import NativeAdCard from '../components/NativeAdCard';
 
 export default function LeaderboardScreen() {
   const eliteUsers = [
@@ -44,6 +45,7 @@ export default function LeaderboardScreen() {
           </View>
         </View>
       ))}
+      <NativeAdCard />
     </ScrollView>
   );
 }

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, FlatList, Pressable } from 'react-native';
 import { useAppStore } from '../store/appStore';
 import AttendanceEngine from '../services/attendanceEngine';
+import NativeAdCard from '../components/NativeAdCard';
 
 export default function DashboardScreen() {
   const { subjects, calendarEvents, attendanceData, attendanceSettings, fullSync } = useAppStore();
@@ -61,6 +62,9 @@ export default function DashboardScreen() {
           <Text style={styles.premiumDesc}>Advanced calculator and prediction insights active.</Text>
         </View>
       </View>
+
+      {/* Native Advanced Ad (Home feed between cards) */}
+      <NativeAdCard />
 
       {/* Subject list */}
       <Text style={styles.sectionTitle}>Tracked Class Load</Text>

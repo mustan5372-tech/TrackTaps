@@ -121,14 +121,16 @@ export const useAppStore = create<AppState>()(
         const unsubscribe = authService.onAuthChange(async (nativeUser) => {
           if (nativeUser) {
             let dbRole = 'user';
+            let dbPlan = 'free';
             try {
               const userDoc = await db.collection('users').doc(nativeUser.uid).get();
-              if (userDoc.exists) {
+              if ((userDoc as any).exists) {
                 const data = userDoc.data();
                 if (data?.role) dbRole = data.role;
+                dbPlan = data?.plan || data?.subscription?.planType || data?.subscription?.plan || 'free';
               }
             } catch (e) {
-              console.log("Failed to fetch native user role:", e);
+              console.log("Failed to fetch native user role/plan:", e);
             }
             
             set({ 
@@ -136,12 +138,13 @@ export const useAppStore = create<AppState>()(
                 uid: nativeUser.uid,
                 email: nativeUser.email,
                 displayName: nativeUser.displayName,
-                photoURL: nativeUser.photoURL
+                photoURL: nativeUser.photoURL,
+                plan: dbPlan
               },
               role: dbRole,
               isAuthLoading: false 
             });
-            console.log("👤 [AppStore Native] User session recovered natively:", nativeUser.email);
+            console.log("👤 [AppStore Native] User session recovered natively:", nativeUser.email, "Plan:", dbPlan);
           } else {
             set({ user: null, role: 'user', isAuthLoading: false });
             console.log("👤 [AppStore Native] Guest mode active");
@@ -157,14 +160,16 @@ export const useAppStore = create<AppState>()(
           const user = await authService.loginWithGoogle();
           if (user) {
             let dbRole = 'user';
+            let dbPlan = 'free';
             try {
               const userDoc = await db.collection('users').doc(user.uid).get();
-              if (userDoc.exists) {
+              if ((userDoc as any).exists) {
                 const data = userDoc.data();
                 if (data?.role) dbRole = data.role;
+                dbPlan = data?.plan || data?.subscription?.planType || data?.subscription?.plan || 'free';
               }
             } catch (e) {
-              console.log("Failed to fetch native user role:", e);
+              console.log("Failed to fetch native user role/plan:", e);
             }
 
             set({ 
@@ -172,7 +177,8 @@ export const useAppStore = create<AppState>()(
                 uid: user.uid,
                 email: user.email,
                 displayName: user.displayName,
-                photoURL: user.photoURL
+                photoURL: user.photoURL,
+                plan: dbPlan
               },
               role: dbRole,
               isAuthLoading: false 

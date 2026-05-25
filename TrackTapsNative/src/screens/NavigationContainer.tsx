@@ -11,12 +11,16 @@ import TimetableScreen from './TimetableScreen';
 import LeaderboardScreen from './LeaderboardScreen';
 import SettingsScreen from './SettingsScreen';
 import LoginScreen from './LoginScreen';
+import InsightsScreen from './InsightsScreen';
+import ReferralScreen from './ReferralScreen';
 
 import { useAppStore } from '../store/appStore';
 
 export type RootStackParamList = {
   MainTabs: undefined;
   Login: undefined;
+  Insights: undefined;
+  Referral: undefined;
 };
 
 export type TabParamList = {
@@ -124,7 +128,29 @@ export default function AppNavigation() {
         }}
       >
         {user ? (
-          <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+          <>
+            <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+            <Stack.Screen 
+              name="Insights" 
+              component={InsightsScreen} 
+              options={{ 
+                headerShown: true, 
+                title: 'Insights', 
+                headerStyle: { backgroundColor: '#0f172a' }, 
+                headerTintColor: '#ffffff' 
+              }} 
+            />
+            <Stack.Screen 
+              name="Referral" 
+              component={ReferralScreen} 
+              options={{ 
+                headerShown: true, 
+                title: 'Referral Perks', 
+                headerStyle: { backgroundColor: '#0f172a' }, 
+                headerTintColor: '#ffffff' 
+              }} 
+            />
+          </>
         ) : (
           <Stack.Screen name="Login" component={LoginScreen} />
         )}
