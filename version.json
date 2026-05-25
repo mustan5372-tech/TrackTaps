@@ -1,7 +1,8 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "min_required_version": "1.0.0",
   "platform": "production",
-  "last_updated": "2026-05-10",
-  "update_url": "https://www.tracktaps.online/download"
+  "last_updated": "2026-05-25",
+  "update_url": "https://www.tracktaps.online/download",
+  "changelog": "🚀 Core Update: Full Google AdMob Integration, modern glassmorphic Native Advanced ad cards, pulsating Premium Ad-Free experience container, and high-performance compilation upgrades."
 }
