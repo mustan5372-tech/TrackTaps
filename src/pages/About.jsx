@@ -46,7 +46,7 @@ const BlurRevealText = React.memo(({ children, delay = 0 }) => {
 });
 
 // Premium Founders & Core Team Card Component (Optimized)
-const FounderCard = React.memo(({ member, index, onSelect }) => {
+const FounderCard = React.memo(({ member, index, onSelect, onZoomImage }) => {
   const [ref, isVisible] = useScrollReveal();
   const [isHovered, setIsHovered] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -110,6 +110,12 @@ const FounderCard = React.memo(({ member, index, onSelect }) => {
       {/* Avatar with premium glow */}
       <motion.div
         animate={isHovered ? { scale: 1.1, y: -5 } : { scale: 1, y: 0 }}
+        onClick={(e) => {
+          if (member.image) {
+            e.stopPropagation();
+            onZoomImage(member.image);
+          }
+        }}
         style={{
           width: '90px',
           height: '90px',
@@ -128,7 +134,8 @@ const FounderCard = React.memo(({ member, index, onSelect }) => {
           position: 'relative',
           zIndex: 2,
           overflow: 'hidden',
-          border: '2px solid var(--primary-glow)'
+          border: '2px solid var(--primary-glow)',
+          cursor: member.image ? 'zoom-in' : 'pointer'
         }}
       >
         {member.image ? (
@@ -177,7 +184,7 @@ const FounderCard = React.memo(({ member, index, onSelect }) => {
 });
 
 // Detailed Profile Modal Component
-const ProfileModal = ({ member, onClose }) => {
+const ProfileModal = ({ member, onClose, onZoomImage }) => {
   if (!member) return null;
 
   return (
@@ -239,22 +246,26 @@ const ProfileModal = ({ member, onClose }) => {
         >✕</button>
 
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{
-            width: '120px',
-            height: '120px',
-            margin: '0 auto 24px',
-            background: member.image ? 'none' : 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '48px',
-            fontWeight: '800',
-            color: 'white',
-            boxShadow: '0 0 40px rgba(139, 92, 246, 0.4)',
-            overflow: 'hidden',
-            border: '3px solid var(--primary-glow)'
-          }}>
+          <div 
+            onClick={() => { if (member.image) onZoomImage(member.image); }}
+            style={{
+              width: '120px',
+              height: '120px',
+              margin: '0 auto 24px',
+              background: member.image ? 'none' : 'linear-gradient(135deg, var(--primary) 0%, #a855f7 100%)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '48px',
+              fontWeight: '800',
+              color: 'white',
+              boxShadow: '0 0 40px rgba(139, 92, 246, 0.4)',
+              overflow: 'hidden',
+              border: '3px solid var(--primary-glow)',
+              cursor: member.image ? 'zoom-in' : 'default'
+            }}
+          >
             {member.image ? (
               <img 
                 src={member.image} 
@@ -400,6 +411,7 @@ const RoadmapPhase = React.memo(({ phase, items, index }) => {
 function About() {
   const [ref, isVisible] = useScrollReveal();
   const [selectedMember, setSelectedMember] = useState(null);
+  const [zoomedImage, setZoomedImage] = useState(null);
 
   const TEAM_MEMBERS = useMemo(() => [
     {
@@ -465,7 +477,82 @@ function About() {
           <ProfileModal 
             member={selectedMember} 
             onClose={() => setSelectedMember(null)} 
+            onZoomImage={setZoomedImage}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {zoomedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setZoomedImage(null)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.95)',
+              backdropFilter: 'blur(10px)',
+              zIndex: 2000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
+            }}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setZoomedImage(null)}
+              style={{
+                position: 'absolute',
+                top: '24px',
+                right: '24px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: 'none',
+                color: 'white',
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                fontSize: '22px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 0 20px rgba(0,0,0,0.5)',
+                transition: 'background 0.3s ease',
+                zIndex: 2010
+              }}
+            >✕</button>
+
+            <motion.div
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'relative',
+                maxWidth: '90%',
+                maxHeight: '85vh',
+                borderRadius: '24px',
+                overflow: 'hidden',
+                boxShadow: '0 0 50px rgba(139, 92, 246, 0.4)',
+                border: '2px solid rgba(139, 92, 246, 0.3)'
+              }}
+            >
+              <img 
+                src={zoomedImage} 
+                alt="Enlarged profile" 
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '85vh',
+                  display: 'block',
+                  objectFit: 'contain'
+                }}
+              />
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -771,7 +858,7 @@ function About() {
           <p style={{ fontSize: '18px', color: 'var(--text-dim)', textAlign: 'center', maxWidth: '600px', margin: '0 auto 60px', fontWeight: '500' }}>Built by students, for students.</p>
           <div className="founders-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px', maxWidth: '1100px', margin: '0 auto' }}>
             {TEAM_MEMBERS.map((m, idx) => (
-              <FounderCard key={idx} member={m} index={idx} onSelect={setSelectedMember} />
+              <FounderCard key={idx} member={m} index={idx} onSelect={setSelectedMember} onZoomImage={setZoomedImage} />
             ))}
           </div>
         </motion.section>
