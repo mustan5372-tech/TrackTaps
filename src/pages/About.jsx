@@ -423,7 +423,7 @@ function About() {
       description: "Pranav is an AU EV student at Medicaps University leading the operational and marketing direction for TrackTaps. He is obsessed with community-driven growth and ensuring that TrackTaps reaches every student who needs it. His focus is on scaling the platform while maintaining the authentic, student-first identity that makes TrackTaps unique.",
       passions: ["Strategic Growth", "Community Building", "Brand Narrative"],
       quote: "Growth isn't just about numbers; it's about the impact we have on a student's daily life.",
-      image: "/pranav.png",
+      image: "/pranav.jpg",
       projects: ["TrackTaps Launch", "Community Outreach"]
     },
     {
@@ -434,7 +434,7 @@ function About() {
       description: "Purandar is an AU EV student at Medicaps University focused on user engagement and the expansion of the TrackTaps ecosystem. He works closely with the student community to understand their pain points and translate them into product features, ensuring the platform remains relevant and indispensable.",
       passions: ["User Engagement", "Market Research", "Digital Outreach"],
       quote: "Listening to our users is our greatest competitive advantage.",
-      image: "/purandar.png",
+      image: "/purandar.jpg",
       projects: ["User Feedback Loop", "Regional Expansion"]
     }
   ], []);
