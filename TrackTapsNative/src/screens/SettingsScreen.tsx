@@ -59,6 +59,28 @@ export default function SettingsScreen() {
         </Text>
       </View>
 
+      {/* About Section */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>ℹ️ About TrackTaps</Text>
+        <View style={styles.aboutRow}>
+          <Text style={styles.aboutLabel}>Version:</Text>
+          <Text style={styles.aboutValue}>1.1.0 (v1.1)</Text>
+        </View>
+        <View style={styles.aboutRow}>
+          <Text style={styles.aboutLabel}>Platform:</Text>
+          <Text style={styles.aboutValue}>Mobile (Android)</Text>
+        </View>
+        <Text style={styles.aboutDescription}>
+          TrackTaps is a smart attendance tracking platform designed to help students manage their academic attendance efficiently with AI-powered insights and predictions.
+        </Text>
+        <Text style={styles.aboutFooter}>
+          🔒 TrackTaps uses lightweight anonymous analytics to improve user experience.
+        </Text>
+        <Text style={styles.aboutCopyright}>
+          © 2026 TrackTaps. All rights reserved.
+        </Text>
+      </View>
+
       {/* Logout Pressable Button */}
       <Pressable 
         style={({ pressed }) => [
@@ -173,6 +195,37 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#64748b',
     lineHeight: 16,
+  },
+  aboutRow: {
+    flexDirection: 'row',
+    marginBottom: 6,
+  },
+  aboutLabel: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#94a3b8',
+    width: 80,
+  },
+  aboutValue: {
+    fontSize: 13,
+    color: '#ffffff',
+  },
+  aboutDescription: {
+    fontSize: 13,
+    color: '#94a3b8',
+    lineHeight: 18,
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  aboutFooter: {
+    fontSize: 11,
+    color: '#64748b',
+    lineHeight: 16,
+    marginBottom: 8,
+  },
+  aboutCopyright: {
+    fontSize: 11,
+    color: '#64748b',
   },
   logoutBtn: {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',

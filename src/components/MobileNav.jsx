@@ -73,12 +73,13 @@ function MobileNav() {
     );
   }
 
-  // 2. AUTHENTICATED USER FLOW (4 Main Tabs + More Tab = 5 Total Bottom Tabs)
+  // 2. AUTHENTICATED USER FLOW (5 Main Tabs + More Tab = 6 Total Bottom Tabs)
   const primaryItems = [
     { icon: '🏠', label: 'Home', path: '/' },
     { icon: '☀️', label: 'Today', path: '/today' },
     { icon: '📅', label: 'Calendar', path: '/calendar' },
     { icon: '🕒', label: 'Schedule', path: '/timetable' },
+    { icon: 'ℹ️', label: 'About', path: '/about' },
   ];
 
   const moreItems = [

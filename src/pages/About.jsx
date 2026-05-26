@@ -412,7 +412,7 @@ function About() {
       quote: "We didn't just want another attendance tracker. We wanted to build a smarter academic ecosystem for students.",
       github: "https://github.com/mustan5372-tech",
       email: "tracktaps@gmail.com",
-      image: "/mustansir.jpg",
+      image: "/mustansir.png",
       projects: ["TrackTaps Plus", "AI Engine", "Native Mobile Bridge"]
     },
     {
@@ -423,6 +423,7 @@ function About() {
       description: "Pranav is an AU EV student at Medicaps University leading the operational and marketing direction for TrackTaps. He is obsessed with community-driven growth and ensuring that TrackTaps reaches every student who needs it. His focus is on scaling the platform while maintaining the authentic, student-first identity that makes TrackTaps unique.",
       passions: ["Strategic Growth", "Community Building", "Brand Narrative"],
       quote: "Growth isn't just about numbers; it's about the impact we have on a student's daily life.",
+      image: "/pranav.png",
       projects: ["TrackTaps Launch", "Community Outreach"]
     },
     {
@@ -433,6 +434,7 @@ function About() {
       description: "Purandar is an AU EV student at Medicaps University focused on user engagement and the expansion of the TrackTaps ecosystem. He works closely with the student community to understand their pain points and translate them into product features, ensuring the platform remains relevant and indispensable.",
       passions: ["User Engagement", "Market Research", "Digital Outreach"],
       quote: "Listening to our users is our greatest competitive advantage.",
+      image: "/purandar.png",
       projects: ["User Feedback Loop", "Regional Expansion"]
     }
   ], []);
@@ -633,6 +635,115 @@ function About() {
               <span style={{ fontSize: '18px' }}>🏆</span>
             </Link>
           </div>
+        </motion.section>
+
+        {/* INSTAGRAM FOLLOW SECTION */}
+        <motion.section 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{
+            background: 'linear-gradient(135deg, rgba(225, 48, 108, 0.1) 0%, rgba(139, 92, 246, 0.08) 50%, rgba(245, 101, 57, 0.08) 100%)',
+            border: '1.5px solid rgba(225, 48, 108, 0.35)',
+            borderRadius: '24px',
+            padding: window.innerWidth < 768 ? '30px 20px' : '48px 40px',
+            textAlign: 'center',
+            marginBottom: '100px',
+            position: 'relative',
+            overflow: 'hidden',
+            backdropFilter: window.innerWidth < 768 ? 'none' : 'blur(10px)',
+            boxShadow: '0 20px 40px rgba(225, 48, 108, 0.12), 0 0 25px rgba(139, 92, 246, 0.08)'
+          }}
+        >
+          {/* Decorative pink/purple glows */}
+          <div style={{
+            position: 'absolute',
+            top: '-20%',
+            right: '-10%',
+            width: '240px',
+            height: '240px',
+            background: 'radial-gradient(circle, rgba(225, 48, 108, 0.25) 0%, transparent 70%)',
+            borderRadius: '50%',
+            filter: 'blur(30px)',
+            pointerEvents: 'none'
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: '-20%',
+            left: '-10%',
+            width: '240px',
+            height: '240px',
+            background: 'radial-gradient(circle, rgba(245, 101, 57, 0.18) 0%, transparent 70%)',
+            borderRadius: '50%',
+            filter: 'blur(30px)',
+            pointerEvents: 'none'
+          }} />
+
+          {/* Instagram Glowing Icon */}
+          <motion.div 
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            style={{
+              width: '76px',
+              height: '76px',
+              borderRadius: '50%',
+              background: 'linear-gradient(45deg, #f58529, #dd2a7b, #8134af, #515bd4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px',
+              boxShadow: '0 8px 30px rgba(221, 42, 123, 0.45)',
+              fontSize: '36px',
+              cursor: 'pointer'
+            }}
+            onClick={() => window.open("https://www.instagram.com/tracktaps.online?igsh=MWp1aDQ4eGpmNW11Mg==", "_blank")}
+          >
+            📸
+          </motion.div>
+
+          <h3 style={{ 
+            color: 'var(--text-main)', 
+            fontSize: 'clamp(22px, 4vw, 28px)', 
+            fontWeight: '900', 
+            marginBottom: '12px',
+            letterSpacing: '-0.02em'
+          }}>
+            Join the TrackTaps Community!
+          </h3>
+          
+          <p style={{ 
+            color: 'var(--text-dim)', 
+            fontSize: '15px', 
+            lineHeight: '1.7', 
+            maxWidth: '560px', 
+            margin: '0 auto 28px' 
+          }}>
+            Follow <span style={{ color: '#ff549a', fontWeight: '800' }}>@tracktaps.online</span> on Instagram for student survival guides, attendance analytics lifehacks, instant update alerts, and premium membership giveaways!
+          </p>
+
+          <motion.a
+            href="https://www.instagram.com/tracktaps.online?igsh=MWp1aDQ4eGpmNW11Mg=="
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '12px',
+              background: 'linear-gradient(45deg, #f58529, #dd2a7b, #8134af, #515bd4)',
+              color: 'white',
+              padding: '16px 36px',
+              borderRadius: '16px',
+              fontWeight: '800',
+              fontSize: '15px',
+              textDecoration: 'none',
+              boxShadow: '0 10px 25px rgba(221, 42, 123, 0.35)',
+              cursor: 'pointer'
+            }}
+          >
+            <span>✨</span> Follow @tracktaps.online
+          </motion.a>
         </motion.section>
 
         {/* WHY TRACKTAPS SECTION */}

@@ -35,6 +35,7 @@ import presenceService from './services/presenceService';
 import OfflineBanner from './components/OfflineBanner';
 import notificationService from './services/notificationService';
 import NotificationPrompt from './components/NotificationPrompt';
+import InstagramFollowPopup from './components/InstagramFollowPopup';
 
 const SafeRoute = ({ children }) => {
   const { user, isAuthLoading } = useAppStore();
@@ -227,6 +228,7 @@ function App() {
           Staging Build
         </div>
       )}
+      <InstagramFollowPopup />
       <NotificationPrompt />
       <OfflineBanner />
       <GlobalToast />

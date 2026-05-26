@@ -4,8 +4,8 @@ import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads'
 import { useAppStore } from '../store/appStore';
 
 // Ad Unit configuration: Use official test banner ID in development, production ID in release
-const AD_UNIT_ID = __DEV__ 
-  ? TestIds.BANNER 
+const AD_UNIT_ID = __DEV__
+  ? TestIds.BANNER
   : 'ca-app-pub-2979111018616024/3848868406';
 
 export function shouldShowAds(user: any, role: string): boolean {
