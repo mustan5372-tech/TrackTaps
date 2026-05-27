@@ -12,6 +12,10 @@ function Community() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Advanced UX states
+  const [filterType, setFilterType] = useState('attendance'); // 'attendance' | 'classes'
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadLeaderboard();
@@ -39,23 +43,44 @@ function Community() {
     }
   };
 
+  // Sorting & Filtering logic
+  const sortedLeaderboard = [...leaderboard].sort((a, b) => {
+    if (filterType === 'classes') {
+      return (b.totalClasses || 0) - (a.totalClasses || 0);
+    }
+    return (b.attendance || 0) - (a.attendance || 0);
+  });
+
+  const filteredLeaderboard = sortedLeaderboard.filter(item => 
+    item.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const myLeaderboardRank = user ? leaderboard.findIndex(x => x.uid === user.uid) : -1;
+  const myRecord = myLeaderboardRank !== -1 ? leaderboard[myLeaderboardRank] : null;
+
+  // Podium variables based on percentage attendance
+  const podiumScholars = [...leaderboard].sort((a, b) => (b.attendance || 0) - (a.attendance || 0)).slice(0, 3);
+  const goldChamp = podiumScholars[0];
+  const silverChamp = podiumScholars[1];
+  const bronzeChamp = podiumScholars[2];
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
+      transition: { staggerChildren: 0.08 }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 15 },
     visible: { opacity: 1, y: 0 }
   };
 
   return (
-    <div className="community-view" style={{ padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--text-main)' }}>
+    <div className="community-view" style={{ padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--text-main)', paddingBottom: '120px' }}>
       {/* Header Section */}
-      <header style={{ marginBottom: '48px', textAlign: 'center' }}>
+      <header style={{ marginBottom: '40px', textAlign: 'center' }}>
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -73,15 +98,226 @@ function Community() {
             border: '1px solid var(--primary-glow)'
           }}
         >
-          🏆 Champions Board
+          🏆 TRACKTAPS ELITE SQUAD
         </motion.div>
-        <h1 style={{ fontSize: 'clamp(28px, 6vw, 40px)', fontWeight: '950', marginBottom: '12px', letterSpacing: '-1.5px', lineHeight: 1 }}>
-          The <span style={{ color: 'var(--primary-light)' }}>Top 3</span> Elite
+        <h1 style={{ fontSize: 'clamp(28px, 6vw, 44px)', fontWeight: '950', marginBottom: '12px', letterSpacing: '-1.5px', lineHeight: 1 }}>
+          The Academic <span style={{ background: 'linear-gradient(135deg, var(--primary-light), #d946ef)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Hall of Fame</span>
         </h1>
-        <p style={{ color: 'var(--text-dim)', fontSize: '15px', maxWidth: '450px', margin: '0 auto', lineHeight: 1.5 }}>
-          Recognizing the most disciplined and consistent students in the TrackTaps ecosystem.
+        <p style={{ color: 'var(--text-dim)', fontSize: '15px', maxWidth: '520px', margin: '0 auto', lineHeight: 1.5 }}>
+          Celebrating consistent class attendees and elite discipline stars across our campus network.
         </p>
       </header>
+
+      {/* INTERACTIVE CHAMPION PODIUM DECK */}
+      {!loading && !error && leaderboard.length > 0 && (
+        <div style={{ 
+          background: 'rgba(255, 255, 255, 0.02)', 
+          border: '1px solid var(--border)', 
+          borderRadius: '32px', 
+          padding: '24px 16px', 
+          marginBottom: '40px',
+          boxShadow: 'var(--shadow-md)'
+        }}>
+          <h3 style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-dim)', marginBottom: '24px', letterSpacing: '0.5px' }}>🏆 CORE PODIUM CHAMPIONS</h3>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '12px', maxWidth: '600px', margin: '0 auto', height: '260px' }}>
+            {/* 2nd Place */}
+            {silverChamp && (
+              <motion.div
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2, type: 'spring' }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}
+              >
+                <div style={{ position: 'relative', marginBottom: '12px' }}>
+                  <div style={{ width: '58px', height: '58px', borderRadius: '50%', border: '3px solid #cbd5e1', overflow: 'hidden', boxShadow: '0 8px 16px rgba(0,0,0,0.3)' }}>
+                    {silverChamp.photoURL ? (
+                      <img src={silverChamp.photoURL} alt={silverChamp.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #94a3b8 0%, #cbd5e1 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '900', color: '#000' }}>
+                        {silverChamp.name?.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: '#cbd5e1', color: '#000', width: '20px', height: '20px', borderRadius: '50%', fontSize: '11px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>2</span>
+                </div>
+                <div style={{ fontWeight: '800', fontSize: '13px', color: 'var(--text-main)', textAlign: 'center', maxWidth: '85px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{silverChamp.name?.split(' ')[0]}</div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 8px', fontWeight: '700' }}>{silverChamp.attendance}%</div>
+                <div style={{ width: '100%', height: '70px', background: 'linear-gradient(180deg, rgba(203, 213, 225, 0.15) 0%, rgba(203, 213, 225, 0.02) 100%)', border: '1px solid rgba(203, 213, 225, 0.2)', borderBottom: 'none', borderRadius: '12px 12px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '20px' }}>🥈</span>
+                </div>
+              </motion.div>
+            )}
+
+            {/* 1st Place */}
+            {goldChamp && (
+              <motion.div
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.1, type: 'spring', stiffness: 120 }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1.2, zIndex: 10 }}
+              >
+                <div style={{ position: 'relative', marginBottom: '12px' }}>
+                  <motion.div 
+                    animate={{ y: [0, -3, 0] }}
+                    transition={{ duration: 2.5, repeat: Infinity }}
+                    style={{ position: 'absolute', top: '-18px', left: '50%', transform: 'translateX(-50%)', fontSize: '22px' }}
+                  >
+                    👑
+                  </motion.div>
+                  <div style={{ width: '74px', height: '74px', borderRadius: '50%', border: '4px solid #fbbf24', overflow: 'hidden', boxShadow: '0 12px 24px rgba(251, 191, 36, 0.3)' }}>
+                    {goldChamp.photoURL ? (
+                      <img src={goldChamp.photoURL} alt={goldChamp.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', fontWeight: '900', color: '#000' }}>
+                        {goldChamp.name?.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: '#fbbf24', color: '#000', width: '22px', height: '22px', borderRadius: '50%', fontSize: '12px', fontWeight: '950', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.3)' }}>1</span>
+                </div>
+                <div style={{ fontWeight: '900', fontSize: '14px', color: '#fbbf24', textAlign: 'center', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{goldChamp.name?.split(' ')[0]}</div>
+                <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--success)', margin: '2px 0 8px' }}>{goldChamp.attendance}%</div>
+                <div style={{ width: '100%', height: '110px', background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.2) 0%, rgba(251, 191, 36, 0.02) 100%)', border: '2px solid rgba(251, 191, 36, 0.3)', borderBottom: 'none', borderRadius: '16px 16px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                  <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at center, rgba(251, 191, 36, 0.1) 0%, transparent 75%)', pointerEvents: 'none' }} />
+                  <span style={{ fontSize: '28px', filter: 'drop-shadow(0 4px 6px rgba(251, 191, 36, 0.3))' }}>🥇</span>
+                </div>
+              </motion.div>
+            )}
+
+            {/* 3rd Place */}
+            {bronzeChamp && (
+              <motion.div
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3, type: 'spring' }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}
+              >
+                <div style={{ position: 'relative', marginBottom: '12px' }}>
+                  <div style={{ width: '54px', height: '54px', borderRadius: '50%', border: '3px solid #f97316', overflow: 'hidden', boxShadow: '0 8px 16px rgba(0,0,0,0.3)' }}>
+                    {bronzeChamp.photoURL ? (
+                      <img src={bronzeChamp.photoURL} alt={bronzeChamp.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #d97706 0%, #f97316 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: '900', color: '#000' }}>
+                        {bronzeChamp.name?.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: '#f97316', color: '#000', width: '20px', height: '20px', borderRadius: '50%', fontSize: '11px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>3</span>
+                </div>
+                <div style={{ fontWeight: '800', fontSize: '13px', color: 'var(--text-main)', textAlign: 'center', maxWidth: '85px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bronzeChamp.name?.split(' ')[0]}</div>
+                <div style={{ fontSize: '11px', color: '#f97316', margin: '2px 0 8px', fontWeight: '700' }}>{bronzeChamp.attendance}%</div>
+                <div style={{ width: '100%', height: '55px', background: 'linear-gradient(180deg, rgba(249, 115, 22, 0.15) 0%, rgba(249, 115, 22, 0.02) 100%)', border: '1px solid rgba(249, 115, 22, 0.2)', borderBottom: 'none', borderRadius: '12px 12px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '18px' }}>🥉</span>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* PERSONAL LIVE RANK CARD */}
+      {!loading && !error && myRecord && (
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          style={{
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.18) 0%, rgba(15, 23, 42, 0.4) 100%)',
+            border: '1px solid var(--primary-glow)',
+            borderRadius: '24px',
+            padding: '16px 20px',
+            marginBottom: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 8px 32px rgba(139, 92, 246, 0.05)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ fontSize: '32px' }}>⚡</div>
+            <div style={{ textAlign: 'left' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>Your Live Position</h4>
+              <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: '2px 0 0' }}>
+                You currently rank <strong style={{ color: 'var(--primary-light)' }}>#{myLeaderboardRank + 1}</strong> out of all tracked scholars!
+              </p>
+            </div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '20px', fontWeight: '950', color: 'var(--primary-light)', lineHeight: 1.1 }}>{myRecord.attendance}%</div>
+            <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{myRecord.totalClasses || 0} classes</span>
+          </div>
+        </motion.div>
+      )}
+
+      {/* FILTER BUTTONS & SEARCH BAR */}
+      {!loading && !error && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+            {/* Filter Toggle */}
+            <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '14px', padding: '4px', display: 'inline-flex', gap: '4px' }}>
+              <button
+                onClick={() => setFilterType('attendance')}
+                style={{
+                  background: filterType === 'attendance' ? 'var(--primary)' : 'transparent',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '8px 16px',
+                  color: 'white',
+                  fontSize: '12px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                📊 Score Leader
+              </button>
+              <button
+                onClick={() => setFilterType('classes')}
+                style={{
+                  background: filterType === 'classes' ? 'var(--primary)' : 'transparent',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '8px 16px',
+                  color: 'white',
+                  fontSize: '12px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                Grind Streak
+              </button>
+            </div>
+
+            {/* Premium Indicator Notice */}
+            {!isPremium && (
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                🔒 Free plan shows Top 3. <strong style={{ color: 'var(--primary-light)', cursor: 'pointer' }} onClick={() => navigate('/premium')}>Unlock Top 20</strong>
+              </span>
+            )}
+          </div>
+
+          {/* Search bar input */}
+          <input
+            type="text"
+            placeholder="🔍 Search scholars in community..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              background: 'rgba(0,0,0,0.15)',
+              border: '1px solid var(--border)',
+              borderRadius: '16px',
+              padding: '14px 18px',
+              color: 'white',
+              fontSize: '13px',
+              outline: 'none',
+              transition: 'border-color 0.2s'
+            }}
+            onFocus={(e) => e.target.style.borderColor = 'var(--primary-light)'}
+            onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
+          />
+        </div>
+      )}
 
       {/* Leaderboard Section */}
       <div className="leaderboard-container" style={{ position: 'relative', minHeight: '300px' }}>
@@ -126,12 +362,12 @@ function Community() {
             style={{ display: 'grid', gap: '16px' }}
           >
             {/* Conditional List Rendering: Top 3 for Free, Top 20 for Premium */}
-            {leaderboard.length === 0 ? (
+            {filteredLeaderboard.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-dim)' }}>
-                <p>Waiting for the first champions to sync...</p>
+                <p>No champions matched your query...</p>
               </div>
             ) : (
-              (isPremium ? leaderboard.slice(0, 20) : leaderboard.slice(0, 3)).map((item, index) => (
+              (isPremium ? filteredLeaderboard.slice(0, 20) : filteredLeaderboard.slice(0, 3)).map((item, index) => (
                 <motion.div
                   key={item.uid}
                   variants={itemVariants}
@@ -151,7 +387,7 @@ function Community() {
                     position: 'relative',
                     overflow: 'hidden',
                     boxShadow: index === 0 ? '0 15px 30px rgba(251, 191, 36, 0.1)' : 'var(--shadow-sm)',
-                    opacity: !isPremium && index > 2 ? 0.4 : 1, // Visual hint if we ever allow more in future
+                    opacity: !isPremium && index > 2 ? 0.4 : 1, 
                   }}
                 >
                   {/* Rank Badge */}
