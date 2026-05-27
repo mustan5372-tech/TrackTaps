@@ -18,6 +18,7 @@ import Community from './community/Community';
 import Referral from './pages/Referral';
 import Guide from './pages/Guide';
 import Today from './pages/Today';
+import MegaSaver from './pages/MegaSaver';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import DownloadPage from './pages/DownloadPage';
@@ -344,6 +345,7 @@ function App() {
           <Route path="/admin" element={<SafeRoute><Admin /></SafeRoute>} />
           <Route path="/ai-import" element={<SafeRoute><AiSemesterImport /></SafeRoute>} />
           <Route path="/bunk-calculator" element={<SafeRoute><BunkCalculator /></SafeRoute>} />
+          <Route path="/mega-saver" element={<SafeRoute><MegaSaver /></SafeRoute>} />
           <Route path="/community" element={<SafeRoute><Community /></SafeRoute>} />
           <Route path="/referral" element={<SafeRoute><Referral /></SafeRoute>} />
           <Route path="/guide" element={<SafeRoute><Guide /></SafeRoute>} />

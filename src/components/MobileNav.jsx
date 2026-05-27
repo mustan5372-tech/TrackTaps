@@ -87,6 +87,7 @@ function MobileNav() {
     { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🏖️', label: 'Bunks', path: '/bunk-calculator' },
+    { icon: '👥', label: 'Mega Sync', path: '/mega-saver' },
     { icon: '📖', label: 'Guide', path: '/guide' },
     { icon: '🎁', label: 'Referrals', path: '/referral' },
     { icon: '⚙️', label: 'Settings', path: '/settings' },
