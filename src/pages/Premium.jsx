@@ -28,8 +28,8 @@ const PLANS = [
   {
     id: 'yearly',
     name: 'Mega Saver',
-    price: 18,
-    priceInPaise: 1800,
+    price: 15,
+    priceInPaise: 1500,
     durationDays: 365,
     description: 'Best value for academic excellence',
     color: '#f59e0b',
