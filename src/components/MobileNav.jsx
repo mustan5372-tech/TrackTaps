@@ -84,6 +84,7 @@ function MobileNav() {
 
   const moreItems = [
     { icon: '📚', label: 'Subjects', path: '/subjects' },
+    { icon: '💰', label: 'Mega Saver', path: '/mega-saver' },
     { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🏖️', label: 'Bunks', path: '/bunk-calculator' },

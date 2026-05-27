@@ -17,6 +17,7 @@ function Sidebar() {
     { icon: '📚', label: 'Subjects', path: '/subjects' },
     { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🏖️', label: 'Bunk Calculator', path: '/bunk-calculator' },
+    { icon: '💰', label: 'Mega Saver', path: '/mega-saver' },
     { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '📖', label: 'Guide Center', path: '/guide' },
     { icon: 'ℹ️', label: 'About', path: '/about' },
