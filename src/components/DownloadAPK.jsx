@@ -13,7 +13,9 @@ const DownloadAPK = () => {
     subscription,
     fullSync,
     isApkModalOpen,
-    setApkModalOpen
+    setApkModalOpen,
+    calendarEvents,
+    user
   } = useAppStore();
 
   const isOpen = isApkModalOpen;
@@ -115,7 +117,28 @@ const DownloadAPK = () => {
     document.body.removeChild(link);
   };
 
+  const renderFormattedMessage = (text) => {
+    return text.split('\n').map((line, idx) => {
+      // Parse bold tags **text**
+      const parts = line.split(/\*\*([^*]+)\*\*/g);
+      const renderedLine = parts.map((part, pIdx) => {
+        if (pIdx % 2 === 1) {
+          return <strong key={pIdx} style={{ color: '#c084fc', fontWeight: '800' }}>{part}</strong>;
+        }
+        return part;
+      });
+
+      return (
+        <div key={idx} style={{ marginBottom: line.trim() === '' ? '10px' : '4px' }}>
+          {renderedLine}
+        </div>
+      );
+    });
+  };
+
   const handleAskAI = (query) => {
+    if (!query.trim()) return;
+
     setChatMessages(prev => [...prev, { sender: 'user', text: query }]);
     setIsTyping(true);
     try {
@@ -124,32 +147,186 @@ const DownloadAPK = () => {
 
     setTimeout(() => {
       let reply = '';
+      let actionButton = null;
+      
       const defaultTarget = attendanceSettings?.defaultTarget || 75;
       const overall = dashboardStats?.overallPercentage || 0;
-      
       const normalizedQuery = query.toLowerCase();
 
-      if (normalizedQuery.includes('bunk') || normalizedQuery.includes('skip')) {
-        const safe = getSafeSubjects ? getSafeSubjects() : [];
-        if (safe.length > 0) {
-          reply = `🛡️ You can safely skip classes in ${safe.length} subjects: ${safe.map(s => s.name).join(', ')}. Keep an eye on critical classes to stay above ${defaultTarget}%.`;
-        } else {
-          reply = `⚠️ Alert: You currently have 0 safe bunks! Skipping any classes right now will drop your score below your ${defaultTarget}% target.`;
+      // Greetings Synonyms
+      const greetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'greetings', 'howdy', 'hola'];
+      const isGreeting = greetings.some(g => normalizedQuery.startsWith(g) || normalizedQuery === g);
+
+      // Emotion Synonyms
+      const emotions = ['stressed', 'anxious', 'fail', 'scared', 'worry', 'worrying', 'worried', 'tired', 'help me', 'panicking', 'scared', 'sad'];
+      const isEmotional = emotions.some(e => normalizedQuery.includes(e));
+
+      // Gratitude Synonyms
+      const thanks = ['thank you', 'thanks', 'awesome', 'cool', 'helpful', 'love you', 'great', 'perfect', 'amazing', 'appreciate'];
+      const isThankful = thanks.some(t => normalizedQuery.includes(t));
+
+      // 1. Dynamic Subject Lookup (with Multi-Turn context back-reference)
+      let matchedSubject = (subjects || []).find(s => 
+        normalizedQuery.includes(s.name.toLowerCase())
+      );
+
+      // Back-reference memory scan
+      if (!matchedSubject && !isGreeting && !isEmotional && !isThankful) {
+        for (let i = chatMessages.length - 1; i >= 0; i--) {
+          const msg = chatMessages[i];
+          if (msg.sender === 'user') {
+            const found = (subjects || []).find(s => msg.text.toLowerCase().includes(s.name.toLowerCase()));
+            if (found) {
+              matchedSubject = found;
+              break;
+            }
+          }
         }
-      } else if (normalizedQuery.includes('critical') || normalizedQuery.includes('risk')) {
-        const critical = getCriticalSubjects ? getCriticalSubjects() : [];
-        if (critical.length > 0) {
-          reply = `🚨 Critical Risk: You have ${critical.length} subjects below your target: ${critical.map(s => s.name).join(', ')}. prioritize attending these next lectures!`;
-        } else {
-          reply = `✨ All clear! You have 0 critical subjects below your target threshold. Great consistency!`;
-        }
-      } else {
-        reply = `📊 Your current overall attendance score is ${overall}%. Your semester target is set to ${defaultTarget}%. You are ${overall >= defaultTarget ? 'safe & on track' : 'below target criteria'}. Keep tracking with TrackTaps!`;
       }
 
-      setChatMessages(prev => [...prev, { sender: 'ai', text: reply }]);
+      if (isGreeting) {
+        const studentName = user?.displayName ? user.displayName.split(' ')[0] : 'Scholar';
+        reply = `👋 **Hello, ${studentName}! Welcome to your TrackTaps AI Command Deck.**\n\n` +
+                `I have scanned your active enrollment profile containing **${(subjects || []).length} registered subjects**.\n` +
+                `Your current overall score stands at **${overall}%** (Target Goal: ${defaultTarget}%).\n\n` +
+                `What shall we calculate today? Ask me about skip credits, danger lists, upcoming schedules, or specific course guidelines!`;
+      } else if (isEmotional) {
+        reply = `🌟 **Hey ${user?.displayName ? user.displayName.split(' ')[0] : 'there'}, pause and take a deep breath.**\n\n` +
+                `College calendars can feel incredibly fast-paced, but remember: **attendance is simply a game of numbers**, and we can solve it step-by-step. \n\n` +
+                `Let's focus on stability. Would you like me to map out a clear recovery roadmap for your critical subjects? I am always here to calculate the way out! 💪`;
+        actionButton = { label: '🎯 Run Skip Simulator', path: '/bunk-calculator' };
+      } else if (isThankful) {
+        reply = `✨ **You are very welcome!**\n\n` +
+                `It's my absolute pleasure to serve as your strategic co-pilot. Keep tracking your lectures, and let me know whenever you want to simulate another bunk or check upcoming calendar slots! 🚀`;
+      } else if (matchedSubject) {
+        const subTarget = matchedSubject.criteria || defaultTarget;
+        const present = matchedSubject.attendance?.present || 0;
+        const absent = matchedSubject.attendance?.absent || 0;
+        const total = matchedSubject.attendance?.total || 0;
+        const pct = total > 0 ? Math.round((present / total) * 100) : 0;
+
+        let safeBunks = 0;
+        let tempTotal = total;
+        while (tempTotal > 0) {
+          const nextPct = Math.round((present / (tempTotal + 1)) * 100);
+          if (nextPct >= subTarget) {
+            safeBunks++;
+            tempTotal++;
+          } else {
+            break;
+          }
+        }
+
+        let mustAttend = 0;
+        let tempTotal2 = total;
+        let tempPresent2 = present;
+        while (tempTotal2 === 0 || Math.round((tempPresent2 / tempTotal2) * 100) < subTarget) {
+          mustAttend++;
+          tempTotal2++;
+          tempPresent2++;
+        }
+
+        reply = `📚 **${matchedSubject.name} Attendance Status Report:**\n` +
+                `• Current Score: **${pct}%** (Required target: **${subTarget}%**)\n` +
+                `• Completed Summary: **${present} present / ${total} total sessions**\n\n`;
+
+        if (pct >= subTarget) {
+          reply += `🛡️ **Status: SAFE.** You are currently sitting comfortably above criteria! You can safely skip up to **${safeBunks} class(es)** consecutively. The predictive engine guarantees you will stay above safety limits.`;
+          actionButton = { label: '🏖️ Simulate Skips', path: '/bunk-calculator' };
+        } else {
+          reply += `🚨 **Status: CRITICAL.** Your attendance has fallen below target thresholds. You must attend the next **${mustAttend} class(es)** consecutively to recover and cross the ${subTarget}% safety line!`;
+          actionButton = { label: '📈 Check Insights', path: '/insights' };
+        }
+      } else if (normalizedQuery.includes('bunk') || normalizedQuery.includes('skip') || normalizedQuery.includes('buffer')) {
+        const safeList = (subjects || []).map(s => {
+          const target = s.criteria || defaultTarget;
+          const present = s.attendance?.present || 0;
+          const total = s.attendance?.total || 0;
+          const pct = total > 0 ? Math.round((present / total) * 100) : 0;
+          
+          let safeBunks = 0;
+          let tempTotal = total;
+          while (tempTotal > 0) {
+            const nextPct = Math.round((present / (tempTotal + 1)) * 100);
+            if (nextPct >= target) {
+              safeBunks++;
+              tempTotal++;
+            } else {
+              break;
+            }
+          }
+          return { name: s.name, safeBunks, pct, target };
+        }).filter(x => x.safeBunks > 0);
+
+        if (safeList.length > 0) {
+          reply = `🛡️ **Your Smart Skip Buffer Catalog:**\nHere is your active skip safety catalog where attendance exceeds thresholds:\n\n`;
+          safeList.forEach(s => {
+            reply += `• **${s.name}**: **${s.safeBunks} safe bunk(s)** (Current: ${s.pct}% / Required: ${s.target}%)\n`;
+          });
+          reply += `\n💡 Plan your skips selectively to prevent sudden score drops!`;
+          actionButton = { label: '🏖️ Open Skip Planner', path: '/bunk-calculator' };
+        } else {
+          reply = `⚠️ **Bunk Alert:** You currently have **0 safe bunks** across all registered subjects! Skipping any further lectures will drop your score below safety targets.`;
+          actionButton = { label: '📈 Check Insights', path: '/insights' };
+        }
+      } else if (normalizedQuery.includes('critical') || normalizedQuery.includes('risk') || normalizedQuery.includes('danger') || normalizedQuery.includes('fail')) {
+        const dangerList = (subjects || []).map(s => {
+          const target = s.criteria || defaultTarget;
+          const present = s.attendance?.present || 0;
+          const total = s.attendance?.total || 0;
+          const pct = total > 0 ? Math.round((present / total) * 100) : 0;
+          
+          let mustAttend = 0;
+          let tempTotal = total;
+          let tempPresent = present;
+          while (tempTotal === 0 || Math.round((tempPresent / tempTotal) * 100) < target) {
+            mustAttend++;
+            tempTotal++;
+            tempPresent++;
+          }
+          return { name: s.name, mustAttend, pct, target };
+        }).filter(x => x.pct < x.target);
+
+        if (dangerList.length > 0) {
+          reply = `🚨 **Critical Subjects & Recovery Roadmaps:**\nYou have ${dangerList.length} subject(s) below target score:\n\n`;
+          dangerList.forEach(s => {
+            reply += `• **${s.name}**: Current **${s.pct}%** (Required: ${s.target}%)\n  👉 Recovery: Attend the next **${s.mustAttend} classes consecutively** to restore status.\n`;
+          });
+          actionButton = { label: '📈 Check Insights', path: '/insights' };
+        } else {
+          reply = `✨ **Health Check: ALL CLEAR!** Every single registered subject is currently above your criteria threshold. Outstanding consistency!`;
+        }
+      } else if (normalizedQuery.includes('schedule') || normalizedQuery.includes('timetable') || normalizedQuery.includes('class') || normalizedQuery.includes('calendar') || normalizedQuery.includes('next')) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const upcoming = (calendarEvents || [])
+          .filter(e => e.date >= todayStr)
+          .sort((a, b) => a.date.localeCompare(b.date))
+          .slice(0, 4);
+
+        if (upcoming.length > 0) {
+          reply = `🗓️ **Upcoming Academic Timetable:**\nHere is your upcoming schedule mapped by the AI parser:\n\n`;
+          upcoming.forEach((cls, idx) => {
+            reply += `${idx + 1}. **${cls.subjectName}**\n   📅 Date: ${new Date(cls.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}\n   ⏰ Slot: ${cls.timeSlot} (${cls.dayName})\n\n`;
+          });
+          actionButton = { label: '📅 Go to Calendar', path: '/calendar' };
+        } else {
+          reply = `🗓️ No upcoming class sessions found in your calendar database. Import one automatically in Calendar Setup!`;
+          actionButton = { label: '📅 Go to Calendar', path: '/calendar' };
+        }
+      } else {
+        reply = `📊 **TrackTaps Semester Health Report:**\n` +
+                `• Overall score: **${overall}%** (Target Goal: ${defaultTarget}%)\n` +
+                `• Registered Subjects: **${(subjects || []).length}**\n` +
+                `• Status: **${overall >= defaultTarget ? '✅ ON TRACK & SAFE' : '⚠️ CRITICAL RECOVERY NEEDED'}**\n\n` +
+                `💡 **Try asking me:**\n` +
+                `- "Can I bunk [Subject Name]?"\n` +
+                `- "Am I critical?"\n` +
+                `- "Show my upcoming schedule"`;
+      }
+
+      setChatMessages(prev => [...prev, { sender: 'ai', text: reply, actionButton }]);
       setIsTyping(false);
-    }, 1200);
+    }, 1000);
   };
 
   const platforms = [
@@ -329,12 +506,45 @@ const DownloadAPK = () => {
                     <span style={{ fontSize: '10px', color: 'var(--primary-light)', fontWeight: '700' }}>ONLINE ASSISTANT</span>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setIsChatOpen(false)}
-                  style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', fontSize: '18px', cursor: 'pointer' }}
-                >
-                  ✕
-                </button>
+                
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  {chatMessages.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => {
+                          const summary = chatMessages
+                            .map(m => `${m.sender.toUpperCase()}: ${m.text}`)
+                            .join('\n\n');
+                          navigator.clipboard.writeText(summary);
+                          alert('📝 Chat history copied to clipboard!');
+                        }}
+                        title="Export Chat History"
+                        style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                      >
+                        📋
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm('🧹 Clear all chat messages?')) {
+                            setChatMessages([
+                              { sender: 'ai', text: '👋 Hello! I am the TrackTaps AI assistant. Ask me anything about your attendance buffer, skip safety, or semester goals!' }
+                            ]);
+                          }
+                        }}
+                        title="Clear Chat History"
+                        style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                      >
+                        🧹
+                      </button>
+                    </>
+                  )}
+                  <button 
+                    onClick={() => setIsChatOpen(false)}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', fontSize: '18px', cursor: 'pointer' }}
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               {/* Chat messages */}
@@ -352,18 +562,45 @@ const DownloadAPK = () => {
                       fontSize: '13px',
                       color: 'var(--text-main)',
                       lineHeight: 1.5,
-                      textAlign: 'left',
-                      whiteSpace: 'pre-line'
+                      textAlign: 'left'
                     }}
                   >
-                    {msg.text}
+                    {renderFormattedMessage(msg.text)}
+                    {msg.actionButton && (
+                      <button
+                        onClick={() => {
+                          setIsChatOpen(false);
+                          navigate(msg.actionButton.path);
+                        }}
+                        style={{
+                          marginTop: '10px',
+                          padding: '8px 12px',
+                          background: 'rgba(139, 92, 246, 0.2)',
+                          border: '1px solid rgba(139, 92, 246, 0.4)',
+                          borderRadius: '8px',
+                          color: 'var(--primary-light)',
+                          fontSize: '11px',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          width: 'fit-content'
+                        }}
+                      >
+                        <span>⚡</span> {msg.actionButton.label}
+                      </button>
+                    )}
                   </div>
                 ))}
                 {isTyping && (
-                  <div style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '18px 18px 18px 2px', padding: '12px 16px', display: 'flex', gap: '4px' }}>
-                    <span style={{ width: '6px', height: '6px', background: 'var(--primary-light)', borderRadius: '50%', animation: 'bounce 1s infinite' }} />
-                    <span style={{ width: '6px', height: '6px', background: 'var(--primary-light)', borderRadius: '50%', animation: 'bounce 1s infinite 0.2s' }} />
-                    <span style={{ width: '6px', height: '6px', background: 'var(--primary-light)', borderRadius: '50%', animation: 'bounce 1s infinite 0.4s' }} />
+                  <div style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '18px 18px 18px 2px', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--primary-light)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>TrackTaps AI is thinking...</div>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <span style={{ width: '6px', height: '6px', background: 'var(--primary-light)', borderRadius: '50%', animation: 'bounce 1s infinite' }} />
+                      <span style={{ width: '6px', height: '6px', background: 'var(--primary-light)', borderRadius: '50%', animation: 'bounce 1s infinite 0.2s' }} />
+                      <span style={{ width: '6px', height: '6px', background: 'var(--primary-light)', borderRadius: '50%', animation: 'bounce 1s infinite 0.4s' }} />
+                    </div>
                   </div>
                 )}
                 <div ref={chatEndRef} />
@@ -372,9 +609,10 @@ const DownloadAPK = () => {
               {/* Suggestions chips */}
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
                 {[
-                  '🏖️ Can I bunk class?',
-                  '🚨 Critical risks?',
-                  '📊 Overall score?'
+                  '🏖️ Bunk buffer analysis',
+                  '🚨 Critical subjects',
+                  '🗓️ Show my schedule',
+                  '📊 Overall score'
                 ].map((chip, idx) => (
                   <button
                     key={idx}

@@ -24,6 +24,11 @@ function BunkCalculator() {
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
   const [isPremium, setIsPremium] = useState(false);
   const [simulatedBunks, setSimulatedBunks] = useState(2);
+  const [customSkips, setCustomSkips] = useState({});
+
+  useEffect(() => {
+    setCustomSkips({});
+  }, [selectedSubjectId]);
 
   useEffect(() => {
     fullSync();
@@ -386,7 +391,7 @@ function BunkCalculator() {
               <div style={{ background: 'rgba(139, 92, 246, 0.05)', borderRadius: '24px', padding: '28px', border: '1px solid var(--primary-glow)', marginBottom: '32px', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-20px', right: '-20px', fontSize: '60px', opacity: 0.05 }}>📊</div>
                 <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--primary-light)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                   <span>⚡</span> Prediction Insights
+                   <span>⚡</span> AI Prediction Insights
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -411,7 +416,7 @@ function BunkCalculator() {
                 </div>
               </div>
 
-              {/* Future Bunk Predictor AI Simulator */}
+              {/* Interactive "What-If" AI Skip Planner */}
               <div style={{ 
                 background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)', 
                 borderRadius: '24px', 
@@ -426,161 +431,231 @@ function BunkCalculator() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
                   <span style={{ fontSize: '22px' }}>🔮</span>
                   <h4 style={{ fontSize: '14px', fontWeight: '900', color: '#818cf8', margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    Future Bunk Predictor
+                    What-If AI Skip Planner
                   </h4>
-                  <span style={{ fontSize: '10px', background: 'rgba(99, 102, 241, 0.2)', color: '#a5b4fc', padding: '2px 8px', borderRadius: '20px', fontWeight: '800' }}>AI SIMULATOR</span>
+                  <span style={{ fontSize: '10px', background: 'rgba(99, 102, 241, 0.2)', color: '#a5b4fc', padding: '2px 8px', borderRadius: '20px', fontWeight: '800' }}>INTERACTIVE PREDICTOR</span>
                 </div>
 
                 <p style={{ fontSize: '13px', color: 'var(--text-dim)', lineHeight: 1.5, margin: '0 0 24px 0' }}>
-                  Simulate skipping future classes. Our engine scans your academic calendar and holidays to predict the exact date impact and your final score.
+                  Plan your skips class-by-class for the next 5 sessions. Toggle the checkboxes to simulate skips; the AI engine dynamically recalculates the exact trajectory below.
                 </p>
 
-                {/* Counter Control */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', background: 'rgba(15, 23, 42, 0.4)', padding: '16px', borderRadius: '20px', border: '1px solid var(--border)', marginBottom: '28px' }}>
-                  <button 
-                    onClick={() => setSimulatedBunks(prev => Math.max(1, prev - 1))}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '12px',
-                      background: 'var(--surface-bright)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--text-main)',
-                      fontSize: '20px',
-                      fontWeight: '800',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = '#818cf8'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'var(--border)'}
-                  >
-                    −
-                  </button>
-                  
-                  <div style={{ textAlign: 'center', minWidth: '100px' }}>
-                    <div style={{ fontSize: '28px', fontWeight: '950', color: 'white', lineHeight: 1 }}>
-                      {simulatedBunks}
-                    </div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '4px', fontWeight: '800', letterSpacing: '0.05em' }}>
-                      {simulatedBunks === 1 ? 'Class to Skip' : 'Classes to Skip'}
-                    </div>
-                  </div>
+                {/* Checklist grid */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+                  {(() => {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const upcoming5 = (calendarEvents || [])
+                      .filter(e => e.subjectName === selectedSubject?.name && e.date >= todayStr)
+                      .sort((a, b) => a.date.localeCompare(b.date))
+                      .slice(0, 5);
 
-                  <button 
-                    onClick={() => setSimulatedBunks(prev => Math.min(10, prev + 1))}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '12px',
-                      background: 'var(--surface-bright)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--text-main)',
-                      fontSize: '20px',
-                      fontWeight: '800',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = '#818cf8'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'var(--border)'}
-                  >
-                    +
-                  </button>
-                </div>
+                    if (upcoming5.length === 0) {
+                      return (
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px' }}>
+                          No upcoming sessions scheduled in this semester.
+                        </div>
+                      );
+                    }
 
-                {/* Simulation Output Card */}
-                <div style={{ 
-                  background: isSimulatedSafe ? 'rgba(16, 185, 129, 0.06)' : 'rgba(239, 68, 68, 0.06)', 
-                  border: `1.5px solid ${isSimulatedSafe ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`, 
-                  borderRadius: '20px', 
-                  padding: '20px',
-                  marginBottom: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '16px'
-                }}>
-                  <div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginBottom: '4px' }}>
-                      Predicted Attendance
-                    </div>
-                    <div style={{ fontSize: '26px', fontWeight: '950', color: isSimulatedSafe ? 'var(--success)' : 'var(--danger)', letterSpacing: '-0.5px' }}>
-                      {simulatedPercentage}%
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px', fontWeight: '600' }}>
-                      Drops from {selectedStats?.percentage || 0}% by {Math.max(0, (selectedStats?.percentage || 0) - simulatedPercentage)}%
-                    </div>
-                  </div>
-                  
-                  <div style={{ 
-                    background: isSimulatedSafe ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', 
-                    color: isSimulatedSafe ? '#34d399' : '#f87171',
-                    padding: '8px 16px',
-                    borderRadius: '12px',
-                    fontSize: '12px',
-                    fontWeight: '900',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    textAlign: 'center'
-                  }}>
-                    {isSimulatedSafe ? '🛡️ SAFE TO SKIP' : '⚠️ DROPS BELOW TARGET'}
-                  </div>
-                </div>
-
-                {/* Calendar & Holiday Timeline */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '850', letterSpacing: '0.05em', marginBottom: '4px' }}>
-                    🗓️ Simulated Calendar Timeline
-                  </div>
-                  
-                  {simulatedClasses.map((cls) => (
-                    <div 
-                      key={cls.index} 
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between', 
-                        background: cls.holidayName ? 'rgba(139, 92, 246, 0.08)' : 'rgba(15, 23, 42, 0.3)', 
-                        padding: '12px 16px', 
-                        borderRadius: '14px', 
-                        border: `1px solid ${cls.holidayName ? 'rgba(139, 92, 246, 0.25)' : 'var(--border)'}` 
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '16px' }}>{cls.holidayName ? '🎉' : '📅'}</span>
-                        <div>
-                          <div style={{ fontSize: '13px', fontWeight: '750', color: cls.holidayName ? '#a78bfa' : 'white' }}>
-                            Class {cls.index}: {new Date(cls.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    return upcoming5.map((cls, idx) => {
+                      const holiday = semesterSettings?.holidays?.find(h => h.date === cls.date);
+                      const isSkipped = !!customSkips[cls.id];
+                      return (
+                        <div 
+                          key={cls.id} 
+                          onClick={() => {
+                            if (holiday) return;
+                            setCustomSkips(prev => ({
+                              ...prev,
+                              [cls.id]: !prev[cls.id]
+                            }));
+                          }}
+                          style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between', 
+                            background: holiday ? 'rgba(139, 92, 246, 0.08)' : isSkipped ? 'rgba(239, 68, 68, 0.08)' : 'rgba(15, 23, 42, 0.3)', 
+                            padding: '12px 16px', 
+                            borderRadius: '14px', 
+                            border: `1px solid ${holiday ? 'rgba(139, 92, 246, 0.25)' : isSkipped ? 'rgba(239, 68, 68, 0.25)' : 'var(--border)'}`,
+                            cursor: holiday ? 'not-allowed' : 'pointer',
+                            userSelect: 'none',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <input
+                              type="checkbox"
+                              checked={isSkipped || !!holiday}
+                              disabled={!!holiday}
+                              readOnly
+                              style={{ width: '16px', height: '16px', accentColor: holiday ? '#a78bfa' : '#ef4444', cursor: 'pointer' }}
+                            />
+                            <div>
+                              <div style={{ fontSize: '13px', fontWeight: '750', color: holiday ? '#a78bfa' : isSkipped ? '#fca5a5' : 'white' }}>
+                                Session {idx + 1}: {new Date(cls.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                              </div>
+                              <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                                {cls.timeSlot} • {cls.dayName}
+                              </span>
+                            </div>
                           </div>
-                          {cls.isEstimated && (
-                            <span style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Estimated Date</span>
+                          
+                          {holiday ? (
+                            <span style={{ fontSize: '11px', fontWeight: '850', color: '#a78bfa', background: 'rgba(139, 92, 246, 0.15)', padding: '4px 10px', borderRadius: '8px' }}>
+                              🎉 HOLIDAY Break
+                            </span>
+                          ) : isSkipped ? (
+                            <span style={{ fontSize: '11px', fontWeight: '800', color: '#f87171', background: 'rgba(239, 68, 68, 0.15)', padding: '4px 10px', borderRadius: '8px' }}>
+                              Simulated Skip ✗
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: '11px', fontWeight: '700', color: '#34d399', background: 'rgba(16, 185, 129, 0.15)', padding: '4px 10px', borderRadius: '8px' }}>
+                              Attending ✓
+                            </span>
                           )}
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+
+                {/* Calculate What-If live stats */}
+                {(() => {
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  const upcoming5 = (calendarEvents || [])
+                    .filter(e => e.subjectName === selectedSubject?.name && e.date >= todayStr)
+                    .sort((a, b) => a.date.localeCompare(b.date))
+                    .slice(0, 5);
+
+                  const conducted = Number(selectedStats?.total) || 0;
+                  const present = Number(selectedStats?.present) || 0;
+                  
+                  let whatIfTotal = conducted;
+                  let whatIfPresent = present;
+                  
+                  upcoming5.forEach(cls => {
+                    const holiday = semesterSettings?.holidays?.find(h => h.date === cls.date);
+                    if (!holiday) {
+                      whatIfTotal += 1;
+                      if (!customSkips[cls.id]) {
+                        whatIfPresent += 1;
+                      }
+                    }
+                  });
+
+                  const whatIfPercentage = whatIfTotal > 0 ? Math.round((whatIfPresent / whatIfTotal) * 100) : 0;
+                  const isWhatIfSafe = whatIfPercentage >= targetPct;
+                  const dropAmount = Math.max(0, (selectedStats?.percentage || 0) - whatIfPercentage);
+
+                  return (
+                    <div style={{ 
+                      background: isWhatIfSafe ? 'rgba(16, 185, 129, 0.06)' : 'rgba(239, 68, 68, 0.06)', 
+                      border: `1.5px solid ${isWhatIfSafe ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`, 
+                      borderRadius: '20px', 
+                      padding: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '16px'
+                    }}>
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginBottom: '4px' }}>
+                          What-If Predicted Score
+                        </div>
+                        <div style={{ fontSize: '28px', fontWeight: '950', color: isWhatIfSafe ? 'var(--success)' : 'var(--danger)', letterSpacing: '-0.5px' }}>
+                          {whatIfPercentage}%
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px', fontWeight: '600' }}>
+                          {dropAmount > 0 
+                            ? `Drops from current by ${dropAmount}%` 
+                            : 'No change to current score'}
                         </div>
                       </div>
                       
-                      {cls.holidayName ? (
-                        <span style={{ fontSize: '11px', fontWeight: '800', color: '#a78bfa', background: 'rgba(139, 92, 246, 0.15)', padding: '4px 10px', borderRadius: '8px' }}>
-                          HOLIDAY: {cls.holidayName}
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)' }}>
-                          Bunk Affected
-                        </span>
-                      )}
+                      <div style={{ 
+                        background: isWhatIfSafe ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', 
+                        color: isWhatIfSafe ? '#34d399' : '#f87171',
+                        padding: '8px 16px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '900',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        textAlign: 'center'
+                      }}>
+                        {isWhatIfSafe ? '🛡️ SAFE PLAN' : '⚠️ ATTENDANCE DROPS'}
+                      </div>
                     </div>
-                  ))}
-                  
-                  {actualSimulatedBunks === 0 && simulatedBunks > 0 && (
-                    <div style={{ fontSize: '12px', color: '#a78bfa', background: 'rgba(139, 92, 246, 0.1)', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(139, 92, 246, 0.2)', textAlign: 'center', fontWeight: '600' }}>
-                      ✨ Wow! All selected classes fall on official holidays. Your attendance won't be affected at all!
+                  );
+                })()}
+              </div>
+
+              {/* AI Strategic Action Checklist */}
+              <div className="dashboard-card" style={{ 
+                padding: '28px', 
+                background: 'rgba(139, 92, 246, 0.04)', 
+                border: '1px solid rgba(139, 92, 246, 0.15)', 
+                borderRadius: '24px',
+                marginBottom: '32px',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ position: 'absolute', top: '-15px', right: '-15px', fontSize: '60px', opacity: 0.05 }}>🧠</div>
+                <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--primary-light)', marginBottom: '18px', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>🧠</span> AI Strategic Action Checklist
+                </h4>
+
+                {(() => {
+                  const pct = selectedStats?.percentage || 0;
+                  let badgeColor = '';
+                  let badgeText = '';
+                  let checklistItems = [];
+
+                  if (pct >= 80) {
+                    badgeColor = 'var(--success)';
+                    badgeText = '🏆 HIGH PRIVILEGE ZONE';
+                    checklistItems = [
+                      { text: `You have a very strong buffer. You can safely bunk up to ${selectedStats?.bunkableNow || 0} classes.`, check: true },
+                      { text: 'Recommended skip strategy: "Selective High-Value Skip". Reserve skips for hackathons or research.', check: true },
+                      { text: 'Verify that manual offline marks are synced with Pod.ai daily.', check: true }
+                    ];
+                  } else if (pct >= targetPct) {
+                    badgeColor = 'var(--warning)';
+                    badgeText = '⚠️ STABILITY ALERT ZONE';
+                    checklistItems = [
+                      { text: `Your attendance is above criteria but close to the margin. Limit bunks to ${selectedStats?.bunkableNow || 0} session max.`, check: true },
+                      { text: 'Avoid back-to-back bunks of this subject to prevent sudden drops.', check: true },
+                      { text: 'Recommended strategy: "Conservative Skip Mode". Skip only when absolutely vital.', check: true }
+                    ];
+                  } else {
+                    badgeColor = '#ef4444';
+                    badgeText = '🚨 EMERGENCY RECOVERY ZONE';
+                    checklistItems = [
+                      { text: `Attendance depleted! You must attend the next ${selectedStats?.mustAttend || 0} classes consecutively.`, check: false },
+                      { text: 'Freeze all skip actions. Set strict reminder alarms for all upcoming lecture alerts.', check: false },
+                      { text: 'Recommended strategy: "Absolute Timetable Lock". Full attendance required until target is reached.', check: false }
+                    ];
+                  }
+
+                  return (
+                    <div>
+                      <div style={{ display: 'inline-block', fontSize: '11px', fontWeight: '900', color: badgeColor, background: 'rgba(255,255,255,0.03)', border: `1px solid ${badgeColor}`, padding: '4px 10px', borderRadius: '8px', marginBottom: '16px' }}>
+                        {badgeText}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {checklistItems.map((item, index) => (
+                          <div key={index} style={{ display: 'flex', gap: '10px', fontSize: '13px', lineHeight: '1.5', alignItems: 'flex-start' }}>
+                            <span style={{ color: item.check ? 'var(--success)' : '#ef4444', fontWeight: '900' }}>
+                              {item.check ? '✓' : '⚠️'}
+                            </span>
+                            <span style={{ color: 'var(--text-main)' }}>{item.text}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  )}
-                </div>
+                  );
+                })()}
               </div>
 
               <div style={{ display: 'flex', gap: '12px' }}>
