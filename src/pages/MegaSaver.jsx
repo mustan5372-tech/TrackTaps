@@ -2,80 +2,229 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { db } from '../services/firebase';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
 function MegaSaver() {
   const navigate = useNavigate();
-  const { user, subscription, subjects, timetable } = useAppStore();
-  const isPremium = subscription?.status === 'active';
-  
-  // Custom mock data for high-fidelity Coordinated Timetable Sync
-  const [syncPin, setSyncPin] = useState('');
+  const { user, subscription, subjects, subjectStats, role } = useAppStore();
+  const isPremium = subscription?.status === 'active' || role === 'owner' || role === 'core_admin';
+
   const [activeGroup, setActiveGroup] = useState(null);
   const [pinInput, setPinInput] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [groupId, setGroupId] = useState('');
 
-  // Auto-generate a Sync PIN if premium
-  useEffect(() => {
-    if (isPremium && !syncPin) {
-      setSyncPin(`TAPS-${Math.floor(1000 + Math.random() * 9000)}`);
-    }
-  }, [isPremium, syncPin]);
-
+  // Helper: Toast Notifications
   const triggerToast = (msg) => {
     setToastMessage(msg);
     setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+    setTimeout(() => setShowToast(false), 3500);
   };
 
-  const handleCreateGroup = () => {
-    if (!isPremium) {
-      navigate('/premium');
-      return;
+  // Helper: Calculate attendance percentage exactly like subjects page
+  const getAttendancePercentage = (subject, stats) => {
+    if (stats && stats.total > 0) {
+      return Math.round((stats.present / stats.total) * 100) || 0;
     }
-    setActiveGroup({
-      name: "Engineering Study Batch B",
-      pin: syncPin,
-      members: [
-        { name: `${user?.displayName || 'You'} (Host)`, attendance: '82%', avatar: '🦁', status: 'Safe' },
-        { name: 'Aarav Patel', attendance: '79%', avatar: '🦊', status: 'Safe' },
-        { name: 'Meera Sharma', attendance: '68%', avatar: '🐼', status: 'Critical' },
-        { name: 'Rohit Verma', attendance: '88%', avatar: '🦁', status: 'Safe' }
-      ],
-      recommendations: [
-        { day: 'Monday', action: 'Coordinated Library Study', label: 'Recommended Skip Slot', class: 'Applied Mathematics (10:00 AM)', savings: '+$5.50 fuel saved' },
-        { day: 'Wednesday', action: 'Attend Class Together', label: 'High Risk for Meera', class: 'Data Structures Lab (02:00 PM)', savings: 'Mandatory attendance' },
-        { day: 'Friday', action: 'Coordinated Semester Bunk', label: 'Perfect Skip Window', class: 'Digital Electronics (09:00 AM)', savings: '+$4.00 commute saved' }
-      ]
+    if (subject.podaiPercentage) return Math.round(Number(subject.podaiPercentage));
+    const present = Number(subject.initialPresent || subject.present || 0);
+    const total = Number(subject.initialTotal || subject.total || 0);
+    return total > 0 ? Math.round((present / total) * 100) : 0;
+  };
+
+  // Helper: Prepare real member payload with active subjects & attendance stats
+  const prepareMemberPayload = () => {
+    const realSubjects = (subjects || []).map(sub => {
+      const stats = subjectStats?.[sub.id];
+      const percentage = getAttendancePercentage(sub, stats);
+      return {
+        id: sub.id,
+        name: sub.name,
+        criteria: sub.criteria || 75,
+        present: stats?.present ?? Number(sub.initialPresent || sub.present || 0),
+        total: stats?.total ?? Number(sub.initialTotal || sub.total || 0),
+        percentage
+      };
     });
-    triggerToast("✨ Study Group Created successfully!");
+
+    return {
+      uid: user?.uid,
+      name: user?.displayName || user?.email || 'Anonymous Scholar',
+      avatar: ['🦁', '🐙', '🐻', '🐸', '🐼', '🦊'][Math.floor((user?.uid?.charCodeAt(0) || 0) % 6)],
+      subjects: realSubjects,
+      updatedAt: new Date().toISOString()
+    };
   };
 
-  const handleJoinGroup = () => {
+  // Unique Group PIN Generator: alphanumeric 6 chars
+  const generateUniquePin = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return `TAPS-${result}`;
+  };
+
+  // Create real group in Firestore
+  const handleCreateGroup = async () => {
     if (!isPremium) {
       navigate('/premium');
       return;
     }
-    if (!pinInput.trim()) {
+    if (!user) {
+      triggerToast("⚠️ You must be logged in to create a group!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const newPin = generateUniquePin();
+      const groupRef = doc(db, 'sync_groups', newPin);
+      
+      const hostPayload = prepareMemberPayload();
+      const initialGroup = {
+        groupId: newPin,
+        name: `${user.displayName || 'My'}'s Study Sync Group`,
+        hostUid: user.uid,
+        createdAt: new Date().toISOString(),
+        members: {
+          [user.uid]: hostPayload
+        }
+      };
+
+      await setDoc(groupRef, initialGroup);
+      setGroupId(newPin);
+      triggerToast(`✨ Group ${newPin} created successfully!`);
+    } catch (err) {
+      console.error("Firestore creation error:", err);
+      triggerToast("❌ Failed to create study group in cloud database.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Join real group in Firestore
+  const handleJoinGroup = async () => {
+    if (!isPremium) {
+      navigate('/premium');
+      return;
+    }
+    if (!user) {
+      triggerToast("⚠️ You must be logged in to join a group!");
+      return;
+    }
+    const cleanPin = pinInput.trim().toUpperCase();
+    if (!cleanPin) {
       triggerToast("⚠️ Please enter a valid Sync PIN!");
       return;
     }
-    setActiveGroup({
-      name: "CS Main Core Sync Group",
-      pin: pinInput.toUpperCase(),
-      members: [
-        { name: 'Kabir Dev (Host)', attendance: '85%', avatar: '🐸', status: 'Safe' },
-        { name: `${user?.displayName || 'You'} (Joined)`, attendance: '78%', avatar: '🦁', status: 'Safe' },
-        { name: 'Siddharth Sen', attendance: '74%', avatar: '🐻', status: 'Warning' },
-        { name: 'Riya Paul', attendance: '61%', avatar: '🐙', status: 'Critical' }
-      ],
-      recommendations: [
-        { day: 'Tuesday', action: 'Coordinated Semester Bunk', label: 'All Members Safe', class: 'Computer Networks (11:00 AM)', savings: 'Perfect skip window' },
-        { day: 'Thursday', action: 'Attend Class Together', label: 'High Risk for Riya & Siddharth', class: 'Operating Systems (01:00 PM)', savings: 'Required for all' }
-      ]
-    });
-    triggerToast(`🔗 Linked to Group ${pinInput.toUpperCase()} successfully!`);
+
+    setLoading(true);
+    try {
+      const groupRef = doc(db, 'sync_groups', cleanPin);
+      const snap = await getDoc(groupRef);
+
+      if (!snap.exists()) {
+        triggerToast("🔍 Sync PIN not found. Double-check your spelling!");
+        setLoading(false);
+        return;
+      }
+
+      const myPayload = prepareMemberPayload();
+      const currentData = snap.data();
+      
+      // Update Firestore with merged member data
+      await setDoc(groupRef, {
+        members: {
+          ...currentData.members,
+          [user.uid]: myPayload
+        }
+      }, { merge: true });
+
+      setGroupId(cleanPin);
+      triggerToast(`🔗 Joined group ${cleanPin} successfully!`);
+    } catch (err) {
+      console.error("Firestore join error:", err);
+      triggerToast("❌ Failed to join study group. Try again!");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Real-time Firestore document listener
+  useEffect(() => {
+    if (!groupId || !db) return;
+
+    console.log(`📡 [MegaSaver] Listening to Firestore group: ${groupId}`);
+    const groupRef = doc(db, 'sync_groups', groupId);
+
+    const unsubscribe = onSnapshot(groupRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        
+        // Convert members map into array
+        const membersList = Object.values(data.members || {});
+        
+        // Dynamic Coordinated recommendations based on REAL synced subjects!
+        const recommendations = [];
+        
+        // Get all unique subject names across all group members
+        const allSubjectNames = Array.from(
+          new Set(membersList.flatMap(m => (m.subjects || []).map(s => s.name)))
+        );
+
+        allSubjectNames.forEach(subName => {
+          // Find members who have this subject
+          const matchingMembers = membersList.filter(m => 
+            (m.subjects || []).some(s => s.name === subName)
+          );
+
+          // Check if any matching member is below target criteria for this subject
+          const criticalMembers = matchingMembers.filter(m => {
+            const sub = m.subjects.find(s => s.name === subName);
+            return sub && sub.percentage < sub.criteria;
+          });
+
+          if (criticalMembers.length > 0) {
+            recommendations.push({
+              day: 'High Alert',
+              action: 'Attend Class Together',
+              label: `High Risk for ${criticalMembers.map(m => m.name.split(' ')[0]).join(', ')}`,
+              class: subName,
+              savings: 'Attendance criteria not met! Attendance recommended.'
+            });
+          } else {
+            recommendations.push({
+              day: 'Safe skip',
+              action: 'Coordinated Semester Bunk',
+              label: 'All Members Safe',
+              class: subName,
+              savings: 'Everyone is above their target criteria. Safe skip window!'
+            });
+          }
+        });
+
+        // Update local React state with Firestore real-time updates!
+        setActiveGroup({
+          ...data,
+          members: membersList,
+          recommendations
+        });
+      } else {
+        triggerToast("⚠️ Group session has expired or been terminated.");
+        setActiveGroup(null);
+        setGroupId('');
+      }
+    }, (err) => {
+      console.error("Firestore onSnapshot error:", err);
+    });
+
+    return () => unsubscribe();
+  }, [groupId]);
 
   return (
     <div className="mega-saver-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '120px', color: 'var(--text-main)' }}>
@@ -153,21 +302,17 @@ function MegaSaver() {
             {/* Create Group Box */}
             <div className="dashboard-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>✨</span> Start Coordinated study Group
+                <span>✨</span> Start Coordinated Study Group
               </h4>
               <p style={{ color: 'var(--text-dim)', fontSize: '12.5px', margin: 0, lineHeight: 1.5 }}>
-                Generate a secure Sync PIN, share it with your classmates, and sync your timetables directly.
+                Generate a unique database PIN, share it with your classmates, and sync your actual subject attendance.
               </p>
-              
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '700' }}>YOUR PIN:</span>
-                <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--primary-light)', letterSpacing: '2px' }}>{syncPin}</span>
-              </div>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleCreateGroup}
+                disabled={loading}
                 style={{
                   background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
                   color: 'white',
@@ -176,10 +321,11 @@ function MegaSaver() {
                   borderRadius: '10px',
                   fontSize: '13px',
                   fontWeight: '800',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  opacity: loading ? 0.6 : 1
                 }}
               >
-                Create Study Sync Group
+                {loading ? 'Initializing Database...' : 'Create Active Sync Group 👥'}
               </motion.button>
             </div>
 
@@ -189,12 +335,12 @@ function MegaSaver() {
                 <span>🔗</span> Join Classmate's Sync Group
               </h4>
               <p style={{ color: 'var(--text-dim)', fontSize: '12.5px', margin: 0, lineHeight: 1.5 }}>
-                Paste the unique Sync PIN provided by your group host to import their schedule overlay.
+                Paste the unique PIN provided by your classmate to link your schedules in real-time.
               </p>
               
               <input
                 type="text"
-                placeholder="Enter PIN (e.g. TAPS-1234)"
+                placeholder="Enter PIN (e.g. TAPS-ABC123)"
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
                 style={{
@@ -214,6 +360,7 @@ function MegaSaver() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleJoinGroup}
+                disabled={loading}
                 style={{
                   background: 'rgba(255,255,255,0.05)',
                   border: '1px solid var(--border)',
@@ -222,10 +369,11 @@ function MegaSaver() {
                   borderRadius: '10px',
                   fontSize: '13px',
                   fontWeight: '750',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  opacity: loading ? 0.6 : 1
                 }}
               >
-                Join Sync Group
+                {loading ? 'Connecting...' : 'Join Classmate Group'}
               </motion.button>
             </div>
 
@@ -244,18 +392,18 @@ function MegaSaver() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: 'var(--text-main)' }}>👥 {activeGroup.name}</h3>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginTop: '4px' }}>Active Session PIN: **{activeGroup.pin}**</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginTop: '4px' }}>Active Session PIN: **{activeGroup.groupId}**</span>
                   </div>
                   <span style={{ fontSize: '11px', background: 'var(--success)20', border: '1px solid var(--success)', color: 'var(--success)', padding: '4px 12px', borderRadius: '100px', fontWeight: '800' }}>
-                    ● LIVE SYNC ACTIVE
+                    ● REALTIME SYNC ACTIVE
                   </span>
                 </div>
               </div>
 
               {/* Members List */}
               <div className="dashboard-card" style={{ padding: '24px' }}>
-                <h4 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '800' }}>👥 Study Group Members ({activeGroup.members.length})</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                <h4 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '800' }}>👥 Synced Classmates ({activeGroup.members.length})</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                   {activeGroup.members.map((member, idx) => (
                     <div 
                       key={idx} 
@@ -263,21 +411,38 @@ function MegaSaver() {
                         background: 'rgba(255,255,255,0.02)', 
                         border: '1px solid var(--border)', 
                         borderRadius: '16px', 
-                        padding: '16px', 
+                        padding: '20px', 
                         display: 'flex', 
-                        alignItems: 'center', 
+                        flexDirection: 'column',
                         gap: '12px' 
                       }}
                     >
-                      <span style={{ fontSize: '28px' }}>{member.avatar}</span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '13px', fontWeight: '750', color: 'var(--text-main)' }}>{member.name}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Attendance:</span>
-                          <span style={{ fontSize: '12px', fontWeight: '800', color: member.status === 'Critical' ? 'var(--danger)' : 'var(--success)' }}>
-                            {member.attendance}
-                          </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '32px' }}>{member.avatar}</span>
+                        <div>
+                          <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-main)' }}>{member.name}</div>
+                          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Updated: {new Date(member.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
+                      </div>
+
+                      {/* Synced Real Subjects & Percentages */}
+                      <div style={{ background: 'rgba(0,0,0,0.15)', borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '750', textTransform: 'uppercase' }}>Real Subjects Sync</div>
+                        {(member.subjects || []).length === 0 ? (
+                          <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>No active subjects listed</div>
+                        ) : (
+                          member.subjects.map((sub, sIdx) => (
+                            <div key={sIdx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                              <span style={{ color: 'var(--text-dim)' }}>{sub.name}</span>
+                              <span style={{ 
+                                fontWeight: '800', 
+                                color: sub.percentage >= sub.criteria ? 'var(--success)' : 'var(--danger)' 
+                              }}>
+                                {sub.percentage}%
+                              </span>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   ))}
@@ -290,45 +455,59 @@ function MegaSaver() {
                   <span>🔮</span> AI Coordinated Group Recommendations
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {activeGroup.recommendations.map((rec, idx) => (
-                    <div 
-                      key={idx} 
-                      style={{ 
-                        background: 'rgba(0,0,0,0.15)', 
-                        border: '1px solid var(--border)', 
-                        borderRadius: '16px', 
-                        padding: '20px', 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        flexWrap: 'wrap', 
-                        gap: '12px' 
-                      }}
-                    >
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '11px', background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '2px 8px', borderRadius: '100px', fontWeight: '800', textTransform: 'uppercase' }}>
-                            {rec.day}
-                          </span>
-                          <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '700' }}>{rec.label}</span>
-                        </div>
-                        <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', marginTop: '8px' }}>{rec.class}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{rec.savings}</div>
-                      </div>
-
-                      <div style={{ 
-                        background: rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', 
-                        border: `1.5px solid ${rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
-                        borderRadius: '12px', 
-                        padding: '10px 20px',
-                        color: rec.action === 'Attend Class Together' ? 'var(--danger)' : 'var(--success)',
-                        fontWeight: '800',
-                        fontSize: '13px'
-                      }}>
-                        {rec.action}
-                      </div>
+                  {activeGroup.recommendations.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-dim)', fontSize: '12px' }}>
+                      Add matching subjects to view AI Coordinated planning matrix.
                     </div>
-                  ))}
+                  ) : (
+                    activeGroup.recommendations.map((rec, idx) => (
+                      <div 
+                        key={idx} 
+                        style={{ 
+                          background: 'rgba(0,0,0,0.15)', 
+                          border: '1px solid var(--border)', 
+                          borderRadius: '16px', 
+                          padding: '20px', 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center', 
+                          flexWrap: 'wrap', 
+                          gap: '12px' 
+                        }}
+                      >
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ 
+                              fontSize: '11px', 
+                              background: rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.15)' : 'var(--primary-glow)', 
+                              color: rec.action === 'Attend Class Together' ? 'var(--danger)' : 'var(--primary-light)', 
+                              padding: '2px 8px', 
+                              borderRadius: '100px', 
+                              fontWeight: '800', 
+                              textTransform: 'uppercase' 
+                            }}>
+                              {rec.day}
+                            </span>
+                            <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '700' }}>{rec.label}</span>
+                          </div>
+                          <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', marginTop: '8px' }}>{rec.class}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{rec.savings}</div>
+                        </div>
+
+                        <div style={{ 
+                          background: rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', 
+                          border: `1.5px solid ${rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
+                          borderRadius: '12px', 
+                          padding: '10px 20px',
+                          color: rec.action === 'Attend Class Together' ? 'var(--danger)' : 'var(--success)',
+                          fontWeight: '800',
+                          fontSize: '13px'
+                        }}>
+                          {rec.action}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
