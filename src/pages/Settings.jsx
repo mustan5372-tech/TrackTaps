@@ -638,6 +638,7 @@ function Settings() {
                 { id: 'gold', name: 'Royal Gold', type: 'premium', bg: '#0c0a09', primary: '#f59e0b', icon: '👑' },
                 { id: 'minimal', name: 'Minimal White', type: 'premium', bg: '#ffffff', primary: '#111827', icon: '⬜' },
                 { id: 'pod', name: 'Pod Purple', type: 'premium', bg: 'var(--bg-primary)', primary: '#6366f1', icon: '📦' },
+                { id: 'custom', name: 'Premium Custom', type: 'premium', bg: 'linear-gradient(135deg, #ef4444 0%, #3b82f6 50%, #10b981 100%)', primary: 'hsl(var(--custom-hue, 270), 91%, 65%)', icon: '🎨' },
               ].map(t => {
                 const isLocked = t.type === 'premium' && subscription?.status !== 'active';
                 const isActive = theme === t.id;
@@ -702,6 +703,47 @@ function Settings() {
                 );
               })}
             </div>
+
+            {/* Custom Brand Hue Slider */}
+            {theme === 'custom' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{
+                  marginTop: '24px',
+                  padding: '20px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px dashed var(--primary-glow)',
+                  borderRadius: '16px'
+                }}
+              >
+                <label style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-main)', fontSize: '13px', fontWeight: '800', marginBottom: '12px' }}>
+                  <span>🎨 Custom Brand Hue</span>
+                  <span style={{ color: 'var(--primary-light)' }}>{localStorage.getItem('tracktaps_custom_hue') || '270'}°</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="360"
+                  value={localStorage.getItem('tracktaps_custom_hue') || '270'}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    localStorage.setItem('tracktaps_custom_hue', val);
+                    document.documentElement.style.setProperty('--custom-hue', val);
+                    // Force update local view
+                    setSettings(prev => ({ ...prev, customHue: val }));
+                  }}
+                  style={{
+                    width: '100%',
+                    accentColor: 'var(--primary-light)',
+                    cursor: 'pointer'
+                  }}
+                />
+                <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '8px 0 0' }}>
+                  Drag the slider to dynamically change the entire accent coloring of your personal TrackTaps dashboard.
+                </p>
+              </motion.div>
+            )}
           </div>
         </div>
 

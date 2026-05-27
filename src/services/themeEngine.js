@@ -165,6 +165,24 @@ export const THEMES = {
     '--border': 'rgba(99, 102, 241, 0.2)',
     '--border-bright': 'rgba(99, 102, 241, 0.4)',
     '--shadow-premium': '0 0 30px rgba(99, 102, 241, 0.15)'
+  },
+  custom: {
+    '--bg-deep': '#020617',
+    '--bg-primary': '#0f172a',
+    '--bg-secondary': '#1e293b',
+    '--surface': 'rgba(30, 41, 59, 0.5)',
+    '--surface-glass': 'rgba(15, 23, 42, 0.6)',
+    '--surface-bright': 'rgba(255, 255, 255, 0.03)',
+    '--primary': 'hsl(var(--custom-hue, 270), 91%, 65%)',
+    '--primary-light': 'hsl(var(--custom-hue, 270), 91%, 75%)',
+    '--primary-glow': 'hsla(var(--custom-hue, 270), 91%, 65%, 0.3)',
+    '--accent': 'hsl(var(--custom-hue, 270), 91%, 50%)',
+    '--text-main': '#f8fafc',
+    '--text-dim': '#94a3b8',
+    '--text-muted': '#64748b',
+    '--border': 'hsla(var(--custom-hue, 270), 91%, 65%, 0.2)',
+    '--border-bright': 'hsla(var(--custom-hue, 270), 91%, 65%, 0.4)',
+    '--shadow-premium': '0 0 30px hsla(var(--custom-hue, 270), 91%, 65%, 0.2)'
   }
 };
 
@@ -173,6 +191,10 @@ export const applyTheme = (themeName) => {
   const root = document.documentElement;
 
   console.log(`🎨 [ThemeEngine] Applying tokens for: ${themeName}`);
+
+  // Retrieve stored custom brand hue
+  const customHue = localStorage.getItem('tracktaps_custom_hue') || '270';
+  root.style.setProperty('--custom-hue', customHue);
 
   Object.entries(theme).forEach(([property, value]) => {
     root.style.setProperty(property, value);
