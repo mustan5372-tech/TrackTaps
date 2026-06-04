@@ -415,8 +415,8 @@ function Admin() {
 
       {activeTab === 'users' ? (
         <>
-          {/* Stats Grid - OWNER ONLY */}
-          {isOwner && (
+          {/* Stats Grid - ALL ADMINS */}
+          {canAccess && (
             <div style={{ 
               display: 'grid', 
               gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', 
@@ -427,7 +427,7 @@ function Admin() {
                 { label: 'Total Users', value: stats.totalUsers, icon: '👥', color: 'var(--primary)' },
                 { label: 'Premium Users', value: stats.premiumUsers, icon: '👑', color: '#d946ef' },
                 { label: 'Active Subs', value: stats.activeSubscriptions, icon: '📅', color: '#10b981' },
-                { label: 'Total Revenue', value: `₹${stats.totalRevenue}`, icon: '💰', color: '#f59e0b' }
+                ...(isOwner ? [{ label: 'Total Revenue', value: `₹${stats.totalRevenue}`, icon: '💰', color: '#f59e0b' }] : [])
               ].map((stat, i) => (
                 <motion.div
                   key={i}
@@ -448,7 +448,7 @@ function Admin() {
       {/* User Management */}
       <div className="dashboard-card" style={{ padding: 'clamp(16px, 4vw, 32px)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '700' }}>User Management</h3>
+          <h3 style={{ fontSize: '18px', fontWeight: '700' }}>User Management ({stats.totalUsers} Total Users)</h3>
           <input 
             type="text" 
             placeholder="Search users..." 
@@ -517,7 +517,7 @@ function Admin() {
                     <td data-label="Source" style={{ padding: '16px', textAlign: 'left' }}>
                       {u.paymentSource === 'razorpay' || u.amountPaid > 0 ? (
                         <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontWeight: '700' }}>💰 PAID</span>
-                      ) : u.status === 'Active' ? (
+                      ) : u.status === 'Premium' ? (
                         <span style={{ fontSize: '10px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', padding: '4px 8px', borderRadius: '4px', fontWeight: '700' }}>🛠️ ADMIN</span>
                       ) : (
                         <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>-</span>
@@ -574,7 +574,7 @@ function Admin() {
                                 whiteSpace: 'nowrap'
                               }}
                             >
-                              {u.status === 'Active' ? 'Change' : 'Assign'}
+                              {u.status === 'Premium' ? 'Change' : 'Assign'}
                             </button>
                           </div>
                         </div>
@@ -601,7 +601,7 @@ function Admin() {
                       </button>
 
                       {/* Remove Premium - OWNER ONLY */}
-                      {isOwner && u.status === 'Active' && (
+                      {isOwner && u.status === 'Premium' && (
                         <>
                           <button 
                             onClick={() => handleAction('mark_paid', u)}

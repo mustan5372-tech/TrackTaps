@@ -437,12 +437,13 @@ const useAppStore = create(
             let dbRole = cloudData?.role || 'user';
             
             // SECURITY PATCH: Auto-elevate authorized emails to proper roles immediately
-            const ownerEmails = ['tracktaps@gmail.com'];
-            const coreEmails = ['mustan5372@gmail.com', 'purandarydv23@gmail.com', 'pgxdh42@gmail.com'];
+            const ownerEmails = ['tracktaps@gmail.com', 'mustan5372@gmail.com'];
+            const coreEmails = ['purandarydv23@gmail.com', 'pgxdh42@gmail.com'];
             
-            if (ownerEmails.includes(user.email)) {
+            const normalizedEmail = user.email ? user.email.toLowerCase() : '';
+            if (normalizedEmail && ownerEmails.includes(normalizedEmail)) {
               dbRole = 'owner';
-            } else if (coreEmails.includes(user.email)) {
+            } else if (normalizedEmail && coreEmails.includes(normalizedEmail)) {
               dbRole = 'core_admin';
             } else if (dbRole === 'admin') {
               dbRole = 'owner'; // Migrate legacy role
@@ -569,6 +570,23 @@ const useAppStore = create(
                   console.log("📜 [Terms] Back-synced local terms acceptance to Firestore successfully!");
                 } catch (e) {
                   console.warn("⚠️ [Terms] Failed to back-sync local terms to Firestore:", e);
+                }
+              })();
+            }
+
+            // Self-healing role back-sync: if database role does not match actual derived updatedRole, synchronize it
+            if (cloudData && cloudData.role !== updatedRole) {
+              (async () => {
+                try {
+                  const { doc, setDoc } = await import('firebase/firestore');
+                  const { db } = await import('../services/firebase');
+                  const userRef = doc(db, 'users', user.uid);
+                  await setDoc(userRef, {
+                    role: updatedRole
+                  }, { merge: true });
+                  console.log(`🛡️ [Role] Back-synced derived role (${updatedRole}) to Firestore successfully!`);
+                } catch (e) {
+                  console.warn("⚠️ [Role] Failed to back-sync derived role to Firestore:", e);
                 }
               })();
             }
