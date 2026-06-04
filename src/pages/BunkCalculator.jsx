@@ -26,6 +26,78 @@ function BunkCalculator() {
   const [simulatedBunks, setSimulatedBunks] = useState(2);
   const [customSkips, setCustomSkips] = useState({});
 
+  // Exam-Prep AI Skip Planner States & Calculations
+  const [examTargetType, setExamTargetType] = useState('endterm');
+  const [customExamDate, setCustomExamDate] = useState(() => {
+    const twoWeeks = new Date();
+    twoWeeks.setDate(twoWeeks.getDate() + 14);
+    return twoWeeks.toISOString().split('T')[0];
+  });
+
+  const examPrepOptimizer = React.useMemo(() => {
+    let resolvedDateStr = customExamDate;
+    const examsList = semesterSettings?.examPeriods || [];
+    
+    if (examTargetType === 'midterm') {
+      const mid = examsList.find(e => e.name?.toLowerCase().includes('mid') || e.name?.toLowerCase().includes('half'));
+      if (mid) resolvedDateStr = mid.startDate;
+      else {
+        const oneWeek = new Date();
+        oneWeek.setDate(oneWeek.getDate() + 7);
+        resolvedDateStr = oneWeek.toISOString().split('T')[0];
+      }
+    } else if (examTargetType === 'endterm') {
+      const end = examsList.find(e => e.name?.toLowerCase().includes('end') || e.name?.toLowerCase().includes('final'));
+      if (end) resolvedDateStr = end.startDate;
+      else {
+        const twoWeeks = new Date();
+        twoWeeks.setDate(twoWeeks.getDate() + 14);
+        resolvedDateStr = twoWeeks.toISOString().split('T')[0];
+      }
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    const subjectsPlan = (subjects || []).map(subject => {
+      const stats = semesterStats?.[subject.id];
+      const conducted = Number(stats?.total) || 0;
+      const present = Number(stats?.present) || 0;
+      const targetPct = subject.criteria || attendanceSettings?.defaultTarget || 75;
+
+      const upcomingBeforeExam = (calendarEvents || [])
+        .filter(e => e.subjectName === subject.name && e.date >= todayStr && e.date < resolvedDateStr)
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      const N = upcomingBeforeExam.length;
+      const targetRatio = targetPct / 100;
+      const mustAttendBeforeExam = Math.max(0, Math.ceil(targetRatio * (conducted + N) - present));
+      const safeBunksBeforeExam = Math.max(0, N - mustAttendBeforeExam);
+      const reclaimedHours = (safeBunksBeforeExam * 1.5).toFixed(1);
+
+      return {
+        subjectId: subject.id,
+        subjectName: subject.name,
+        criteria: targetPct,
+        currentPct: stats?.percentage || 0,
+        upcomingClassesCount: N,
+        upcomingClasses: upcomingBeforeExam,
+        safeSkips: safeBunksBeforeExam,
+        reclaimedHours: parseFloat(reclaimedHours),
+        mustAttend: mustAttendBeforeExam
+      };
+    });
+
+    const totalHoursReclaimed = subjectsPlan.reduce((sum, s) => sum + s.reclaimedHours, 0);
+    const totalSkipsPossible = subjectsPlan.reduce((sum, s) => sum + s.safeSkips, 0);
+
+    return {
+      resolvedDate: resolvedDateStr,
+      subjectsPlan,
+      totalHoursReclaimed,
+      totalSkipsPossible
+    };
+  }, [subjects, semesterStats, calendarEvents, semesterSettings, attendanceSettings, examTargetType, customExamDate]);
+
   useEffect(() => {
     setCustomSkips({});
   }, [selectedSubjectId]);
@@ -676,6 +748,169 @@ function BunkCalculator() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* 🛡️ Premium Exam-Prep Skip Optimizer */}
+      {isPremium && (
+        <div className="calculator-card" style={{ marginTop: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '24px' }}>🛡️</span>
+                <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--text-main)', margin: 0 }}>
+                  Exam-Prep Skip Optimizer
+                </h3>
+                <span style={{ fontSize: '10px', background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '2px 8px', borderRadius: '20px', fontWeight: '800' }}>AI SYSTEM</span>
+              </div>
+              <p style={{ color: 'var(--text-dim)', fontSize: '12.5px', margin: '4px 0 0 0' }}>
+                Find exactly how many classes you can skip across all subjects to study for exams.
+              </p>
+            </div>
+
+            {/* Selector Controls */}
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <select 
+                value={examTargetType}
+                onChange={(e) => setExamTargetType(e.target.value)}
+                style={{
+                  background: 'rgba(0,0,0,0.2)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '10px',
+                  padding: '10px 14px',
+                  color: 'white',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  outline: 'none'
+                }}
+              >
+                <option value="midterm" style={{ background: '#0f172a' }}>Midterm Exams</option>
+                <option value="endterm" style={{ background: '#0f172a' }}>Final Endterms</option>
+                <option value="custom" style={{ background: '#0f172a' }}>Custom Date...</option>
+              </select>
+
+              {examTargetType === 'custom' && (
+                <input 
+                  type="date"
+                  value={customExamDate}
+                  onChange={(e) => setCustomExamDate(e.target.value)}
+                  style={{
+                    background: 'rgba(0,0,0,0.2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '10px',
+                    padding: '8px 12px',
+                    color: 'white',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    outline: 'none'
+                  }}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Aggregate Savings Dashboard */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '16px',
+            marginBottom: '28px'
+          }}>
+            <div style={{ padding: '18px', background: 'rgba(139, 92, 246, 0.05)', borderRadius: '16px', border: '1px solid var(--primary-glow)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginBottom: '6px' }}>Total Safe Skips Available</div>
+              <div style={{ fontSize: '26px', fontWeight: '950', color: 'var(--primary-light)' }}>{examPrepOptimizer.totalSkipsPossible} <span style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '600' }}>Classes</span></div>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Spread across all active subjects</span>
+            </div>
+
+            <div style={{ padding: '18px', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginBottom: '6px' }}>Study Hours Reclaimed</div>
+              <div style={{ fontSize: '26px', fontWeight: '950', color: 'var(--success)' }}>{examPrepOptimizer.totalHoursReclaimed} <span style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '600' }}>Hours</span></div>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>At estimated 1.5 hrs per lecture</span>
+            </div>
+
+            <div style={{ padding: '18px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginBottom: '6px' }}>Exam Preparation Window</div>
+              <div style={{ fontSize: '15px', fontWeight: '800', color: 'white', marginTop: '8px' }}>
+                Until {new Date(examPrepOptimizer.resolvedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </div>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginTop: '4px' }}>Date resolved by AI engine</span>
+            </div>
+          </div>
+
+          {/* Subjects Optimizer Table */}
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                  <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800' }}>Subject</th>
+                  <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800' }}>Current Attendance</th>
+                  <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800' }}>Classes before Exams</th>
+                  <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800' }}>Safe Skips</th>
+                  <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800' }}>Study Time Gained</th>
+                  <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', textAlign: 'center' }}>Simulation Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {examPrepOptimizer.subjectsPlan.map((plan) => (
+                  <tr key={plan.subjectId} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.03)', transition: 'background 0.2s' }}>
+                    <td style={{ padding: '16px', fontSize: '14px', fontWeight: '750', color: 'white' }}>{plan.subjectName}</td>
+                    <td style={{ padding: '16px', fontSize: '14px', fontWeight: '750', color: plan.currentPct >= plan.criteria ? 'var(--success)' : 'var(--danger)' }}>
+                      {plan.currentPct}% <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '600' }}>/ {plan.criteria}%</span>
+                    </td>
+                    <td style={{ padding: '16px', fontSize: '13px', color: 'var(--text-dim)', fontWeight: '600' }}>{plan.upcomingClassesCount} sessions</td>
+                    <td style={{ padding: '16px', fontSize: '15px', fontWeight: '900', color: plan.safeSkips > 0 ? 'var(--success)' : 'var(--text-muted)' }}>
+                      {plan.safeSkips} classes
+                    </td>
+                    <td style={{ padding: '16px', fontSize: '14px', fontWeight: '800', color: plan.safeSkips > 0 ? 'var(--success)' : 'var(--text-muted)' }}>
+                      +{plan.reclaimedHours}h
+                    </td>
+                    <td style={{ padding: '16px', textAlign: 'center' }}>
+                      <button
+                        disabled={plan.safeSkips === 0}
+                        onClick={() => {
+                          const skipsToApply = {};
+                          plan.upcomingClasses.slice(0, plan.safeSkips).forEach(cls => {
+                            skipsToApply[cls.id] = true;
+                          });
+                          setCustomSkips(skipsToApply);
+                          setSelectedSubjectId(plan.subjectId);
+                          useAppStore.getState().showToast(`⚡ Applied exam skip simulation for ${plan.subjectName}!`, 'success');
+                          
+                          // Scroll to top of card so they can see the simulator
+                          document.querySelector('.calculator-card').scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        style={{
+                          background: plan.safeSkips > 0 ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+                          border: `1.5px solid ${plan.safeSkips > 0 ? '#818cf8' : 'var(--border)'}`,
+                          color: plan.safeSkips > 0 ? '#a5b4fc' : 'var(--text-muted)',
+                          padding: '6px 14px',
+                          borderRadius: '8px',
+                          fontSize: '11px',
+                          fontWeight: '800',
+                          cursor: plan.safeSkips > 0 ? 'pointer' : 'not-allowed',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                          if (plan.safeSkips > 0) {
+                            e.currentTarget.style.background = '#818cf8';
+                            e.currentTarget.style.color = 'white';
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (plan.safeSkips > 0) {
+                            e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)';
+                            e.currentTarget.style.color = '#a5b4fc';
+                          }
+                        }}
+                      >
+                        ⚡ Simulate skips
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <motion.div
         variants={fadeInUp}

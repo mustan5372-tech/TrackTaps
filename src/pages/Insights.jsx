@@ -19,15 +19,165 @@ function Insights() {
     subscription,
     semesterStats,
     semesterSettings,
-    attendanceSettings
+    attendanceSettings,
+    calendarEvents,
+    attendanceData,
+    lastCloudSync
   } = useAppStore();
 
-  const [timeframe, setTimeframe] = useState('Semester');
+  const [timeframe, setTimeframe] = useState('Weekly');
 
   const isPremium = subscription.status === 'active';
   const safeSubjects = getSafeSubjects();
   const criticalSubjects = getCriticalSubjects();
   const warningSubjects = getWarningSubjects();
+
+  // Dynamic Trends calculation based on real attendanceData
+  const trendsData = React.useMemo(() => {
+    let basePresent = 0;
+    let baseTotal = 0;
+    if (Array.isArray(subjects)) {
+      subjects.forEach(s => {
+        const p = parseFloat(s.initialPresent ?? s.present ?? 0);
+        const t = parseFloat(s.initialTotal ?? s.total ?? 0);
+        if (!isNaN(p)) basePresent += p;
+        if (!isNaN(t)) baseTotal += t;
+      });
+    }
+
+    const markedEvents = (calendarEvents || [])
+      .filter(e => {
+        const state = attendanceData[e.id]?.state;
+        return state === 'present' || state === 'absent';
+      })
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    if (markedEvents.length === 0 && baseTotal === 0) {
+      return timeframe === 'Weekly' 
+        ? [65, 72, 70, 75, 78, 82, 80] 
+        : [70, 75, 78, 80];
+    }
+
+    const dailyMarks = {};
+    markedEvents.forEach(e => {
+      const state = attendanceData[e.id]?.state;
+      if (!dailyMarks[e.date]) {
+        dailyMarks[e.date] = { present: 0, total: 0 };
+      }
+      if (state === 'present') {
+        dailyMarks[e.date].present += 1;
+      }
+      dailyMarks[e.date].total += 1;
+    });
+
+    const sortedDates = Object.keys(dailyMarks).sort();
+    
+    const cumulativeHistory = [];
+    let currentPresent = basePresent;
+    let currentTotal = baseTotal;
+
+    if (baseTotal > 0) {
+      cumulativeHistory.push({
+        date: '0000-00-00',
+        percentage: Math.round((basePresent / baseTotal) * 100)
+      });
+    }
+
+    sortedDates.forEach(date => {
+      currentPresent += dailyMarks[date].present;
+      currentTotal += dailyMarks[date].total;
+      cumulativeHistory.push({
+        date,
+        percentage: Math.round((currentPresent / currentTotal) * 100)
+      });
+    });
+
+    const getPercentageForDate = (targetDateStr) => {
+      let latestPercentage = baseTotal > 0 ? Math.round((basePresent / baseTotal) * 100) : 0;
+      for (const record of cumulativeHistory) {
+        if (record.date <= targetDateStr) {
+          latestPercentage = record.percentage;
+        } else {
+          break;
+        }
+      }
+      return latestPercentage;
+    };
+
+    const today = new Date();
+    
+    if (timeframe === 'Weekly') {
+      const points = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - (i * 7));
+        const dateStr = d.toISOString().split('T')[0];
+        points.push(getPercentageForDate(dateStr));
+      }
+      return points;
+    } else {
+      const points = [];
+      for (let i = 3; i >= 0; i--) {
+        const d = new Date(today);
+        d.setMonth(today.getMonth() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        points.push(getPercentageForDate(dateStr));
+      }
+      return points;
+    }
+  }, [subjects, calendarEvents, attendanceData, timeframe]);
+
+  const badges = React.useMemo(() => {
+    const streak = dashboardStats.attendanceStreak || 0;
+    const overall = dashboardStats.overallPercentage || 0;
+    const totalMarks = Object.keys(attendanceData || {}).length;
+    const hasSync = !!lastCloudSync;
+
+    return [
+      {
+        id: 'streak',
+        title: 'Streak Master',
+        icon: '🔥',
+        desc: 'Unlock by logging consecutive attendances.',
+        levels: [
+          { name: 'Bronze', req: 2, current: streak, achieved: streak >= 2 },
+          { name: 'Silver', req: 5, current: streak, achieved: streak >= 5 },
+          { name: 'Gold', req: 10, current: streak, achieved: streak >= 10 }
+        ]
+      },
+      {
+        id: 'academic',
+        title: 'Academic Rank',
+        icon: '🎓',
+        desc: 'Keep overall class attendance high.',
+        levels: [
+          { name: 'Bronze (75%)', req: 75, current: overall, achieved: overall >= 75 },
+          { name: 'Silver (80%)', req: 80, current: overall, achieved: overall >= 80 },
+          { name: 'Gold (90%)', req: 90, current: overall, achieved: overall >= 90 }
+        ]
+      },
+      {
+        id: 'tracker',
+        title: 'Attendance Titan',
+        icon: '📊',
+        desc: 'Mark attendance sessions in the calendar.',
+        levels: [
+          { name: 'Bronze (10)', req: 10, current: totalMarks, achieved: totalMarks >= 10 },
+          { name: 'Silver (25)', req: 25, current: totalMarks, achieved: totalMarks >= 25 },
+          { name: 'Gold (50)', req: 50, current: totalMarks, achieved: totalMarks >= 50 }
+        ]
+      },
+      {
+        id: 'cloud',
+        title: 'Cloud Pioneer',
+        icon: '☁️',
+        desc: 'Establish database sync backups.',
+        levels: [
+          { name: 'Gold Sync', req: 1, current: hasSync ? 1 : 0, achieved: hasSync }
+        ]
+      }
+    ];
+  }, [dashboardStats, attendanceData, lastCloudSync]);
 
   const handleExport = () => {
     if (!isPremium) {
@@ -309,24 +459,129 @@ function Insights() {
             </div>
           </div>
           <div style={{ height: '150px', display: 'flex', alignItems: 'flex-end', gap: '8px', padding: '10px 0' }}>
-            {(timeframe === 'Weekly' ? [65, 78, 82, 45, 90, 88, 75] : [72, 68, 75, 80]).map((val, i) => (
+            {trendsData.map((val, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                <motion.div 
-                  initial={{ height: 0 }}
-                  animate={{ height: `${val}%` }}
-                  style={{ 
-                    width: '100%', 
-                    background: val > 75 ? 'var(--success)' : 'var(--warning)', 
-                    borderRadius: '4px 4px 0 0',
-                    opacity: 0.6 + (val/200)
-                  }} 
-                />
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{timeframe === 'Weekly' ? `W${i+1}` : `M${i+1}`}</span>
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'flex-end' }}>
+                  <motion.div 
+                    initial={{ height: 0 }}
+                    animate={{ height: `${Math.max(4, val)}%` }}
+                    style={{ 
+                      width: '100%', 
+                      background: val >= 75 ? 'var(--success)' : val >= 65 ? 'var(--warning)' : 'var(--danger)', 
+                      borderRadius: '4px 4px 0 0',
+                      opacity: 0.6 + (val/200)
+                    }} 
+                  />
+                </div>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '600' }}>
+                  {timeframe === 'Weekly' 
+                    ? (i === 6 ? 'Now' : `W-${6-i}`) 
+                    : (i === 3 ? 'Now' : `M-${3-i}`)}
+                </span>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* 🏆 Academic Achievements & Badges Section */}
+      <div className="dashboard-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h3 style={{ color: 'var(--text-main)', fontSize: '16px', fontWeight: '700', margin: 0 }}>🏆 Academic Achievements</h3>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>Log attendance & unlock milestone badges</p>
+          </div>
+          <span style={{ fontSize: '12px', color: 'var(--primary-light)', fontWeight: '800', background: 'var(--primary-glow)', padding: '4px 10px', borderRadius: '8px' }}>
+            {badges.reduce((acc, b) => acc + b.levels.filter(l => l.achieved).length, 0)} / {badges.reduce((acc, b) => acc + b.levels.length, 0)} Completed
+          </span>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '16px'
+        }}>
+          {badges.map((badge) => (
+            <div 
+              key={badge.id}
+              style={{
+                background: 'rgba(15, 23, 42, 0.4)',
+                border: '1px solid var(--border)',
+                borderRadius: '16px',
+                padding: '16px',
+                display: 'flex',
+                gap: '12px',
+                alignItems: 'flex-start',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+            >
+              <div style={{
+                fontSize: '28px',
+                background: 'rgba(255, 255, 255, 0.03)',
+                padding: '10px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {badge.icon}
+              </div>
+
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>
+                  <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>{badge.title}</h4>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0 0', lineHeight: 1.4 }}>{badge.desc}</p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+                  {badge.levels.map((lvl, index) => {
+                    const isLockedByPremium = !isPremium && (lvl.name.includes('Silver') || lvl.name.includes('Gold'));
+                    return (
+                      <div 
+                        key={index}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          background: lvl.achieved && !isLockedByPremium ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.01)',
+                          padding: '6px 10px',
+                          borderRadius: '8px',
+                          border: `1px solid ${lvl.achieved && !isLockedByPremium ? 'rgba(16, 185, 129, 0.2)' : 'var(--border)'}`,
+                          opacity: isLockedByPremium ? 0.5 : 1
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '10px', color: lvl.achieved && !isLockedByPremium ? 'var(--success)' : 'var(--text-dim)', fontWeight: '800' }}>
+                            {lvl.achieved && !isLockedByPremium ? '✓' : '○'}
+                          </span>
+                          <span style={{ fontSize: '12px', color: lvl.achieved && !isLockedByPremium ? 'var(--text-main)' : 'var(--text-dim)', fontWeight: '600' }}>
+                            {lvl.name}
+                          </span>
+                        </div>
+
+                        {isLockedByPremium ? (
+                          <span 
+                            onClick={() => navigate('/premium')}
+                            style={{ fontSize: '9px', background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '2px 6px', borderRadius: '4px', fontWeight: '900', cursor: 'pointer' }}
+                          >
+                            💎 LOCK
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                            {lvl.achieved ? 'Unlocked' : `${lvl.current}/${lvl.req}`}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* AI Insights List */}
       <div className="dashboard-card" style={{ padding: '24px' }}>
