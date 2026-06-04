@@ -244,13 +244,44 @@ function Admin() {
     }
   };
 
-  const handleAction = async (action, targetUser, customPlan = null) => {
-    // SECURITY: Prevent Core Admins from accessing Owner actions
-    if ((action === 'assign_plan' || action === 'remove_premium' || action === 'delete') && !isOwner) {
-      if (action !== 'delete' || !isCore) { // Core Admins CAN delete as per req
-         alert("🚫 Permission Denied: Only the Owner can perform this action.");
-         return;
+  const handleResolveReport = async (action, report) => {
+    if (!isOwner) {
+      alert("🚫 Permission Denied: Only Owners can resolve reports.");
+      return;
+    }
+
+    const actionText = action === 'delete' ? 'delete this user and resolve report' : 'keep this user and dismiss report';
+    if (!window.confirm(`Are you sure you want to ${actionText}?`)) return;
+
+    try {
+      if (action === 'delete') {
+        const userRef = doc(db, "users", report.reportedUserId);
+        await deleteDoc(userRef);
       }
+      
+      const reportRef = doc(db, "reports", report.id);
+      await deleteDoc(reportRef);
+
+      alert(action === 'delete' ? "🗑️ User deleted and report resolved." : "✅ Report dismissed. User kept.");
+      fetchReports();
+      fetchAdminData();
+    } catch (error) {
+      console.error("Failed to resolve report:", error);
+      alert("❌ Failed to resolve report: " + error.message);
+    }
+  };
+
+  const handleAction = async (action, targetUser, customPlan = null) => {
+    // SECURITY: Prevent unauthorized admin access
+    if (!isOwner && !isCore) {
+      alert("🚫 Permission Denied: Unauthorized admin access.");
+      return;
+    }
+
+    // Core Admins CANNOT modify user subscription plans or payment statuses
+    if (isCore && (action === 'assign_plan' || action === 'remove_premium' || action === 'mark_paid')) {
+      alert("🚫 Permission Denied: Only the Owner can modify user subscription plans.");
+      return;
     }
 
     const actionMsg = customPlan ? `assign ${customPlan.name} to` : action;
@@ -676,20 +707,26 @@ function Admin() {
                     Reported by {report.reportedBy} • {report.createdAt?.toDate ? report.createdAt.toDate().toLocaleString() : 'Just now'}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button 
-                    onClick={() => handleAction('ban', { uid: report.reportedUserId, name: report.reportedUserName })}
-                    style={{ background: '#ef4444', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
-                  >
-                    Ban User
-                  </button>
-                  {isOwner && (
-                    <button 
-                      onClick={() => handleAction('delete', { uid: report.reportedUserId, name: report.reportedUserName })}
-                      style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-dim)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
-                    >
-                      Delete Account
-                    </button>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  {isOwner ? (
+                    <>
+                      <button 
+                        onClick={() => handleResolveReport('dismiss', report)}
+                        style={{ background: 'rgba(16, 185, 129, 0.1)', border: 'none', color: '#10b981', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                      >
+                        Keep User
+                      </button>
+                      <button 
+                        onClick={() => handleResolveReport('delete', report)}
+                        style={{ background: '#ef4444', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                      >
+                        Delete Account
+                      </button>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                      Owner Action Required
+                    </span>
                   )}
                 </div>
               </div>
