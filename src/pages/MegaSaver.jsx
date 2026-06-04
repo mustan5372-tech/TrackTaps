@@ -15,7 +15,17 @@ function MegaSaver() {
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [groupId, setGroupId] = useState('');
+  const [groupId, setGroupId] = useState(() => {
+    return localStorage.getItem('tracktaps_sync_group_id') || '';
+  });
+
+  // Leave / Disconnect from study sync group
+  const handleLeaveGroup = () => {
+    localStorage.removeItem('tracktaps_sync_group_id');
+    setGroupId('');
+    setActiveGroup(null);
+    triggerToast("🔌 Disconnected from sync group successfully!");
+  };
 
   // Helper: Toast Notifications
   const triggerToast = (msg) => {
@@ -98,6 +108,7 @@ function MegaSaver() {
 
       await setDoc(groupRef, initialGroup);
       setGroupId(newPin);
+      localStorage.setItem('tracktaps_sync_group_id', newPin);
       triggerToast(`✨ Group ${newPin} created successfully!`);
     } catch (err) {
       console.error("Firestore creation error:", err);
@@ -146,6 +157,7 @@ function MegaSaver() {
       }, { merge: true });
 
       setGroupId(cleanPin);
+      localStorage.setItem('tracktaps_sync_group_id', cleanPin);
       triggerToast(`🔗 Joined group ${cleanPin} successfully!`);
     } catch (err) {
       console.error("Firestore join error:", err);
@@ -451,9 +463,29 @@ function MegaSaver() {
                       </motion.button>
                     </div>
                   </div>
-                  <span style={{ fontSize: '11px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid var(--success)', color: 'var(--success)', padding: '4px 12px', borderRadius: '100px', fontWeight: '800' }}>
-                    ● REALTIME SYNC ACTIVE
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '11px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid var(--success)', color: 'var(--success)', padding: '4px 12px', borderRadius: '100px', fontWeight: '800' }}>
+                      ● REALTIME SYNC ACTIVE
+                    </span>
+                    <button
+                      onClick={handleLeaveGroup}
+                      style={{
+                        background: 'transparent',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text-dim)',
+                        padding: '4px 10px',
+                        borderRadius: '100px',
+                        fontSize: '11px',
+                        fontWeight: '750',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#ef4444'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-dim)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                    >
+                      🔌 Disconnect
+                    </button>
+                  </div>
                 </div>
               </div>
 
