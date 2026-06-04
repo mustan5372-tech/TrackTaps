@@ -1691,6 +1691,59 @@ const useAppStore = create(
           try {
             sessionStorage.clear();
           } catch (e) {}
+        },
+
+        loadDemoData: () => {
+          const mockSubjects = [
+            { id: 'subject_math', name: 'Mathematics', color: '#8b5cf6', criteria: 75, present: 18, total: 22, attendance: 81.8, podaiSynced: true },
+            { id: 'subject_cs', name: 'Computer Science', color: '#10b981', criteria: 75, present: 22, total: 24, attendance: 91.7, podaiSynced: true },
+            { id: 'subject_phys', name: 'Physics', color: '#3b82f6', criteria: 75, present: 14, total: 20, attendance: 70.0, podaiSynced: true },
+            { id: 'subject_eng', name: 'English Literature', color: '#ec4899', criteria: 75, present: 16, total: 18, attendance: 88.9, podaiSynced: true },
+            { id: 'subject_chem', name: 'Chemistry', color: '#f59e0b', criteria: 75, present: 15, total: 20, attendance: 75.0, podaiSynced: true }
+          ];
+
+          const mockTimetable = {
+            '1-09:00': { name: 'Mathematics', color: '#8b5cf6', criteria: 75, label: '09:00 - 10:00' },
+            '1-10:00': { name: 'Computer Science', color: '#10b981', criteria: 75, label: '10:00 - 11:00' },
+            '2-11:00': { name: 'Physics', color: '#3b82f6', criteria: 75, label: '11:00 - 12:00' },
+            '2-14:00': { name: 'Chemistry', color: '#f59e0b', criteria: 75, label: '14:00 - 15:00' },
+            '3-09:00': { name: 'Mathematics', color: '#8b5cf6', criteria: 75, label: '09:00 - 10:00' },
+            '3-13:00': { name: 'English Literature', color: '#ec4899', criteria: 75, label: '13:00 - 14:00' },
+            '4-10:00': { name: 'Computer Science', color: '#10b981', criteria: 75, label: '10:00 - 11:00' },
+            '4-11:00': { name: 'Physics', color: '#3b82f6', criteria: 75, label: '11:00 - 12:00' },
+            '5-13:00': { name: 'English Literature', color: '#ec4899', criteria: 75, label: '13:00 - 14:00' },
+            '5-14:00': { name: 'Chemistry', color: '#f59e0b', criteria: 75, label: '14:00 - 15:00' }
+          };
+
+          const mockAttendanceData = {};
+          
+          set({
+            user: { uid: 'demo_user_123', email: 'demo@tracktaps.online', displayName: 'Alex Mercer' },
+            role: 'owner',
+            subscription: {
+              plan: 'plus',
+              status: 'active',
+              expiryDate: '2027-12-31',
+              paymentId: 'demo_pay_123',
+              features: {
+                aiUsageLimit: 99,
+                aiRequestsToday: 0,
+                aiImportLimit: 99,
+                aiImportsToday: 0,
+                lastAiImportDate: null,
+                hasBadge: true,
+                hasGlow: true,
+                theme: 'neon'
+              }
+            },
+            subjects: mockSubjects,
+            timetable: mockTimetable,
+            attendanceData: mockAttendanceData,
+            termsAccepted: true,
+            termsVersion: 'v1.0'
+          });
+
+          get().fullSync();
         }
       }),
       {

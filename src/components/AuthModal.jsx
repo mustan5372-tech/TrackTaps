@@ -209,6 +209,17 @@ function AuthModal({ isOpen, onClose }) {
                   label="Email & Password" 
                   onClick={() => setView('login')} 
                 />
+                <AuthButton 
+                  icon="⚡" 
+                  label="Demo / Presentation Sandbox" 
+                  onClick={() => {
+                    const store = useAppStore.getState();
+                    if (store.loadDemoData) {
+                      store.loadDemoData();
+                    }
+                    onClose();
+                  }} 
+                />
               </div>
 
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '24px', lineHeight: '1.6' }}>
