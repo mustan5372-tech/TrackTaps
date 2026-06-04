@@ -42,6 +42,25 @@ function Referral() {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
+  const handleShareNative = async () => {
+    if (!referralLink) return;
+    const shareData = {
+      title: 'TrackTaps Campus Referral Campaign',
+      text: `🚀 Track your attendance smarter with TrackTaps! Sync Pod.ai, calculate safe bunks, and manage your semester like a pro. Join using my link:`,
+      url: referralLink
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log("Web Share cancelled or failed", err);
+      }
+    } else {
+      handleCopy();
+    }
+  };
+
   return (
     <div className="referral-view" style={{ paddingBottom: '120px' }}>
       <header className="view-header" style={{ marginBottom: '24px' }}>
@@ -201,18 +220,24 @@ function Referral() {
               <span>WhatsApp</span>
             </button>
             <button 
-              onClick={() => showToast("📱 Feature coming soon!", "info")}
+              onClick={handleShareNative}
+              disabled={!referralLink}
               style={{ 
                 padding: '14px', 
-                background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', 
+                background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
                 color: 'white', 
                 border: 'none', 
                 borderRadius: '12px', 
                 fontWeight: '700', 
-                cursor: 'pointer'
+                cursor: referralLink ? 'pointer' : 'not-allowed',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                opacity: referralLink ? 1 : 0.5
               }}
             >
-              Instagram
+              <span>📢 Share Invite</span>
             </button>
           </div>
         </div>

@@ -383,6 +383,26 @@ function Home() {
            >
              Sync Pod.ai Now →
            </button>
+           <button
+             onClick={() => navigate('/subjects')}
+             style={{
+               background: 'rgba(255, 255, 255, 0.05)',
+               color: 'var(--text-main)',
+               border: '1px solid rgba(255, 255, 255, 0.1)',
+               padding: '14px 32px',
+               borderRadius: '16px',
+               fontWeight: '700',
+               fontSize: '14px',
+               cursor: 'pointer',
+               width: '100%',
+               marginTop: '12px',
+               transition: 'all 0.2s'
+             }}
+             onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+             onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+           >
+             ✍️ Configure Subjects Manually
+           </button>
          </motion.div>
        </div>
      );
