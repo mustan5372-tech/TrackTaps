@@ -245,6 +245,18 @@ const authService = {
       if (isNativeAPK()) {
         try {
           const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+          
+          // CRITICAL: Initialize GoogleAuth before signing out/disconnecting to prevent native NullPointerException/crash
+          try {
+            await GoogleAuth.initialize({
+              clientId: '273530797417-bd8fuigvtn5pteccivud773ijo8s9ioe.apps.googleusercontent.com',
+              scopes: ['profile', 'email'],
+              forceCodeForRefreshToken: true
+            }).catch(() => {});
+          } catch (initErr) {
+            console.warn("⚠️ [Auth] GoogleAuth init during logout warning:", initErr);
+          }
+
           // signOut clears the current session
           await GoogleAuth.signOut().catch(() => {});
           // disconnect completely revokes authorization — forces account chooser next time

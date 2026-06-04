@@ -293,11 +293,11 @@ const useAppStore = create(
         logout: async () => {
           set({ isSigningOut: true });
           
-          // 0. Stop presence heartbeat immediately
+          // 0. Stop presence heartbeat immediately (non-blocking)
           try {
             const currentUser = get().user;
             if (currentUser) {
-              await presenceService.goOffline(currentUser.uid);
+              presenceService.goOffline(currentUser.uid).catch(() => {});
             }
           } catch (e) {
             console.warn("⚠️ [Logout] Presence offline failed:", e);

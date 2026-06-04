@@ -22,7 +22,7 @@ function DownloadPage() {
 
   const triggerDownload = () => {
     // Redirect directly to the robust GitHub raw CDN to trigger download instantly
-    window.location.href = 'https://github.com/mustan5372-tech/TrackTaps/raw/main/TrackTaps.apk';
+    window.location.href = 'https://github.com/mustan5372-tech/TrackTaps/raw/main/dist/TrackTaps.apk';
   };
 
   return (
@@ -114,7 +114,7 @@ function DownloadPage() {
         </h2>
         
         <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: '0 0 32px 0' }}>
-          Please wait while the latest stable Version 1.5 APK package downloads to your phone.
+          Please wait while the latest stable Version 1.6 APK package downloads to your phone.
         </p>
 
         {/* Retry trigger */}

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 function APKUpdateBanner() {
   const [needsUpdate, setNeedsUpdate] = useState(false);
   const [nativeVersion, setNativeVersion] = useState('1.0');
-  const LATEST_VERSION = '1.5';
+  const LATEST_VERSION = '1.6';
 
   useEffect(() => {
     const checkAppVersion = async () => {
