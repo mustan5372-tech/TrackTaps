@@ -72,6 +72,8 @@ function Home() {
   const getTodaySchedule = useAppStore(state => state.getTodaySchedule);
   const semesterStats = useAppStore(state => state.semesterStats);
   const referralData = useAppStore(state => state.referralData);
+  const setSemesterSettings = useAppStore(state => state.setSemesterSettings);
+  const addSubject = useAppStore(state => state.addSubject);
 
   const isPremium = subscription?.status === 'active' || role === 'owner' || role === 'core_admin';
 
@@ -249,6 +251,62 @@ function Home() {
     return Object.values(semesterStats || {}).reduce((acc, stat) => acc + (stat.bunkableNow || 0), 0);
   };
 
+  // Guided Onboarding Setup Wizard States
+  const [wizardStep, setWizardStep] = useState(1);
+  const [semesterName, setSemesterName] = useState('Fall 2026');
+  const [targetCriteria, setTargetCriteria] = useState(75);
+  const [selectedSubjects, setSelectedSubjects] = useState(['Mathematics', 'Computer Science', 'Physics']);
+  const [customSubject, setCustomSubject] = useState('');
+  const [startDate, setStartDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 4);
+    return d.toISOString().split('T')[0];
+  });
+
+  const predefinedSubjects = [
+    'Mathematics', 'Computer Science', 'Physics', 'Chemistry',
+    'Biology', 'Economics', 'English Literature', 'Engineering Graphics'
+  ];
+
+  const handleToggleSubject = (sub) => {
+    if (selectedSubjects.includes(sub)) {
+      setSelectedSubjects(selectedSubjects.filter(s => s !== sub));
+    } else {
+      setSelectedSubjects([...selectedSubjects, sub]);
+    }
+  };
+
+  const handleAddCustomSubject = () => {
+    const cleanSub = customSubject.trim();
+    if (cleanSub && !selectedSubjects.includes(cleanSub)) {
+      setSelectedSubjects([...selectedSubjects, cleanSub]);
+      setCustomSubject('');
+    }
+  };
+
+  const handleFinishOnboarding = () => {
+    // 1. Save Semester Settings
+    setSemesterSettings({
+      startDate,
+      endDate,
+      minRequirement: Number(targetCriteria)
+    });
+
+    // 2. Add each subject
+    selectedSubjects.forEach(subName => {
+      addSubject({
+        name: subName,
+        present: 0,
+        total: 0,
+        criteria: Number(targetCriteria),
+        color: '#8b5cf6'
+      });
+    });
+
+    fullSync();
+  };
+
   const [tourActive, setTourActive] = useState(false);
   const [currentTourStep, setCurrentTourStep] = useState(0);
   const [hasTourCompleted, setHasTourCompleted] = useState(() => localStorage.getItem('tracktaps_completed_tour') === 'true');
@@ -346,63 +404,333 @@ function Home() {
 
   if (dashboardStats.totalSubjects === 0 && !isAuthLoading && user) {
      return (
-       <div className="home-view" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+       <div className="home-view" style={{ padding: '40px 20px', display: 'flex', flexDirection: 'column', gap: '32px', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', position: 'relative' }}>
          <motion.div
-           initial={{ opacity: 0, scale: 0.9 }}
-           animate={{ opacity: 1, scale: 1 }}
+           initial={{ opacity: 0, y: 30 }}
+           animate={{ opacity: 1, y: 0 }}
            style={{
-             textAlign: 'center',
              background: 'var(--surface-glass)',
              border: '1px solid var(--border)',
              borderRadius: '32px',
-             padding: '48px 24px',
-             maxWidth: '400px',
+             padding: '40px 32px',
+             maxWidth: '540px',
              width: '100%',
-             boxShadow: 'var(--shadow-lg)'
+             boxShadow: 'var(--shadow-xl)',
+             backdropFilter: 'blur(20px)',
+             position: 'relative',
+             zIndex: 2
            }}
          >
-           <div style={{ fontSize: '64px', marginBottom: '16px' }}>🚀</div>
-           <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>No attendance data yet.</h2>
-           <p style={{ color: 'var(--text-dim)', fontSize: '15px', lineHeight: 1.5, marginBottom: '32px' }}>
-             Sync your Pod.ai account to instantly track your attendance and calculate safe bunks.
-           </p>
-           <button
-             onClick={() => navigate('/pod')}
-             style={{
-               background: 'var(--primary)',
-               color: 'white',
-               border: 'none',
-               padding: '16px 32px',
-               borderRadius: '16px',
-               fontWeight: '800',
-               fontSize: '16px',
-               cursor: 'pointer',
-               boxShadow: '0 10px 30px var(--primary-glow)',
-               width: '100%'
-             }}
-           >
-             Sync Pod.ai Now →
-           </button>
-           <button
-             onClick={() => navigate('/subjects')}
-             style={{
-               background: 'rgba(255, 255, 255, 0.05)',
-               color: 'var(--text-main)',
-               border: '1px solid rgba(255, 255, 255, 0.1)',
-               padding: '14px 32px',
-               borderRadius: '16px',
-               fontWeight: '700',
-               fontSize: '14px',
-               cursor: 'pointer',
-               width: '100%',
-               marginTop: '12px',
-               transition: 'all 0.2s'
-             }}
-             onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-             onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-           >
-             ✍️ Configure Subjects Manually
-           </button>
+           {/* Steps Tracker */}
+           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', position: 'relative' }}>
+             <div style={{ position: 'absolute', top: '15px', left: '10%', right: '10%', height: '2px', background: 'rgba(255,255,255,0.06)', zIndex: 1 }} />
+             <div style={{ position: 'absolute', top: '15px', left: '10%', width: wizardStep === 1 ? '0%' : wizardStep === 2 ? '40%' : '80%', height: '2px', background: 'var(--primary)', zIndex: 2, transition: 'all 0.3s' }} />
+             
+             {[1, 2, 3].map((step) => (
+               <div key={step} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 3, width: '60px' }}>
+                 <div style={{
+                   width: '32px',
+                   height: '32px',
+                   borderRadius: '50%',
+                   background: wizardStep >= step ? 'var(--primary)' : 'rgba(30, 41, 59, 0.8)',
+                   border: `2px solid ${wizardStep >= step ? 'var(--primary-light)' : 'rgba(255,255,255,0.08)'}`,
+                   color: 'white',
+                   display: 'flex',
+                   alignItems: 'center',
+                   justifyContent: 'center',
+                   fontSize: '13px',
+                   fontWeight: '900',
+                   transition: 'all 0.3s'
+                 }}>
+                   {step}
+                 </div>
+                 <span style={{ fontSize: '10px', color: wizardStep >= step ? 'var(--text-main)' : 'var(--text-muted)', marginTop: '6px', fontWeight: '800', textTransform: 'uppercase' }}>
+                   {step === 1 ? 'Targets' : step === 2 ? 'Subjects' : 'Timeline'}
+                 </span>
+               </div>
+             ))}
+           </div>
+
+           {/* Step Content */}
+           {wizardStep === 1 && (
+             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+               <div style={{ textAlign: 'center' }}>
+                 <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 8px' }}>🎓 Welcome to TrackTaps!</h2>
+                 <p style={{ color: 'var(--text-dim)', fontSize: '13.5px', margin: 0 }}>Let's customize your target goals for the upcoming semester.</p>
+               </div>
+
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                 <label style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Semester Name</label>
+                 <input
+                   type="text"
+                   value={semesterName}
+                   onChange={(e) => setSemesterName(e.target.value)}
+                   style={{
+                     background: 'rgba(0,0,0,0.2)',
+                     border: '1px solid var(--border)',
+                     padding: '14px',
+                     borderRadius: '16px',
+                     color: 'white',
+                     fontSize: '14px',
+                     fontWeight: '700'
+                   }}
+                 />
+               </div>
+
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <label style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Minimum Attendance Criteria</label>
+                   <span style={{ fontSize: '16px', fontWeight: '900', color: 'var(--primary-light)' }}>{targetCriteria}%</span>
+                 </div>
+                 <input
+                   type="range"
+                   min="50"
+                   max="100"
+                   value={targetCriteria}
+                   onChange={(e) => setTargetCriteria(Number(e.target.value))}
+                   style={{ width: '100%', accentColor: 'var(--primary)' }}
+                 />
+                 <span style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'right' }}>
+                   {targetCriteria >= 85 ? '🔥 High Standards (Scholar mode)' : targetCriteria >= 75 ? '👍 Standard Criteria (Safe)' : '⚠️ Warning: Risk of condonation'}
+                 </span>
+               </div>
+
+               <button
+                 onClick={() => setWizardStep(2)}
+                 style={{
+                   background: 'var(--primary)',
+                   color: 'white',
+                   border: 'none',
+                   padding: '16px',
+                   borderRadius: '16px',
+                   fontWeight: '800',
+                   fontSize: '15px',
+                   cursor: 'pointer',
+                   marginTop: '12px',
+                   boxShadow: '0 8px 24px var(--primary-glow)'
+                 }}
+               >
+                 Next Step: Subjects →
+               </button>
+             </motion.div>
+           )}
+
+           {wizardStep === 2 && (
+             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+               <div style={{ textAlign: 'center' }}>
+                 <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 8px' }}>📚 Select Your Subjects</h2>
+                 <p style={{ color: 'var(--text-dim)', fontSize: '13.5px', margin: 0 }}>Tap to select or add subjects for {semesterName}.</p>
+               </div>
+
+               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+                 {predefinedSubjects.map((sub) => {
+                   const isSelected = selectedSubjects.includes(sub);
+                   return (
+                     <button
+                       key={sub}
+                       onClick={() => handleToggleSubject(sub)}
+                       style={{
+                         background: isSelected ? 'var(--primary-glow)' : 'rgba(255,255,255,0.02)',
+                         border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
+                         color: isSelected ? 'var(--primary-light)' : 'var(--text-dim)',
+                         padding: '8px 16px',
+                         borderRadius: '100px',
+                         fontSize: '12px',
+                         fontWeight: '750',
+                         cursor: 'pointer',
+                         transition: 'all 0.2s'
+                       }}
+                     >
+                       {sub}
+                     </button>
+                   );
+                 })}
+               </div>
+
+               <div style={{ display: 'flex', gap: '8px' }}>
+                 <input
+                   type="text"
+                   placeholder="Add custom subject (e.g. Data Structures)"
+                   value={customSubject}
+                   onChange={(e) => setCustomSubject(e.target.value)}
+                   style={{
+                     flex: 1,
+                     background: 'rgba(0,0,0,0.2)',
+                     border: '1px solid var(--border)',
+                     padding: '12px 16px',
+                     borderRadius: '12px',
+                     color: 'white',
+                     fontSize: '13.5px'
+                   }}
+                 />
+                 <button
+                   onClick={handleAddCustomSubject}
+                   style={{
+                     background: 'rgba(255,255,255,0.06)',
+                     border: '1px solid var(--border)',
+                     color: 'white',
+                     padding: '0 20px',
+                     borderRadius: '12px',
+                     fontWeight: '700',
+                     cursor: 'pointer'
+                   }}
+                 >
+                   + Add
+                 </button>
+               </div>
+
+               {selectedSubjects.length > 0 && (
+                 <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                   Selected: {selectedSubjects.join(', ')}
+                 </div>
+               )}
+
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
+                 <button
+                   onClick={() => setWizardStep(1)}
+                   style={{
+                     background: 'transparent',
+                     border: '1px solid var(--border)',
+                     color: 'white',
+                     padding: '14px',
+                     borderRadius: '16px',
+                     fontWeight: '700',
+                     cursor: 'pointer'
+                   }}
+                 >
+                   ← Back
+                 </button>
+                 <button
+                   onClick={() => setWizardStep(3)}
+                   disabled={selectedSubjects.length === 0}
+                   style={{
+                     background: 'var(--primary)',
+                     color: 'white',
+                     border: 'none',
+                     padding: '14px',
+                     borderRadius: '16px',
+                     fontWeight: '800',
+                     cursor: selectedSubjects.length > 0 ? 'pointer' : 'not-allowed',
+                     opacity: selectedSubjects.length > 0 ? 1 : 0.5
+                   }}
+                 >
+                   Next: Timeline →
+                 </button>
+               </div>
+
+               <div style={{ position: 'relative', margin: '12px 0', textAlign: 'center' }}>
+                 <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.05)', zIndex: 1 }} />
+                 <span style={{ position: 'relative', background: 'var(--bg-primary)', padding: '0 12px', color: 'var(--text-muted)', fontSize: '11px', zIndex: 2, fontWeight: '800' }}>OR SYNC AUTOMATICALLY</span>
+               </div>
+
+               <button
+                 onClick={() => navigate('/pod')}
+                 style={{
+                   background: 'rgba(139, 92, 246, 0.1)',
+                   border: '1px solid var(--primary)',
+                   color: 'var(--primary-light)',
+                   padding: '12px',
+                   borderRadius: '16px',
+                   fontWeight: '800',
+                   fontSize: '13px',
+                   cursor: 'pointer',
+                   display: 'flex',
+                   alignItems: 'center',
+                   justifyContent: 'center',
+                   width: '100%',
+                   gap: '8px'
+                 }}
+               >
+                 <span>🔄</span> Sync Pod.ai Portal
+               </button>
+             </motion.div>
+           )}
+
+           {wizardStep === 3 && (
+             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+               <div style={{ textAlign: 'center' }}>
+                 <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--text-main)', margin: '0 0 8px' }}>📅 Semester Timeline</h2>
+                 <p style={{ color: 'var(--text-dim)', fontSize: '13.5px', margin: 0 }}>Configure the start and end dates of your semester.</p>
+               </div>
+
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                   <label style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Start Date</label>
+                   <input
+                     type="date"
+                     value={startDate}
+                     onChange={(e) => setStartDate(e.target.value)}
+                     style={{
+                       background: 'rgba(0,0,0,0.2)',
+                       border: '1px solid var(--border)',
+                       padding: '12px',
+                       borderRadius: '12px',
+                       color: 'white',
+                       fontSize: '13px'
+                     }}
+                   />
+                 </div>
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                   <label style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase' }}>End Date</label>
+                   <input
+                     type="date"
+                     value={endDate}
+                     onChange={(e) => setEndDate(e.target.value)}
+                     style={{
+                       background: 'rgba(0,0,0,0.2)',
+                       border: '1px solid var(--border)',
+                       padding: '12px',
+                       borderRadius: '12px',
+                       color: 'white',
+                       fontSize: '13px'
+                     }}
+                   />
+                 </div>
+               </div>
+
+               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', padding: '16px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                 <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-main)' }}>📋 Setup Summary</div>
+                 <div style={{ fontSize: '12.5px', color: 'var(--text-dim)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                   <div>Semester Name: <strong style={{ color: 'white' }}>{semesterName}</strong></div>
+                   <div>Target Criteria: <strong style={{ color: 'var(--primary-light)' }}>{targetCriteria}%</strong></div>
+                   <div>Subjects to track: <strong style={{ color: 'white' }}>{selectedSubjects.length} subjects</strong></div>
+                 </div>
+               </div>
+
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                 <button
+                   onClick={() => setWizardStep(2)}
+                   style={{
+                     background: 'transparent',
+                     border: '1px solid var(--border)',
+                     color: 'white',
+                     padding: '14px',
+                     borderRadius: '16px',
+                     fontWeight: '700',
+                     cursor: 'pointer'
+                   }}
+                 >
+                   ← Back
+                 </button>
+                 <button
+                   onClick={handleFinishOnboarding}
+                   style={{
+                     background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
+                     color: 'white',
+                     border: 'none',
+                     padding: '14px',
+                     borderRadius: '16px',
+                     fontWeight: '900',
+                     fontSize: '14px',
+                     cursor: 'pointer',
+                     boxShadow: '0 8px 24px var(--primary-glow)'
+                   }}
+                 >
+                   🚀 Complete Setup
+                 </button>
+               </div>
+             </motion.div>
+           )}
          </motion.div>
        </div>
      );
