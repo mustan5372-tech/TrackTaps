@@ -155,6 +155,38 @@ function MegaSaver() {
     }
   };
 
+  // Share study group PIN and instructions
+  const handleShareGroup = async () => {
+    const activePin = activeGroup?.groupId || groupId || pinInput;
+    if (!activePin) {
+      triggerToast("⚠️ No active group to share!");
+      return;
+    }
+
+    const shareData = {
+      title: 'TrackTaps Study Sync Group Invite',
+      text: `Hey! Join my TrackTaps Coordinated Study Sync Group to link our timetables, view attendance overlays, and coordinate our class skip/bunk decisions safely!\n\nHow it works:\n1. Open TrackTaps: https://www.tracktaps.online/mega-saver\n2. Click "Join Classmate's Sync Group"\n3. Enter our unique PIN: ${activePin}\n\nLet's sync up! 👥📊`,
+      url: 'https://www.tracktaps.online/mega-saver'
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        triggerToast("📢 Invite shared successfully!");
+      } catch (err) {
+        console.log("Web Share cancelled or failed", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareData.text);
+        triggerToast("📋 Invite message copied to clipboard! Share it with your classmates.");
+      } catch (err) {
+        console.error("Failed to copy", err);
+        triggerToast("❌ Failed to share or copy invite.");
+      }
+    }
+  };
+
   // Real-time Firestore document listener
   useEffect(() => {
     if (!groupId || !db) return;
@@ -392,9 +424,34 @@ function MegaSaver() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: 'var(--text-main)' }}>👥 {activeGroup.name}</h3>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginTop: '4px' }}>Active Session PIN: **{activeGroup.groupId}**</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
+                        Active Session PIN: <strong style={{ color: 'var(--primary-light)', fontSize: '14px', letterSpacing: '0.5px' }}>{activeGroup.groupId}</strong>
+                      </span>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleShareGroup}
+                        style={{
+                          background: 'var(--primary-glow)',
+                          border: '1px solid var(--primary)',
+                          color: 'var(--primary-light)',
+                          padding: '4px 12px',
+                          borderRadius: '8px',
+                          fontSize: '11px',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          boxShadow: 'var(--shadow-sm)'
+                        }}
+                      >
+                        📢 Share Invite PIN
+                      </motion.button>
+                    </div>
                   </div>
-                  <span style={{ fontSize: '11px', background: 'var(--success)20', border: '1px solid var(--success)', color: 'var(--success)', padding: '4px 12px', borderRadius: '100px', fontWeight: '800' }}>
+                  <span style={{ fontSize: '11px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid var(--success)', color: 'var(--success)', padding: '4px 12px', borderRadius: '100px', fontWeight: '800' }}>
                     ● REALTIME SYNC ACTIVE
                   </span>
                 </div>
