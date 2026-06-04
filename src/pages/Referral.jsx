@@ -20,7 +20,7 @@ function Referral() {
 
   const validReferrals = referralData?.totalValidReferrals || 0;
   const analytics = referralData?.analytics || { totalSignups: 0, activeUsers: 0 };
-  const target = 10;
+  const target = 3;
   const progress = Math.min((validReferrals / target) * 100, 100);
   const isCampaignCompleted = referralData?.referralCampaignCompleted || false;
   
@@ -126,7 +126,7 @@ function Referral() {
               Unlock 15 Days Premium Plus
             </h3>
             <p style={{ fontSize: '15px', color: 'var(--text-dim)', lineHeight: '1.6', marginBottom: '24px' }}>
-              🎓 Invite 10 Active Students and Unlock<br/>
+              🎓 Invite 3 Active Students and Unlock<br/>
               <strong>15 Days of TrackTaps Premium Plus FREE</strong>
             </p>
             

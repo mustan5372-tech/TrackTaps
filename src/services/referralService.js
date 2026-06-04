@@ -146,8 +146,8 @@ const referralService = {
 
       console.log(`✅ [ReferralService] Referral VALIDATED. New count for ${inviterUid}: ${validCount}`);
       
-      // 6. AUTO-REWARD: Trigger 15 Days Premium if threshold met (10 valid)
-      if (validCount >= 10 && !referralData.referralCampaignCompleted) {
+      // 6. AUTO-REWARD: Trigger 15 Days Premium if threshold met (3 valid)
+      if (validCount >= 3 && !referralData.referralCampaignCompleted) {
         await referralService.triggerReward(inviterUid);
       }
     } catch (error) {
