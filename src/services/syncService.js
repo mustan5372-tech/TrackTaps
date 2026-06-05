@@ -8,6 +8,11 @@ const syncService = {
    * @param {object} data 
    */
   saveToCloud: async (userId, data) => {
+    if (userId === 'beta_tester_uid_2026') {
+      console.log("💾 [SyncService] Mock Beta User: Saving to localStorage");
+      localStorage.setItem('mock_beta_user_cloud_data', JSON.stringify(data));
+      return true;
+    }
     try {
       const userRef = doc(db, "users", userId);
       await setDoc(userRef, {
@@ -26,6 +31,26 @@ const syncService = {
    * @param {string} userId 
    */
   fetchFromCloud: async (userId) => {
+    if (userId === 'beta_tester_uid_2026') {
+      console.log("💾 [SyncService] Mock Beta User: Fetching from localStorage");
+      const localData = localStorage.getItem('mock_beta_user_cloud_data');
+      if (localData) {
+        return JSON.parse(localData);
+      }
+      // Default cloud data for the beta tester, containing lifetime subscription and owner role
+      return {
+        uid: 'beta_tester_uid_2026',
+        displayName: 'Beta Tester',
+        email: 'beta@tracktaps.online',
+        role: 'owner',
+        subscription: {
+          plan: 'plus',
+          planType: 'lifetime',
+          status: 'active',
+          expiryDate: '2099-12-31'
+        }
+      };
+    }
     try {
       const userRef = doc(db, "users", userId);
       const docSnap = await getDoc(userRef);

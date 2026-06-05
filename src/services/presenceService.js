@@ -18,7 +18,7 @@ const presenceService = {
    * Sets isOnline=true and begins heartbeat.
    */
   goOnline: async (uid) => {
-    if (!uid) return;
+    if (!uid || uid === 'beta_tester_uid_2026') return;
 
     try {
       const userRef = doc(db, 'users', uid);
@@ -40,7 +40,7 @@ const presenceService = {
    * Mark user offline. Called on logout/close.
    */
   goOffline: async (uid) => {
-    if (!uid) return;
+    if (!uid || uid === 'beta_tester_uid_2026') return;
     presenceService.stopHeartbeat();
 
     try {
@@ -59,7 +59,7 @@ const presenceService = {
    * Throttled heartbeat — updates lastSeen periodically.
    */
   sendHeartbeat: async (uid) => {
-    if (!uid) return;
+    if (!uid || uid === 'beta_tester_uid_2026') return;
     const now = Date.now();
     if (now - lastHeartbeat < THROTTLE_MS) return; // Skip if too recent
 
@@ -94,7 +94,7 @@ const presenceService = {
    * Call once during app init.
    */
   setupLifecycleListeners: (uid) => {
-    if (!uid) return;
+    if (!uid || uid === 'beta_tester_uid_2026') return () => {};
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {

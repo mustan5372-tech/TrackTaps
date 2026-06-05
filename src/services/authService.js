@@ -53,6 +53,7 @@ const authService = {
   },
 
   loginWithGoogle: async () => {
+    localStorage.removeItem('mock_beta_user');
     const isAPK = isNativeAPK();
     console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : 'WEB'}`);
     
@@ -128,6 +129,10 @@ const authService = {
 
   // --- Email Authentication ---
   signupWithEmail: async (email, password, fullName) => {
+    localStorage.removeItem('mock_beta_user');
+    if (email.toLowerCase() === 'beta@tracktaps.online') {
+      throw new Error("This email is reserved for the beta testing account. Please login instead.");
+    }
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       // Update display name
@@ -140,6 +145,22 @@ const authService = {
   },
 
   loginWithEmail: async (email, password) => {
+    if (email.toLowerCase() === 'beta@tracktaps.online' && password === 'BetaAccess2026!') {
+      console.log("🔑 [Auth] Logging in with Beta Test Account (Local Bypass)");
+      localStorage.setItem('mock_beta_user', 'true');
+      const mockUser = authService.getMockBetaUser();
+      
+      // Notify all active listeners
+      if (authService._authCallbacks) {
+        authService._authCallbacks.forEach(cb => {
+          try { cb(mockUser); } catch(e) {}
+        });
+      }
+      
+      return mockUser;
+    }
+    
+    localStorage.removeItem('mock_beta_user');
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       return result.user;
@@ -303,6 +324,8 @@ const authService = {
         // Pod.ai tokens
         localStorage.removeItem('pod_auth_token');
         localStorage.removeItem('pod_username');
+        localStorage.removeItem('mock_beta_user');
+        localStorage.removeItem('mock_beta_user_cloud_data');
         // Referral cache (per-user keys will remain but are harmless)
         // Onboarding state — keep it so user doesn't re-see onboarding
         // Theme — already cleared by clearAppData
@@ -332,11 +355,55 @@ const authService = {
     }
   },
 
+  _authCallbacks: new Set(),
+
+  getMockBetaUser: () => {
+    return {
+      uid: 'beta_tester_uid_2026',
+      email: 'beta@tracktaps.online',
+      displayName: 'Beta Tester',
+      emailVerified: true,
+      isAnonymous: false,
+      providerData: [{ providerId: 'password', email: 'beta@tracktaps.online' }]
+    };
+  },
+
   onAuthChange: (callback) => {
-    return onAuthStateChanged(auth, callback);
+    if (!authService._authCallbacks) {
+      authService._authCallbacks = new Set();
+    }
+    authService._authCallbacks.add(callback);
+    
+    // Check if we already have a mock session in progress
+    const isMock = localStorage.getItem('mock_beta_user') === 'true';
+    if (isMock) {
+      setTimeout(() => {
+        if (localStorage.getItem('mock_beta_user') === 'true') {
+          callback(authService.getMockBetaUser());
+        }
+      }, 0);
+    }
+
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (localStorage.getItem('mock_beta_user') === 'true') {
+        callback(authService.getMockBetaUser());
+      } else {
+        callback(user);
+      }
+    });
+
+    return () => {
+      if (authService._authCallbacks) {
+        authService._authCallbacks.delete(callback);
+      }
+      unsub();
+    };
   },
 
   getCurrentUser: () => {
+    if (localStorage.getItem('mock_beta_user') === 'true') {
+      return authService.getMockBetaUser();
+    }
     return auth.currentUser;
   }
 };
