@@ -363,9 +363,9 @@ const useAppStore = create(
           
           // Safety Timeout: Prevent permanent "Initializing" screen
           const authTimeout = setTimeout(() => {
-            const { user, isAuthLoading } = get();
-            if (isAuthLoading && !user) {
-              console.warn("⚠️ [AuthStore] Auth initialization timed out. Proceeding as Guest.");
+            const { isAuthLoading } = get();
+            if (isAuthLoading) {
+              console.warn("⚠️ [AuthStore] Auth initialization timed out. Forcing UI unblock.");
               set({ isAuthLoading: false, isRestoringSession: false });
             }
           }, 8000); // 8 seconds is plenty for most redirects/persistence checks
@@ -422,19 +422,25 @@ const useAppStore = create(
         },
 
         handleUserAuthenticated: async (user) => {
+          let cloudData = null;
           try {
             // Optimized parallel fetch for premium status
-            const cloudData = await syncService.fetchFromCloud(user.uid);
+            cloudData = await syncService.fetchFromCloud(user.uid);
             
             if (cloudData && cloudData.banned) {
               alert("🚫 Your account has been suspended by an administrator.");
               get().logout();
               return;
             }
+          } catch (error) {
+            console.warn("⚠️ [AuthStore] Cloud data fetch failed (likely offline):", error);
+            // Proceed in offline mode using local cached state
+          }
 
+          try {
             // ROLE IDENTIFICATION
-            // Roles are now fetched dynamically from Firestore database
-            let dbRole = cloudData?.role || 'user';
+            // Roles are now fetched dynamically from Firestore database if online, otherwise preserved from local state
+            let dbRole = cloudData ? (cloudData.role || 'user') : get().role;
             
             // SECURITY PATCH: Auto-elevate authorized emails to proper roles immediately
             const ownerEmails = ['tracktaps@gmail.com', 'mustan5372@gmail.com'];
@@ -451,15 +457,15 @@ const useAppStore = create(
               dbRole = 'core_admin'; // Migrate legacy role
             }
 
-            const cloudSub = cloudData?.subscription || { plan: 'free', status: 'inactive' };
+            const cloudSub = cloudData ? (cloudData.subscription || { plan: 'free', status: 'inactive' }) : null;
             
             // Auto-Expiry and Expiring Warnings Checks
-            let finalSub = { ...cloudSub };
+            let finalSub = cloudSub ? { ...cloudSub } : null;
             let showExpiryWarning = false;
             let showExpiredWarning = false;
             let expiryWarningDate = '';
 
-            if (finalSub.status === 'active' && finalSub.expiryDate) {
+            if (finalSub && finalSub.status === 'active' && finalSub.expiryDate) {
               const now = new Date();
               const expiry = new Date(finalSub.expiryDate);
               
@@ -525,7 +531,8 @@ const useAppStore = create(
             } else if (finalSub && finalSub.status === 'active') {
               updatedSub = { ...updatedSub, ...finalSub };
               // Keeps updatedRole as 'user' but updates subscription
-            } else {
+            } else if (cloudData) {
+              // Only downgrade to free if we successfully fetched cloudData and it indicates they are not premium!
               updatedSub = { 
                 ...updatedSub, 
                 plan: 'free', 
@@ -554,7 +561,7 @@ const useAppStore = create(
               : '';
 
             // Self-healing back-sync: if accepted locally but cloud is missing it, push to Firestore
-            if (localTermsAccepted && !cloudTermsAccepted) {
+            if (cloudData && localTermsAccepted && !cloudTermsAccepted) {
               const currentVersion = get().CURRENT_TERMS_VERSION || 'v1.0';
               (async () => {
                 try {

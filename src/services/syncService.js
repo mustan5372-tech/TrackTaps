@@ -51,15 +51,24 @@ const syncService = {
         }
       };
     }
-    try {
+    // Use a 3-second timeout race to prevent hanging during offline startups or unstable connections
+    const fetchPromise = (async () => {
       const userRef = doc(db, "users", userId);
       const docSnap = await getDoc(userRef);
       if (docSnap.exists()) {
         return docSnap.data();
       }
       return null;
+    })();
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Timeout: Cloud database unreachable (offline)")), 3000)
+    );
+
+    try {
+      return await Promise.race([fetchPromise, timeoutPromise]);
     } catch (error) {
-      console.error("Cloud fetch error:", error);
+      console.error("Cloud fetch error/timeout:", error);
       throw error;
     }
   },
