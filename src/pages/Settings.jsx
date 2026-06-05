@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import versionData from '../../version.json';
 
 function Settings() {
   const navigate = useNavigate();
@@ -1043,7 +1044,7 @@ function Settings() {
             <span className="card-title">ℹ️ About TrackTaps</span>
           </div>
           <div style={{ padding: '20px', color: 'var(--text-dim)', fontSize: '14px', lineHeight: '1.6' }}>
-            <p><strong>Version:</strong> 1.0.0 (v1.0)</p>
+            <p><strong>Version:</strong> {versionData.version} (v{versionData.version.split('.').slice(0, 2).join('.')})</p>
             <p><strong>Platform:</strong> Web & Mobile</p>
             <p style={{ marginTop: '16px' }}>TrackTaps is a smart attendance tracking platform designed to help students manage their academic attendance efficiently with AI-powered insights and predictions.</p>
             
