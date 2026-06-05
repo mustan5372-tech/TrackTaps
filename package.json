@@ -36,6 +36,7 @@
     "resend": "^3.0.0",
     "tough-cookie": "^4.1.3",
     "twilio": "^6.0.2",
+    "uuid": "^14.0.0",
     "zustand": "^5.0.13"
   },
   "devDependencies": {
