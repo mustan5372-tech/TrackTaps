@@ -5,6 +5,5 @@ dist
 .env.local
 .env.development
 .env.production
-TrackTaps.apk
 public/TrackTaps.apk
 

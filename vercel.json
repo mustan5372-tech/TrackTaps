@@ -5,7 +5,7 @@
   "redirects": [
     {
       "source": "/download",
-      "destination": "/TrackTaps.apk",
+      "destination": "https://github.com/mustan5372-tech/TrackTaps/raw/main/TrackTaps.apk",
       "permanent": false
     }
   ],
