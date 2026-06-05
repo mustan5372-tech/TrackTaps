@@ -2,6 +2,10 @@
   "appId": "com.tracktaps.app",
   "appName": "TrackTaps",
   "webDir": "dist",
+  "exclude": [
+    "**/TrackTaps.apk",
+    "**/*.apk"
+  ],
   "bundledWebRuntime": false,
   "server": {
     "cleartext": true,
