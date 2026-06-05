@@ -94,8 +94,9 @@ function App() {
 
     // Detect environment for Staging Badge
     const hostname = window.location.hostname;
-    const isProd = hostname === 'tracktaps.online' || hostname === 'www.tracktaps.online';
-    setIsStaging(!isProd && hostname !== '');
+    const isNative = typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform();
+    const isProd = hostname === 'tracktaps.online' || hostname === 'www.tracktaps.online' || isNative;
+    setIsStaging(!isProd && hostname !== '' && hostname !== 'localhost');
 
     // Initialize Anonymous Visitor Intelligence Tracking System
     analyticsService.initVisitor();
