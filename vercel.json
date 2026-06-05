@@ -11,7 +11,15 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!api/|version\\.json|TrackTaps\\.apk).*)",
+      "source": "/version.json",
+      "destination": "/version.json"
+    },
+    {
+      "source": "/TrackTaps.apk",
+      "destination": "/TrackTaps.apk"
+    },
+    {
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
