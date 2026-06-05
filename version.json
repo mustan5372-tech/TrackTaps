@@ -1,8 +1,8 @@
 {
-  "version": "1.6.0",
+  "version": "1.7.0",
   "min_required_version": "1.0.0",
   "platform": "production",
-  "last_updated": "2026-06-04",
+  "last_updated": "2026-06-05",
   "update_url": "https://www.tracktaps.online/download",
-  "changelog": "🚀 Stability Update: Hardened native logout process to prevent WebView crashes, resolved Google Auth NullPointerException on disconnect, and optimized Firestore presence tracking."
+  "changelog": "🔋 Offline Mode: Full offline manual attendance tracking support, local assets load support for native app client, and automated offline-to-online sync engine."
 }

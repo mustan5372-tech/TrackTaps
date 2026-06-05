@@ -4,9 +4,9 @@
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {
-    "url": "https://www.tracktaps.online/",
     "cleartext": true,
-    "androidScheme": "tracktaps",
+    "androidScheme": "https",
+    "hostname": "localhost",
     "allowNavigation": [
       "accounts.google.com",
       "*.google.com",

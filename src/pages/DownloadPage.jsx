@@ -21,8 +21,8 @@ function DownloadPage() {
   }, []);
 
   const triggerDownload = () => {
-    // Redirect directly to the robust GitHub raw CDN to trigger download instantly
-    window.location.href = 'https://github.com/mustan5372-tech/TrackTaps/raw/main/dist/TrackTaps.apk';
+    // Redirect directly to the self-hosted path to download the latest compiled APK
+    window.location.href = '/TrackTaps.apk';
   };
 
   return (

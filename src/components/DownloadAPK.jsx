@@ -110,7 +110,7 @@ const DownloadAPK = () => {
       return;
     }
     const link = document.createElement('a');
-    link.href = 'https://github.com/mustan5372-tech/TrackTaps/raw/main/dist/TrackTaps.apk';
+    link.href = '/TrackTaps.apk';
     link.download = 'TrackTaps.apk';
     document.body.appendChild(link);
     link.click();
