@@ -38,6 +38,7 @@ import notificationService from './services/notificationService';
 import NotificationPrompt from './components/NotificationPrompt';
 import InstagramFollowPopup from './components/InstagramFollowPopup';
 import BetaFeatureGate from './components/BetaFeatureGate';
+import GeofenceTracker from './components/GeofenceTracker';
 
 const SafeRoute = ({ children }) => {
   const { user, isAuthLoading } = useAppStore();
@@ -64,11 +65,13 @@ const SafeRoute = ({ children }) => {
 
 const BetaSandbox = () => {
   return (
-    <div style={{ padding: '24px', color: 'var(--text-main)' }}>
-      <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px' }}>🧪 Beta Sandbox</h2>
-      <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
+    <div style={{ padding: '24px', color: 'var(--text-main)', maxWidth: '800px', margin: '0 auto' }}>
+      <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', letterSpacing: '-0.02em' }}>🧪 Beta Sandbox</h2>
+      <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '30px', lineHeight: '1.5' }}>
         This is a testing environment for future beta features. You are only able to view this page because you are logged in with a Beta/Test access account!
       </p>
+      
+      <GeofenceTracker />
     </div>
   );
 };

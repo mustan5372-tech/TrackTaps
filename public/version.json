@@ -1,8 +1,8 @@
 {
-  "version": "1.7.0",
+  "version": "1.7.1",
   "min_required_version": "1.0.0",
   "platform": "production",
   "last_updated": "2026-06-05",
   "update_url": "https://www.tracktaps.online/download",
-  "changelog": "🔋 Offline Mode: Full offline manual attendance tracking support, local assets load support for native app client, and automated offline-to-online sync engine."
+  "changelog": "📍 Automated Geotrack Beta: Added background college coordinates geofencing, campus Wi-Fi network recognition, diagnostics logs, and full simulation sandbox for test users."
 }
