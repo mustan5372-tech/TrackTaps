@@ -3,20 +3,56 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function APKUpdateBanner() {
   const [needsUpdate, setNeedsUpdate] = useState(false);
-  const [nativeVersion, setNativeVersion] = useState('1.0');
-  const LATEST_VERSION = '1.6';
+  const [nativeVersion, setNativeVersion] = useState('1.0.0');
+  const [latestVersion, setLatestVersion] = useState('1.7.0');
+  const [changelog, setChangelog] = useState('');
+
+  const parseVersion = (v) => {
+    if (!v) return [0];
+    // Strip non-numeric/dot characters (e.g. 'v1.7' -> '1.7')
+    const cleaned = v.replace(/[^0-9.]/g, '');
+    return cleaned.split('.').map(Number);
+  };
+
+  const isVersionOlder = (current, latest) => {
+    const cArr = parseVersion(current);
+    const lArr = parseVersion(latest);
+    for (let i = 0; i < Math.max(cArr.length, lArr.length); i++) {
+      const cVal = cArr[i] || 0;
+      const lVal = lArr[i] || 0;
+      if (cVal < lVal) return true;
+      if (cVal > lVal) return false;
+    }
+    return false;
+  };
 
   useEffect(() => {
     const checkAppVersion = async () => {
-      // Check if we are inside the native mobile app
+      // 1. Fetch live version data from web server
+      let fetchedVersion = '1.7.0';
+      let fetchedChangelog = '';
+      try {
+        const response = await fetch('https://www.tracktaps.online/version.json', { cache: 'no-store' });
+        if (response.ok) {
+          const data = await response.json();
+          fetchedVersion = data.version || '1.7.0';
+          fetchedChangelog = data.changelog || '';
+          setLatestVersion(fetchedVersion);
+          setChangelog(fetchedChangelog);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch live version info from server:', err);
+      }
+
+      // 2. Check if we are inside the native mobile app
       if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
         try {
           const { App } = await import('@capacitor/app');
           const info = await App.getInfo();
           setNativeVersion(info.version);
           
-          // Compare versions (e.g., if client version is older than latest v1.5)
-          if (parseFloat(info.version) < parseFloat(LATEST_VERSION)) {
+          // Compare local version name against server latest version
+          if (isVersionOlder(info.version, fetchedVersion)) {
             setNeedsUpdate(true);
           }
         } catch (err) {
@@ -85,11 +121,16 @@ function APKUpdateBanner() {
           </div>
           <div style={{ flex: 1 }}>
             <h4 style={{ margin: '0 0 3px 0', fontSize: '14px', fontWeight: '850', color: 'white', letterSpacing: '-0.01em' }}>
-              TrackTaps Update Available! (v{LATEST_VERSION})
+              TrackTaps Update Available! (v{latestVersion})
             </h4>
             <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
-              Your current version (v{nativeVersion}) is outdated. Get the updated APK now for the latest features, background stability, and native alerts.
+              Your current version (v{nativeVersion}) is outdated. Get the updated APK now for:
             </p>
+            {changelog && (
+              <p style={{ margin: '4px 0 0 0', fontSize: '10.5px', color: '#c084fc', fontStyle: 'italic', lineHeight: '1.3' }}>
+                "{changelog}"
+              </p>
+            )}
           </div>
         </div>
 
@@ -132,7 +173,7 @@ function APKUpdateBanner() {
             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1.0)'}
           >
-            Update Now (v{LATEST_VERSION})
+            Update Now (v{latestVersion})
           </button>
         </div>
       </motion.div>

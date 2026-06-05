@@ -2,6 +2,13 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "vite",
+  "redirects": [
+    {
+      "source": "/download",
+      "destination": "/TrackTaps.apk",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!api/).*)",
