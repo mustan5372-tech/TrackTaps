@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useAppStore from '../store/appStore';
 
 function ContactUs({ initialCategory = 'support', minimal = false }) {
   const [formData, setFormData] = useState({
@@ -17,12 +18,12 @@ function ContactUs({ initialCategory = 'support', minimal = false }) {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
 
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user: currentUser } = useAppStore();
   const [myQueries, setMyQueries] = useState([]);
   const [loadingQueries, setLoadingQueries] = useState(false);
   const [activeTab, setActiveTab] = useState('new_ticket'); // 'new_ticket' or 'my_tickets'
 
-  // Fetch support tickets submitted by this email
+  // Fetch support tickets submitted by this email (case-insensitive & exact matching combined)
   const fetchMyQueries = async (email) => {
     if (!email) return;
     setLoadingQueries(true);
@@ -30,15 +31,26 @@ function ContactUs({ initialCategory = 'support', minimal = false }) {
       const { db } = await import('../services/firebase');
       const { collection, getDocs, query, where } = await import('firebase/firestore');
       
-      const q = query(collection(db, 'support_queries'), where('email', '==', email));
-      const qSnap = await getDocs(q);
-      const list = [];
-      qSnap.forEach(docSnap => {
-        list.push({
-          id: docSnap.id,
-          ...docSnap.data()
-        });
+      const emailLower = email.trim().toLowerCase();
+      const emailExact = email.trim();
+      
+      const q1 = query(collection(db, 'support_queries'), where('email', '==', emailLower));
+      const q1Snap = await getDocs(q1);
+      
+      const listMap = new Map();
+      q1Snap.forEach(docSnap => {
+        listMap.set(docSnap.id, { id: docSnap.id, ...docSnap.data() });
       });
+      
+      if (emailExact !== emailLower) {
+        const q2 = query(collection(db, 'support_queries'), where('email', '==', emailExact));
+        const q2Snap = await getDocs(q2);
+        q2Snap.forEach(docSnap => {
+          listMap.set(docSnap.id, { id: docSnap.id, ...docSnap.data() });
+        });
+      }
+      
+      const list = Array.from(listMap.values());
       list.sort((a, b) => new Date(b.timestamp || b.createdAt) - new Date(a.timestamp || a.createdAt));
       setMyQueries(list);
     } catch (err) {
@@ -48,29 +60,14 @@ function ContactUs({ initialCategory = 'support', minimal = false }) {
     }
   };
 
-  // Auth State Listener
+  // Listen to store user login changes
   React.useEffect(() => {
-    let unsubscribe = () => {};
-    const initAuth = async () => {
-      try {
-        const { auth } = await import('../services/firebase');
-        const { onAuthStateChanged } = await import('firebase/auth');
-        unsubscribe = onAuthStateChanged(auth, (user) => {
-          if (user) {
-            setCurrentUser(user);
-            fetchMyQueries(user.email);
-          } else {
-            setCurrentUser(null);
-            setMyQueries([]);
-          }
-        });
-      } catch (err) {
-        console.error('Failed to initialize auth state listener in ContactUs:', err);
-      }
-    };
-    initAuth();
-    return () => unsubscribe();
-  }, []);
+    if (currentUser?.email) {
+      fetchMyQueries(currentUser.email);
+    } else {
+      setMyQueries([]);
+    }
+  }, [currentUser]);
 
   // Autofill name/email if user logs in
   React.useEffect(() => {
