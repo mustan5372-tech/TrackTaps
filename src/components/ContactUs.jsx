@@ -17,6 +17,72 @@ function ContactUs({ initialCategory = 'support', minimal = false }) {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
 
+  const [currentUser, setCurrentUser] = useState(null);
+  const [myQueries, setMyQueries] = useState([]);
+  const [loadingQueries, setLoadingQueries] = useState(false);
+  const [activeTab, setActiveTab] = useState('new_ticket'); // 'new_ticket' or 'my_tickets'
+
+  // Fetch support tickets submitted by this email
+  const fetchMyQueries = async (email) => {
+    if (!email) return;
+    setLoadingQueries(true);
+    try {
+      const { db } = await import('../services/firebase');
+      const { collection, getDocs, query, where } = await import('firebase/firestore');
+      
+      const q = query(collection(db, 'support_queries'), where('email', '==', email));
+      const qSnap = await getDocs(q);
+      const list = [];
+      qSnap.forEach(docSnap => {
+        list.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
+      });
+      list.sort((a, b) => new Date(b.timestamp || b.createdAt) - new Date(a.timestamp || a.createdAt));
+      setMyQueries(list);
+    } catch (err) {
+      console.error('Failed to fetch user support queries:', err);
+    } finally {
+      setLoadingQueries(false);
+    }
+  };
+
+  // Auth State Listener
+  React.useEffect(() => {
+    let unsubscribe = () => {};
+    const initAuth = async () => {
+      try {
+        const { auth } = await import('../services/firebase');
+        const { onAuthStateChanged } = await import('firebase/auth');
+        unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user) {
+            setCurrentUser(user);
+            fetchMyQueries(user.email);
+          } else {
+            setCurrentUser(null);
+            setMyQueries([]);
+          }
+        });
+      } catch (err) {
+        console.error('Failed to initialize auth state listener in ContactUs:', err);
+      }
+    };
+    initAuth();
+    return () => unsubscribe();
+  }, []);
+
+  // Autofill name/email if user logs in
+  React.useEffect(() => {
+    if (currentUser) {
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || currentUser.displayName || '',
+        email: prev.email || currentUser.email || ''
+      }));
+    }
+  }, [currentUser]);
+
   const categories = [
     { value: 'support', label: '🆘 Support' },
     { value: 'bug', label: '🐛 Bug Report' },
@@ -128,11 +194,17 @@ function ContactUs({ initialCategory = 'support', minimal = false }) {
       if (response.ok && data.success) {
         setSubmitted(true);
         showToastMessage('✅ Your query has been logged and sent directly to the team!', 'success');
+        if (formData.email) {
+          fetchMyQueries(formData.email);
+        }
         resetForm();
       } else {
         // Fallback: If email delivery fails, the query is still logged in Firestore successfully!
         setSubmitted(true);
         showToastMessage('✅ Your query was successfully logged in our system!', 'success');
+        if (formData.email) {
+          fetchMyQueries(formData.email);
+        }
         resetForm();
       }
 
@@ -215,7 +287,74 @@ function ContactUs({ initialCategory = 'support', minimal = false }) {
           transform: 'translateY(0)'
         }}
       >
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Navigation Tabs */}
+        <div style={{
+          display: 'flex',
+          gap: '12px',
+          marginBottom: '32px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          paddingBottom: '12px'
+        }}>
+          <button
+            type="button"
+            onClick={() => setActiveTab('new_ticket')}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: activeTab === 'new_ticket' ? 'var(--primary-light)' : 'var(--text-muted)',
+              fontSize: '15px',
+              fontWeight: '700',
+              padding: '8px 16px',
+              cursor: 'pointer',
+              borderBottom: activeTab === 'new_ticket' ? '2px solid var(--primary-light)' : 'none',
+              transition: 'all 0.2s ease',
+              marginBottom: '-13px'
+            }}
+          >
+            📩 Send Query
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('my_tickets');
+              if (currentUser) {
+                fetchMyQueries(currentUser.email);
+              }
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: activeTab === 'my_tickets' ? 'var(--primary-light)' : 'var(--text-muted)',
+              fontSize: '15px',
+              fontWeight: '700',
+              padding: '8px 16px',
+              cursor: 'pointer',
+              borderBottom: activeTab === 'my_tickets' ? '2px solid var(--primary-light)' : 'none',
+              transition: 'all 0.2s ease',
+              marginBottom: '-13px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            📋 My Tickets
+            {myQueries.length > 0 && (
+              <span style={{
+                background: 'var(--primary)',
+                color: 'white',
+                fontSize: '11px',
+                padding: '2px 6px',
+                borderRadius: '100px',
+                fontWeight: '700'
+              }}>
+                {myQueries.filter(q => q.status !== 'resolved').length}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {activeTab === 'new_ticket' ? (
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {/* Name Field */}
           <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label style={{
@@ -541,6 +680,101 @@ function ContactUs({ initialCategory = 'support', minimal = false }) {
             )}
           </button>
         </form>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {loadingQueries ? (
+              <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px' }}>
+                <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', marginRight: '8px' }}>⏳</span>
+                Loading your queries...
+              </div>
+            ) : myQueries.length === 0 ? (
+              <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px' }}>
+                <p style={{ color: 'var(--text-dim)', margin: '0' }}>You haven't submitted any support queries yet.</p>
+                <button 
+                  type="button"
+                  onClick={() => setActiveTab('new_ticket')}
+                  style={{
+                    background: 'rgba(139, 92, 246, 0.1)',
+                    color: 'var(--primary-light)',
+                    border: '1px solid var(--primary-glow)',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    marginTop: '12px',
+                    fontWeight: '600'
+                  }}
+                >
+                  Submit New Query
+                </button>
+              </div>
+            ) : (
+              myQueries.map(query => (
+                <div 
+                  key={query.id} 
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.4)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ 
+                        fontSize: '11px', 
+                        background: 'rgba(139, 92, 246, 0.15)', 
+                        color: 'var(--primary-light)', 
+                        padding: '3px 8px', 
+                        borderRadius: '100px', 
+                        fontWeight: '700',
+                        textTransform: 'uppercase'
+                      }}>
+                        {query.category || 'support'}
+                      </span>
+                      <span style={{ 
+                        fontSize: '11px', 
+                        background: query.status === 'resolved' ? 'rgba(16, 185, 129, 0.15)' : query.status === 'spam' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)', 
+                        color: query.status === 'resolved' ? '#10b981' : query.status === 'spam' ? '#ef4444' : '#f59e0b', 
+                        padding: '3px 8px', 
+                        borderRadius: '100px', 
+                        fontWeight: '700',
+                        textTransform: 'uppercase'
+                      }}>
+                        {query.status || 'pending'}
+                      </span>
+                      <span style={{ 
+                        fontSize: '11px', 
+                        background: 'rgba(255, 255, 255, 0.05)', 
+                        color: 'var(--text-dim)', 
+                        padding: '3px 8px', 
+                        borderRadius: '100px', 
+                        fontWeight: '700',
+                        fontFamily: 'monospace'
+                      }}>
+                        T.ID: {query.trackingId || query.id.substring(0, 8)}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      {query.timestamp ? new Date(query.timestamp).toLocaleDateString() : 'Just now'}
+                    </span>
+                  </div>
+                  
+                  <div>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: 'var(--text-main)', fontWeight: '700' }}>
+                      {query.subject}
+                    </h4>
+                    <p style={{ margin: '0', fontSize: '13px', color: 'var(--text-dim)', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                      {query.message}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
       {/* Toast Notification */}
