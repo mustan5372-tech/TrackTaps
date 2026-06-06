@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import useAppStore from '../store/appStore';
 
-function ContactUs({ initialCategory = 'support', minimal = false }) {
+function ContactUs({ initialCategory = 'support', minimal = false, initialTab = 'new_ticket' }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -21,7 +21,11 @@ function ContactUs({ initialCategory = 'support', minimal = false }) {
   const { user: currentUser } = useAppStore();
   const [myQueries, setMyQueries] = useState([]);
   const [loadingQueries, setLoadingQueries] = useState(false);
-  const [activeTab, setActiveTab] = useState('new_ticket'); // 'new_ticket' or 'my_tickets'
+  const [activeTab, setActiveTab] = useState(initialTab); // 'new_ticket' or 'my_tickets'
+
+  React.useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   // Fetch support tickets submitted by this email (case-insensitive & exact matching combined)
   const fetchMyQueries = async (email) => {

@@ -124,6 +124,7 @@ function Guide() {
   const [supportMethod, setSupportMethod] = useState(null); // null | 'choice' | 'in_app'
   const [selectedCategory, setSelectedCategory] = useState('support'); // 'support' | 'bug' | 'feature'
   const [emailDetails, setEmailDetails] = useState({ subject: '', body: '' });
+  const [initialSupportTab, setInitialSupportTab] = useState('new_ticket');
 
   const handleSupportChoice = (category, subject, body = '') => {
     setSelectedCategory(category);
@@ -162,6 +163,7 @@ function Guide() {
     setShowSupportModal(false);
     setErrorMsg('');
     setSupportMethod(null);
+    setInitialSupportTab('new_ticket');
   };
 
   const handleEmailAction = (subject, body = '') => {
@@ -293,24 +295,53 @@ function Guide() {
         <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px', lineHeight: '1.6' }}>
           If you encounter any issues or have suggestions for TrackTaps, feel free to reach out to the core team. We are available 24/7.
         </p>
-        <motion.button 
-          whileTap={{ scale: 0.95 }}
-          whileHover={{ scale: 1.02 }}
-          onClick={() => setShowSupportModal(true)}
-          style={{
-            background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
-            boxShadow: '0 0 15px var(--primary-glow)',
-            color: '#fff',
-            border: 'none',
-            padding: '14px 32px',
-            borderRadius: '12px',
-            fontWeight: '800',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          Contact Support 💬
-        </motion.button>
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            onClick={() => {
+              setInitialSupportTab('new_ticket');
+              setShowSupportModal(true);
+            }}
+            style={{
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
+              boxShadow: '0 0 15px var(--primary-glow)',
+              color: '#fff',
+              border: 'none',
+              padding: '14px 32px',
+              borderRadius: '12px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Contact Support 💬
+          </motion.button>
+          
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            onClick={() => {
+              setInitialSupportTab('my_tickets');
+              setSupportMethod('in_app');
+              setSelectedCategory('support');
+              setShowSupportModal(true);
+            }}
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: 'var(--text-main)',
+              padding: '14px 32px',
+              borderRadius: '12px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              fontSize: '14px',
+              transition: 'all 0.2s'
+            }}
+          >
+            Track My Tickets 📋
+          </motion.button>
+        </div>
       </div>
 
       {/* Futuristic Help Options Support Modal */}
@@ -582,7 +613,7 @@ function Guide() {
                     Fill out the form below to submit directly to our core administration team.
                   </p>
 
-                  <ContactUs initialCategory={selectedCategory} minimal={true} />
+                  <ContactUs initialCategory={selectedCategory} minimal={true} initialTab={initialSupportTab} />
 
                   <div style={{ textAlign: 'center', marginTop: '16px' }}>
                     <button
