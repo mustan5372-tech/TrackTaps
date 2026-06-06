@@ -290,7 +290,7 @@ function Premium() {
       </header>
 
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <div className="plans-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px', marginBottom: '100px' }}>
+        <div className="plans-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px', marginBottom: '100px' }}>
           {PLANS.map((plan, i) => {
             const isSuperSaverActive = subscription && subscription.status === 'active' && subscription.planType === 'half_yearly';
             const displayPrice = (plan.id === 'yearly' && isSuperSaverActive) ? 8 : plan.price;
@@ -299,11 +299,25 @@ function Premium() {
             return (
               <motion.div
                 key={plan.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.15 }}
-                whileHover={{ y: -12 }}
+                initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 100,
+                  damping: 15,
+                  delay: i * 0.1
+                }}
+                whileHover={{
+                  y: -16,
+                  scale: 1.03,
+                  boxShadow: plan.bestValue 
+                    ? '0 30px 60px rgba(245, 158, 11, 0.25), 0 0 20px rgba(245, 158, 11, 0.15)' 
+                    : plan.popular 
+                      ? '0 30px 60px rgba(217, 70, 239, 0.25), 0 0 20px rgba(217, 70, 239, 0.15)' 
+                      : '0 30px 60px rgba(99, 102, 241, 0.25), 0 0 20px rgba(99, 102, 241, 0.15)',
+                  borderColor: plan.color
+                }}
                 style={{
                   padding: '48px 32px',
                   borderRadius: '32px',
@@ -313,7 +327,8 @@ function Premium() {
                   display: 'flex',
                   flexDirection: 'column',
                   position: 'relative',
-                  boxShadow: plan.bestValue ? '0 20px 50px rgba(245, 158, 11, 0.15)' : plan.popular ? '0 20px 50px rgba(139, 92, 246, 0.15)' : '0 20px 40px rgba(0,0,0,0.3)'
+                  boxShadow: plan.bestValue ? '0 20px 50px rgba(245, 158, 11, 0.15)' : plan.popular ? '0 20px 50px rgba(139, 92, 246, 0.15)' : '0 20px 40px rgba(0,0,0,0.3)',
+                  transition: 'border-color 0.3s ease'
                 }}
               >
                 {(plan.bestValue || plan.popular) && (
