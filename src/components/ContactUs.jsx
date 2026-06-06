@@ -88,8 +88,12 @@ function ContactUs({ initialCategory = 'support', minimal = false }) {
       const { addDoc, collection } = await import('firebase/firestore');
       const { db } = await import('../services/firebase');
       
+      const trackingId = String(Math.floor(10000000 + Math.random() * 90000000));
+      console.log(`🔥 Generated tracking ID: ${trackingId}`);
+
       console.log('🔥 Writing contact query directly to Firestore support_queries...');
       await addDoc(collection(db, 'support_queries'), {
+        trackingId,
         name: formData.name,
         email: formData.email,
         phoneNumber: formData.phoneNumber,
@@ -113,6 +117,7 @@ function ContactUs({ initialCategory = 'support', minimal = false }) {
         },
         body: JSON.stringify({
           ...formData,
+          trackingId,
           timestamp: new Date().toISOString()
         })
       });

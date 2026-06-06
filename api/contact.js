@@ -24,9 +24,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, email, phoneNumber, subject, category, message, timestamp } = req.body;
+    const { name, email, phoneNumber, subject, category, message, timestamp, trackingId } = req.body;
 
-    console.log('📧 Contact form submission received:', { name, email, phoneNumber, subject, category });
+    console.log('📧 Contact form submission received:', { name, email, phoneNumber, subject, category, trackingId });
 
     // Validate required fields
     if (!name || !email || !phoneNumber || !subject || !message) {
@@ -151,7 +151,12 @@ export default async function handler(req, res) {
     <div class="container">
       <div class="header">
         <h1>📬 New Contact Form Submission</h1>
-        <p>From TrackTaps Contact Form</p>
+        <p>From TrackTaps Contact Form - T.ID: ${escapeHtml(trackingId || 'N/A')}</p>
+      </div>
+
+      <div class="field">
+        <span class="field-label">🔢 Tracking ID (T.ID)</span>
+        <div class="field-value" style="font-family: monospace; font-size: 16px; font-weight: bold; color: #8b5cf6;">${escapeHtml(trackingId || 'N/A')}</div>
       </div>
 
       <div class="field">

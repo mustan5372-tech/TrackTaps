@@ -29,6 +29,7 @@ function Admin() {
   const [users, setUsers] = useState([]);
   const [queries, setQueries] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [querySearchTerm, setQuerySearchTerm] = useState('');
   const [stats, setStats] = useState({
     totalUsers: 0,
     premiumUsers: 0,
@@ -191,6 +192,32 @@ function Admin() {
     try {
       const queryRef = doc(db, "support_queries", queryId);
       await updateDoc(queryRef, { status: newStatus });
+      
+      // Send email if status is marked resolved
+      if (newStatus === 'resolved') {
+        const targetQuery = queries.find(q => q.id === queryId);
+        if (targetQuery) {
+          const trackingId = targetQuery.trackingId || targetQuery.id.substring(0, 8);
+          console.log(`📧 Triggering query resolution notification email for T.ID: ${trackingId}`);
+          try {
+            const res = await fetch('/api/resolve-query', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                name: targetQuery.name,
+                email: targetQuery.email,
+                trackingId: trackingId
+              })
+            });
+            const data = await res.json();
+            console.log('📨 Resolve API Response:', data);
+          } catch (apiErr) {
+            console.error('❌ Failed to trigger query resolution email api:', apiErr);
+          }
+        }
+      }
       
       // Update local state
       setQueries(prev => prev.map(q => q.id === queryId ? { ...q, status: newStatus } : q));
@@ -789,186 +816,252 @@ function Admin() {
             </span>
           </h3>
 
+          {/* Search by T.ID Bar */}
+          <div style={{ marginBottom: '24px', position: 'relative' }}>
+            <input 
+              type="text" 
+              placeholder="🔍 Search by Tracking ID (T.ID) or Sender Name..." 
+              value={querySearchTerm}
+              onChange={e => setQuerySearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 20px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(0,0,0,0.2)',
+                color: 'white',
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+            {querySearchTerm && (
+              <button 
+                onClick={() => setQuerySearchTerm('')}
+                style={{
+                  position: 'absolute',
+                  right: '15px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
           <div style={{ display: 'grid', gap: '20px' }}>
-            {queries.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>No support queries or feedback logged.</p>
-            ) : queries.map(query => (
-              <div key={query.id} style={{ 
-                background: query.status === 'spam' 
-                  ? 'rgba(239, 68, 68, 0.02)' 
-                  : query.status === 'resolved' 
-                    ? 'rgba(16, 185, 129, 0.02)' 
-                    : 'rgba(255,255,255,0.02)', 
-                border: query.status === 'spam' 
-                  ? '1.5px dashed rgba(239, 68, 68, 0.2)' 
-                  : query.status === 'resolved' 
-                    ? '1.5px solid rgba(16, 185, 129, 0.2)' 
-                    : '1.5px solid rgba(255,255,255,0.05)', 
-                borderRadius: '20px', 
-                padding: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-                transition: 'all 0.3s ease'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-                  <div>
-                    {/* User Name & Topic */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
-                      <span style={{ fontWeight: '800', color: 'var(--text-main)', fontSize: '16px' }}>{query.name}</span>
-                      <span style={{ 
-                        fontSize: '11px', 
-                        background: 'rgba(139, 92, 246, 0.15)', 
-                        color: 'var(--primary-light)', 
-                        padding: '3px 10px', 
-                        borderRadius: '100px', 
-                        fontWeight: '700',
-                        textTransform: 'uppercase'
-                      }}>
-                        {query.category === 'support' ? '🆘 Support' : query.category === 'bug' ? '🐛 Bug' : query.category === 'feature' ? '✨ Feature' : '💬 Feedback'}
-                      </span>
-                      <span style={{ 
-                        fontSize: '11px', 
-                        background: query.status === 'resolved' ? 'rgba(16, 185, 129, 0.15)' : query.status === 'spam' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)', 
-                        color: query.status === 'resolved' ? '#10b981' : query.status === 'spam' ? '#ef4444' : '#f59e0b', 
-                        padding: '3px 10px', 
-                        borderRadius: '100px', 
-                        fontWeight: '700',
-                        textTransform: 'uppercase'
-                      }}>
-                        {query.status || 'pending'}
-                      </span>
-                    </div>
-                    
-                    {/* User Email & Phone Number */}
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div>📧 Email: <a href={`mailto:${query.email}`} style={{ color: 'var(--primary-light)', textDecoration: 'none' }}>{query.email}</a></div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>📞 Phone: <strong style={{ color: 'var(--text-main)' }}>{query.phoneNumber}</strong></span>
-                        <a 
-                          href={`tel:${query.phoneNumber}`} 
-                          title="Call User"
-                          style={{
-                            background: 'rgba(16, 185, 129, 0.1)',
-                            color: '#10b981',
-                            padding: '2px 8px',
-                            borderRadius: '6px',
-                            fontSize: '11px',
-                            textDecoration: 'none',
-                            fontWeight: '600'
-                          }}
-                        >
-                          📞 Call
-                        </a>
-                        <a 
-                          href={`https://wa.me/${query.phoneNumber.replace(/[^0-9]/g, '')}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          title="Message on WhatsApp"
-                          style={{
-                            background: 'rgba(37, 211, 102, 0.1)',
-                            color: '#25D366',
-                            padding: '2px 8px',
-                            borderRadius: '6px',
-                            fontSize: '11px',
-                            textDecoration: 'none',
-                            fontWeight: '600'
-                          }}
-                        >
-                          💬 WhatsApp
-                        </a>
+            {(() => {
+              const filtered = queries.filter(query => {
+                const term = querySearchTerm.toLowerCase().trim();
+                if (!term) return true;
+                const tid = String(query.trackingId || query.id.substring(0, 8)).toLowerCase();
+                const name = String(query.name || '').toLowerCase();
+                return tid.includes(term) || name.includes(term);
+              });
+              
+              if (queries.length === 0) {
+                return <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>No support queries or feedback logged.</p>;
+              }
+              if (filtered.length === 0) {
+                return <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>No queries match search term "{querySearchTerm}".</p>;
+              }
+              
+              return filtered.map(query => (
+                <div key={query.id} style={{ 
+                  background: query.status === 'spam' 
+                    ? 'rgba(239, 68, 68, 0.02)' 
+                    : query.status === 'resolved' 
+                      ? 'rgba(16, 185, 129, 0.02)' 
+                      : 'rgba(255,255,255,0.02)', 
+                  border: query.status === 'spam' 
+                    ? '1.5px dashed rgba(239, 68, 68, 0.2)' 
+                    : query.status === 'resolved' 
+                      ? '1.5px solid rgba(16, 185, 129, 0.2)' 
+                      : '1.5px solid rgba(255,255,255,0.05)', 
+                  borderRadius: '20px', 
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                    <div>
+                      {/* User Name & Topic */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                        <span style={{ fontWeight: '800', color: 'var(--text-main)', fontSize: '16px' }}>{query.name}</span>
+                        <span style={{ 
+                          fontSize: '11px', 
+                          background: 'rgba(139, 92, 246, 0.15)', 
+                          color: 'var(--primary-light)', 
+                          padding: '3px 10px', 
+                          borderRadius: '100px', 
+                          fontWeight: '700',
+                          textTransform: 'uppercase'
+                        }}>
+                          {query.category === 'support' ? '🆘 Support' : query.category === 'bug' ? '🐛 Bug' : query.category === 'feature' ? '✨ Feature' : '💬 Feedback'}
+                        </span>
+                        <span style={{ 
+                          fontSize: '11px', 
+                          background: query.status === 'resolved' ? 'rgba(16, 185, 129, 0.15)' : query.status === 'spam' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)', 
+                          color: query.status === 'resolved' ? '#10b981' : query.status === 'spam' ? '#ef4444' : '#f59e0b', 
+                          padding: '3px 10px', 
+                          borderRadius: '100px', 
+                          fontWeight: '700',
+                          textTransform: 'uppercase'
+                        }}>
+                          {query.status || 'pending'}
+                        </span>
+                        {/* Tracking ID Badge */}
+                        <span style={{ 
+                          fontSize: '11px', 
+                          background: 'rgba(255, 255, 255, 0.08)', 
+                          color: 'var(--text-dim)', 
+                          padding: '3px 10px', 
+                          borderRadius: '100px', 
+                          fontWeight: '700',
+                          fontFamily: 'monospace'
+                        }}>
+                          T.ID: {query.trackingId || query.id.substring(0, 8)}
+                        </span>
+                      </div>
+                      
+                      {/* User Email & Phone Number */}
+                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div>📧 Email: <a href={`mailto:${query.email}`} style={{ color: 'var(--primary-light)', textDecoration: 'none' }}>{query.email}</a></div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>📞 Phone: <strong style={{ color: 'var(--text-main)' }}>{query.phoneNumber}</strong></span>
+                          <a 
+                            href={`tel:${query.phoneNumber}`} 
+                            title="Call User"
+                            style={{
+                              background: 'rgba(16, 185, 129, 0.1)',
+                              color: '#10b981',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              textDecoration: 'none',
+                              fontWeight: '600'
+                            }}
+                          >
+                            📞 Call
+                          </a>
+                          <a 
+                            href={`https://wa.me/${query.phoneNumber.replace(/[^0-9]/g, '')}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            title="Message on WhatsApp"
+                            style={{
+                              background: 'rgba(37, 211, 102, 0.1)',
+                              color: '#25D366',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              textDecoration: 'none',
+                              fontWeight: '600'
+                            }}
+                          >
+                            💬 WhatsApp
+                          </a>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Submit time */}
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      Logged: {query.timestamp ? new Date(query.timestamp).toLocaleString() : 'Just now'}
+                    </div>
                   </div>
 
-                  {/* Submit time */}
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                    Logged: {query.timestamp ? new Date(query.timestamp).toLocaleString() : 'Just now'}
+                  <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.05)', margin: '0' }} />
+
+                  {/* Subject & Message details */}
+                  <div>
+                    <div style={{ fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px', fontSize: '14px' }}>
+                      Subject: {query.subject}
+                    </div>
+                    <div style={{ 
+                      background: 'rgba(0,0,0,0.2)', 
+                      padding: '16px', 
+                      borderRadius: '12px', 
+                      fontSize: '14px', 
+                      color: 'var(--text-dim)', 
+                      lineHeight: '1.6',
+                      whiteSpace: 'pre-wrap'
+                    }}>
+                      {query.message}
+                    </div>
+                  </div>
+
+                  {/* Actions row */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                    {query.status !== 'resolved' && (
+                      <button 
+                        onClick={() => handleUpdateQueryStatus(query.id, 'resolved')}
+                        style={{ 
+                          background: 'rgba(16, 185, 129, 0.1)', 
+                          border: 'none', 
+                          color: '#10b981', 
+                          padding: '8px 16px', 
+                          borderRadius: '8px', 
+                          fontSize: '12px', 
+                          fontWeight: '700', 
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)'}
+                        onMouseOut={e => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'}
+                      >
+                        ✓ Mark Resolved
+                      </button>
+                    )}
+                    {query.status !== 'spam' && (
+                      <button 
+                        onClick={() => handleUpdateQueryStatus(query.id, 'spam')}
+                        style={{ 
+                          background: 'rgba(239, 68, 68, 0.05)', 
+                          border: 'none', 
+                          color: '#ef4444', 
+                          padding: '8px 16px', 
+                          borderRadius: '8px', 
+                          fontSize: '12px', 
+                          fontWeight: '700', 
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                        onMouseOut={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)'}
+                      >
+                        ⚠ Mark Spam
+                      </button>
+                    )}
+                    {query.status !== 'pending' && (
+                      <button 
+                        onClick={() => handleUpdateQueryStatus(query.id, 'pending')}
+                        style={{ 
+                          background: 'rgba(255, 255, 255, 0.05)', 
+                          border: 'none', 
+                          color: 'var(--text-dim)', 
+                          padding: '8px 16px', 
+                          borderRadius: '8px', 
+                          fontSize: '12px', 
+                          fontWeight: '700', 
+                          cursor: 'pointer' 
+                        }}
+                      >
+                        Reopen
+                      </button>
+                    )}
                   </div>
                 </div>
-
-                <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.05)', margin: '0' }} />
-
-                {/* Subject & Message details */}
-                <div>
-                  <div style={{ fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px', fontSize: '14px' }}>
-                    Subject: {query.subject}
-                  </div>
-                  <div style={{ 
-                    background: 'rgba(0,0,0,0.2)', 
-                    padding: '16px', 
-                    borderRadius: '12px', 
-                    fontSize: '14px', 
-                    color: 'var(--text-dim)', 
-                    lineHeight: '1.6',
-                    whiteSpace: 'pre-wrap'
-                  }}>
-                    {query.message}
-                  </div>
-                </div>
-
-                {/* Actions row */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                  {query.status !== 'resolved' && (
-                    <button 
-                      onClick={() => handleUpdateQueryStatus(query.id, 'resolved')}
-                      style={{ 
-                        background: 'rgba(16, 185, 129, 0.1)', 
-                        border: 'none', 
-                        color: '#10b981', 
-                        padding: '8px 16px', 
-                        borderRadius: '8px', 
-                        fontSize: '12px', 
-                        fontWeight: '700', 
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseOver={e => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)'}
-                      onMouseOut={e => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'}
-                    >
-                      ✓ Mark Resolved
-                    </button>
-                  )}
-                  {query.status !== 'spam' && (
-                    <button 
-                      onClick={() => handleUpdateQueryStatus(query.id, 'spam')}
-                      style={{ 
-                        background: 'rgba(239, 68, 68, 0.05)', 
-                        border: 'none', 
-                        color: '#ef4444', 
-                        padding: '8px 16px', 
-                        borderRadius: '8px', 
-                        fontSize: '12px', 
-                        fontWeight: '700', 
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseOver={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
-                      onMouseOut={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)'}
-                    >
-                      ⚠ Mark Spam
-                    </button>
-                  )}
-                  {query.status !== 'pending' && (
-                    <button 
-                      onClick={() => handleUpdateQueryStatus(query.id, 'pending')}
-                      style={{ 
-                        background: 'rgba(255, 255, 255, 0.05)', 
-                        border: 'none', 
-                        color: 'var(--text-dim)', 
-                        padding: '8px 16px', 
-                        borderRadius: '8px', 
-                        fontSize: '12px', 
-                        fontWeight: '700', 
-                        cursor: 'pointer' 
-                      }}
-                    >
-                      Reopen
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
         </div>
       ) : (
