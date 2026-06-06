@@ -96,7 +96,21 @@ export default async function handler(req, res) {
       throw new Error(`Invalid planId: ${planId}`);
     }
 
-    const expectedAmountPaise = expectedPlan.amount * 100;
+    let expectedAmountPaise = expectedPlan.amount * 100;
+
+    // Check for Upgrade: half_yearly (Super Saver) to yearly (Mega Saver) for 8 INR
+    if (planId === 'yearly' && db && uid) {
+      const userDoc = await db.collection('users').doc(uid).get();
+      const userData = userDoc.data() || {};
+      const currentPlan = userData.premiumPlan || (userData.subscription && userData.subscription.planType);
+      const isActive = userData.premium || (userData.subscription && userData.subscription.status === 'active');
+      
+      if (isActive && currentPlan === 'half_yearly') {
+        expectedAmountPaise = 8 * 100; // Adjusted price to 8 INR
+        console.log(`✨ [PaymentVerification] Detected half_yearly to yearly upgrade. Expecting 8 INR.`);
+      }
+    }
+
     if (order.amount !== expectedAmountPaise) {
       console.error(`❌ [PaymentVerification] Amount mismatch! Expected ${expectedAmountPaise}, got ${order.amount}`);
       return res.status(400).json({ 

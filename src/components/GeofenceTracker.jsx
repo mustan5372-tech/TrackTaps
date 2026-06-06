@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 import geofenceService, {
   parseLatitude,
@@ -10,7 +11,12 @@ import geofenceService, {
 import AttendanceEngine from '../services/attendanceEngine';
 
 export default function GeofenceTracker() {
-  const { calendarEvents, attendanceData, setAttendanceData, pushToCloud } = useAppStore();
+  const navigate = useNavigate();
+  const { calendarEvents, attendanceData, setAttendanceData, pushToCloud, subscription, role } = useAppStore();
+  
+  const isMegaSaver = subscription && subscription.status === 'active' && subscription.planType === 'yearly';
+  const isAdmin = role === 'owner' || role === 'core_admin';
+  const hasAccess = isMegaSaver || isAdmin;
   
   // Local states for configuration
   const [enabled, setEnabled] = useState(false);
@@ -219,7 +225,7 @@ export default function GeofenceTracker() {
 
   // Set up geolocation tracking when enabled
   useEffect(() => {
-    if (enabled) {
+    if (enabled && hasAccess) {
       if (typeof window !== 'undefined' && 'geolocation' in navigator) {
         geofenceService.logEvent('Initializing GPS listener...', 'info');
         watchIdRef.current = navigator.geolocation.watchPosition(
@@ -243,7 +249,7 @@ export default function GeofenceTracker() {
         geofenceService.logEvent('GPS listener stopped.', 'info');
       }
     }
-  }, [enabled]);
+  }, [enabled, hasAccess]);
 
   // Fetch current GPS coordinates from device sensors
   const handleFetchCurrentLocation = () => {
@@ -497,31 +503,50 @@ export default function GeofenceTracker() {
           </p>
         </div>
         <div 
-          onClick={() => setEnabled(!enabled)}
+          onClick={() => {
+            if (!hasAccess) {
+              navigate('/premium');
+              return;
+            }
+            setEnabled(!enabled);
+          }}
           style={{
             width: '56px',
             height: '32px',
-            background: enabled ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)' : 'rgba(255,255,255,0.08)',
+            background: !hasAccess ? 'rgba(255,255,255,0.04)' : enabled ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)' : 'rgba(255,255,255,0.08)',
             borderRadius: '100px',
             padding: '4px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: enabled ? 'flex-end' : 'flex-start',
+            justifyContent: !hasAccess ? 'center' : enabled ? 'flex-end' : 'flex-start',
             transition: 'background 0.3s',
-            boxShadow: enabled ? '0 0 15px var(--primary-glow)' : 'none',
+            boxShadow: (hasAccess && enabled) ? '0 0 15px var(--primary-glow)' : 'none',
             boxSizing: 'border-box'
           }}
         >
-          <motion.div 
-            layout 
-            style={{ width: '24px', height: '24px', background: 'white', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }} 
-          />
+          {!hasAccess ? (
+            <span style={{ fontSize: '12px' }}>🔒</span>
+          ) : (
+            <motion.div 
+              layout 
+              style={{ width: '24px', height: '24px', background: 'white', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }} 
+            />
+          )}
         </div>
       </div>
 
-      {/* 📍 Settings Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+      {/* 📍 Settings Cards & Simulator Wrapper */}
+      <div style={{ position: 'relative', minHeight: '300px' }}>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1fr', 
+          gap: '20px',
+          filter: !hasAccess ? 'blur(6px)' : 'none',
+          pointerEvents: !hasAccess ? 'none' : 'auto',
+          userSelect: !hasAccess ? 'none' : 'auto',
+          transition: 'filter 0.3s ease'
+        }}>
         
         {/* Coordinates Form */}
         <div className="dashboard-card" style={{ padding: '24px' }}>
@@ -895,6 +920,69 @@ export default function GeofenceTracker() {
           )}
         </div>
       </div>
+
+      {/* 🔒 Paywall Lock Overlay */}
+      {!hasAccess && (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px',
+          boxSizing: 'border-box'
+        }}>
+          <div className="dashboard-card" style={{
+            maxWidth: '460px',
+            width: '100%',
+            padding: '40px 32px',
+            textAlign: 'center',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%)',
+            border: '1.5px solid rgba(245, 158, 11, 0.4)',
+            borderRadius: '24px',
+            boxShadow: '0 30px 60px rgba(0,0,0,0.6), 0 0 40px rgba(245, 158, 11, 0.15)',
+            boxSizing: 'border-box'
+          }}>
+            <div style={{ fontSize: '64px', marginBottom: '20px', filter: 'drop-shadow(0 0 10px rgba(245, 158, 11, 0.4))' }}>🔒</div>
+            <h3 style={{ fontSize: '22px', fontWeight: '850', marginBottom: '14px', color: '#f59e0b', letterSpacing: '-0.01em' }}>
+              Mega Saver Exclusive Feature
+            </h3>
+            <p style={{
+              color: 'var(--text-dim)',
+              fontSize: '13.5px',
+              lineHeight: 1.6,
+              marginBottom: '30px',
+              padding: '0 8px'
+            }}>
+              GeoTrack Auto-Attendance automatically monitors your campus arrivals using college coordinates and Wi-Fi SSID connections, and logs attendance instantly.
+            </p>
+            
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate('/premium')}
+              style={{
+                width: '100%',
+                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                color: 'white',
+                border: 'none',
+                padding: '16px',
+                borderRadius: '16px',
+                fontWeight: '800',
+                fontSize: '14px',
+                cursor: 'pointer',
+                boxShadow: '0 8px 24px rgba(245, 158, 11, 0.3)'
+              }}
+            >
+              {subscription && subscription.status === 'active' && subscription.planType === 'half_yearly' 
+                ? 'Upgrade to Mega Saver for ₹8' 
+                : 'Unlock Mega Saver for ₹15/year'}
+            </motion.button>
+          </div>
+        </div>
+      )}
+    </div>
 
       <style>{`
         @keyframes pulse {

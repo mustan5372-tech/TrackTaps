@@ -152,13 +152,16 @@ function Premium() {
     setLoading(true);
     setSelectedPlan(plan.id);
 
+    const isSuperSaverActive = subscription && subscription.status === 'active' && subscription.planType === 'half_yearly';
+    const finalPrice = (plan.id === 'yearly' && isSuperSaverActive) ? 8 : plan.price;
+
     try {
-      console.log(`🎁 [Checkout] Starting payment for: ${plan.name} (₹${plan.price})`);
+      console.log(`🎁 [Checkout] Starting payment for: ${plan.name} (₹${finalPrice})`);
       
       const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: plan.price, planId: plan.id })
+        body: JSON.stringify({ amount: finalPrice, planId: plan.id })
       });
 
       if (!orderResponse.ok) throw new Error('Failed to create order');
@@ -186,7 +189,7 @@ function Premium() {
                 razorpay_signature: response.razorpay_signature,
                 uid: user.uid,
                 planId: plan.id,
-                amount: plan.price
+                amount: finalPrice
               })
             });
 
@@ -288,72 +291,83 @@ function Premium() {
 
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div className="plans-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px', marginBottom: '100px' }}>
-          {PLANS.map((plan, i) => (
-            <motion.div
-              key={plan.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.15 }}
-              whileHover={{ y: -12 }}
-              viewport={{ once: true }}
-              style={{
-                padding: '48px 32px',
-                borderRadius: '32px',
-                background: 'rgba(15, 23, 42, 0.6)',
-                backdropFilter: 'blur(20px)',
-                border: plan.bestValue ? '2px solid #f59e0b' : plan.popular ? '2px solid var(--primary-light)' : '1px solid rgba(255,255,255,0.1)',
-                display: 'flex',
-                flexDirection: 'column',
-                position: 'relative',
-                boxShadow: plan.bestValue ? '0 20px 50px rgba(245, 158, 11, 0.15)' : plan.popular ? '0 20px 50px rgba(139, 92, 246, 0.15)' : '0 20px 40px rgba(0,0,0,0.3)'
-              }}
-            >
-              {(plan.bestValue || plan.popular) && (
-                <div style={{ position: 'absolute', top: '20px', right: '20px', background: plan.bestValue ? '#f59e0b' : 'var(--primary-light)', color: 'white', padding: '6px 16px', borderRadius: '100px', fontSize: '11px', fontWeight: '900', textTransform: 'uppercase' }}>
-                  {plan.bestValue ? 'Best Value' : 'Popular'}
-                </div>
-              )}
-
-              <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>{plan.name}</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '32px', minHeight: '40px' }}>{plan.description}</p>
-              
-              <div style={{ marginBottom: '40px' }}>
-                <span style={{ fontSize: '56px', fontWeight: '900' }}>₹{plan.price}</span>
-                <span style={{ color: 'var(--text-muted)', fontSize: '16px', marginLeft: '4px' }}>/ {plan.id === 'monthly' ? 'month' : plan.id === 'yearly' ? 'year' : '6 months'}</span>
-              </div>
-
-              <div style={{ flex: 1, marginBottom: '40px' }}>
-                {plan.features.map((feat, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', color: '#cbd5e1', fontSize: '15px' }}>
-                    <div style={{ minWidth: '20px', height: '20px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className="fas fa-check" style={{ color: '#10b981', fontSize: '10px' }}></i>
-                    </div>
-                    {feat}
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => handleUpgrade(plan)}
-                disabled={loading || (subscription && subscription.status === 'active' && subscription.planType === plan.id)}
+          {PLANS.map((plan, i) => {
+            const isSuperSaverActive = subscription && subscription.status === 'active' && subscription.planType === 'half_yearly';
+            const displayPrice = (plan.id === 'yearly' && isSuperSaverActive) ? 8 : plan.price;
+            const isCurrentPlan = subscription && subscription.status === 'active' && subscription.planType === plan.id;
+            
+            return (
+              <motion.div
+                key={plan.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.15 }}
+                whileHover={{ y: -12 }}
+                viewport={{ once: true }}
                 style={{
-                  width: '100%',
-                  padding: '18px',
-                  borderRadius: '16px',
-                  background: (subscription && subscription.status === 'active' && subscription.planType === plan.id) ? 'rgba(255,255,255,0.05)' : plan.color,
-                  color: 'white',
-                  border: 'none',
-                  fontWeight: '800',
-                  fontSize: '16px',
-                  cursor: (loading || (subscription && subscription.status === 'active' && subscription.planType === plan.id)) ? 'default' : 'pointer',
-                  boxShadow: (subscription && subscription.status === 'active' && subscription.planType === plan.id) ? 'none' : `0 8px 24px ${plan.color}40`,
-                  transition: 'all 0.3s ease'
+                  padding: '48px 32px',
+                  borderRadius: '32px',
+                  background: 'rgba(15, 23, 42, 0.6)',
+                  backdropFilter: 'blur(20px)',
+                  border: plan.bestValue ? '2px solid #f59e0b' : plan.popular ? '2px solid var(--primary-light)' : '1px solid rgba(255,255,255,0.1)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  position: 'relative',
+                  boxShadow: plan.bestValue ? '0 20px 50px rgba(245, 158, 11, 0.15)' : plan.popular ? '0 20px 50px rgba(139, 92, 246, 0.15)' : '0 20px 40px rgba(0,0,0,0.3)'
                 }}
               >
-                {(subscription && subscription.status === 'active' && subscription.planType === plan.id) ? 'Current Plan' : loading && selectedPlan === plan.id ? 'Starting Checkout...' : `Upgrade to ${plan.name}`}
-              </button>
-            </motion.div>
-          ))}
+                {(plan.bestValue || plan.popular) && (
+                  <div style={{ position: 'absolute', top: '20px', right: '20px', background: plan.bestValue ? '#f59e0b' : 'var(--primary-light)', color: 'white', padding: '6px 16px', borderRadius: '100px', fontSize: '11px', fontWeight: '900', textTransform: 'uppercase' }}>
+                    {plan.bestValue ? 'Best Value' : 'Popular'}
+                  </div>
+                )}
+
+                <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>{plan.name}</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '32px', minHeight: '40px' }}>{plan.description}</p>
+                
+                <div style={{ marginBottom: '40px' }}>
+                  <span style={{ fontSize: '56px', fontWeight: '900' }}>₹{displayPrice}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '16px', marginLeft: '4px' }}>/ {plan.id === 'monthly' ? 'month' : plan.id === 'yearly' ? 'year' : '6 months'}</span>
+                  {plan.id === 'yearly' && isSuperSaverActive && (
+                    <div style={{ color: '#f59e0b', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginTop: '8px', letterSpacing: '0.05em' }}>
+                      Special Upgrade Offer (Save ₹7)
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ flex: 1, marginBottom: '40px' }}>
+                  {plan.features.map((feat, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', color: '#cbd5e1', fontSize: '15px' }}>
+                      <div style={{ minWidth: '20px', height: '20px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <i className="fas fa-check" style={{ color: '#10b981', fontSize: '10px' }}></i>
+                      </div>
+                      {feat}
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => handleUpgrade(plan)}
+                  disabled={loading || isCurrentPlan}
+                  style={{
+                    width: '100%',
+                    padding: '18px',
+                    borderRadius: '16px',
+                    background: isCurrentPlan ? 'rgba(255,255,255,0.05)' : plan.color,
+                    color: 'white',
+                    border: 'none',
+                    fontWeight: '800',
+                    fontSize: '16px',
+                    cursor: (loading || isCurrentPlan) ? 'default' : 'pointer',
+                    boxShadow: isCurrentPlan ? 'none' : `0 8px 24px ${plan.color}40`,
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  {isCurrentPlan ? 'Current Plan' : loading && selectedPlan === plan.id ? 'Starting Checkout...' : (plan.id === 'yearly' && isSuperSaverActive) ? 'Upgrade to Mega Saver for ₹8' : `Upgrade to ${plan.name}`}
+                </button>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Premium Trust Signals */}
