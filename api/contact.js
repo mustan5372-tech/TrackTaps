@@ -24,13 +24,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, email, subject, category, message, timestamp } = req.body;
+    const { name, email, phoneNumber, subject, category, message, timestamp } = req.body;
 
-    console.log('📧 Contact form submission received:', { name, email, subject, category });
+    console.log('📧 Contact form submission received:', { name, email, phoneNumber, subject, category });
 
     // Validate required fields
-    if (!name || !email || !subject || !message) {
-      console.warn('❌ Missing required fields:', { name, email, subject, message });
+    if (!name || !email || !phoneNumber || !subject || !message) {
+      console.warn('❌ Missing required fields:', { name, email, phoneNumber, subject, message });
       return res.status(400).json({ 
         success: false,
         message: 'Missing required fields' 
@@ -162,6 +162,11 @@ export default async function handler(req, res) {
       <div class="field">
         <span class="field-label">📧 Email Address</span>
         <div class="field-value"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">📞 Phone Number</span>
+        <div class="field-value">${escapeHtml(phoneNumber || 'Not provided')}</div>
       </div>
 
       <div class="field">

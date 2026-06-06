@@ -21,11 +21,13 @@ function Admin() {
       fetchAdminData();
       fetchReports();
       fetchVisitorAnalytics();
+      fetchSupportQueries();
     }
   }, [user, role, navigate]);
 
   const [reports, setReports] = useState([]);
   const [users, setUsers] = useState([]);
+  const [queries, setQueries] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -34,7 +36,7 @@ function Admin() {
     activeSubscriptions: 0
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('users'); // 'users', 'reports', or 'analytics'
+  const [activeTab, setActiveTab] = useState('users'); // 'users', 'reports', 'queries', or 'analytics'
 
   const [visitorSessions, setVisitorSessions] = useState([]);
   const [visitorStats, setVisitorStats] = useState({
@@ -164,6 +166,37 @@ function Admin() {
       setReports(reportList);
     } catch (err) {
       console.error("Failed to fetch reports:", err);
+    }
+  };
+
+  const fetchSupportQueries = async () => {
+    try {
+      const qSnap = await getDocs(collection(db, "support_queries"));
+      const queryList = [];
+      qSnap.forEach(docSnap => {
+        queryList.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
+      });
+      // Sort queries by timestamp descending
+      queryList.sort((a, b) => new Date(b.timestamp || b.createdAt) - new Date(a.timestamp || a.createdAt));
+      setQueries(queryList);
+    } catch (err) {
+      console.error("Failed to fetch support queries:", err);
+    }
+  };
+
+  const handleUpdateQueryStatus = async (queryId, newStatus) => {
+    try {
+      const queryRef = doc(db, "support_queries", queryId);
+      await updateDoc(queryRef, { status: newStatus });
+      
+      // Update local state
+      setQueries(prev => prev.map(q => q.id === queryId ? { ...q, status: newStatus } : q));
+    } catch (err) {
+      console.error(`Failed to update query status to ${newStatus}:`, err);
+      alert("Error updating query status.");
     }
   };
 
@@ -430,7 +463,21 @@ function Admin() {
             📊 Analytics
           </button>
           <button 
-            onClick={() => { fetchAdminData(); fetchReports(); fetchVisitorAnalytics(); }}
+            onClick={() => setActiveTab('queries')}
+            style={{ 
+              padding: '10px 20px', 
+              background: activeTab === 'queries' ? 'var(--primary)' : 'var(--surface-glass)', 
+              border: '1px solid var(--primary-glow)',
+              borderRadius: '12px',
+              color: activeTab === 'queries' ? 'white' : 'var(--text-dim)',
+              fontWeight: '700',
+              cursor: 'pointer'
+            }}
+          >
+            📬 Queries {queries.filter(q => q.status === 'pending').length > 0 && `(${queries.filter(q => q.status === 'pending').length})`}
+          </button>
+          <button 
+            onClick={() => { fetchAdminData(); fetchReports(); fetchVisitorAnalytics(); fetchSupportQueries(); }}
             style={{ 
               padding: '10px', 
               background: 'var(--surface-glass)', 
@@ -727,6 +774,197 @@ function Admin() {
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                       Owner Action Required
                     </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : activeTab === 'queries' ? (
+        <div className="dashboard-card" style={{ padding: '32px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>📬 Contact & Support Queries</span>
+            <span style={{ fontSize: '12px', background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '4px 12px', borderRadius: '100px' }}>
+              {queries.filter(q => q.status === 'pending').length} Pending
+            </span>
+          </h3>
+
+          <div style={{ display: 'grid', gap: '20px' }}>
+            {queries.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>No support queries or feedback logged.</p>
+            ) : queries.map(query => (
+              <div key={query.id} style={{ 
+                background: query.status === 'spam' 
+                  ? 'rgba(239, 68, 68, 0.02)' 
+                  : query.status === 'resolved' 
+                    ? 'rgba(16, 185, 129, 0.02)' 
+                    : 'rgba(255,255,255,0.02)', 
+                border: query.status === 'spam' 
+                  ? '1.5px dashed rgba(239, 68, 68, 0.2)' 
+                  : query.status === 'resolved' 
+                    ? '1.5px solid rgba(16, 185, 129, 0.2)' 
+                    : '1.5px solid rgba(255,255,255,0.05)', 
+                borderRadius: '20px', 
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                transition: 'all 0.3s ease'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    {/* User Name & Topic */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                      <span style={{ fontWeight: '800', color: 'var(--text-main)', fontSize: '16px' }}>{query.name}</span>
+                      <span style={{ 
+                        fontSize: '11px', 
+                        background: 'rgba(139, 92, 246, 0.15)', 
+                        color: 'var(--primary-light)', 
+                        padding: '3px 10px', 
+                        borderRadius: '100px', 
+                        fontWeight: '700',
+                        textTransform: 'uppercase'
+                      }}>
+                        {query.category === 'support' ? '🆘 Support' : query.category === 'bug' ? '🐛 Bug' : query.category === 'feature' ? '✨ Feature' : '💬 Feedback'}
+                      </span>
+                      <span style={{ 
+                        fontSize: '11px', 
+                        background: query.status === 'resolved' ? 'rgba(16, 185, 129, 0.15)' : query.status === 'spam' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)', 
+                        color: query.status === 'resolved' ? '#10b981' : query.status === 'spam' ? '#ef4444' : '#f59e0b', 
+                        padding: '3px 10px', 
+                        borderRadius: '100px', 
+                        fontWeight: '700',
+                        textTransform: 'uppercase'
+                      }}>
+                        {query.status || 'pending'}
+                      </span>
+                    </div>
+                    
+                    {/* User Email & Phone Number */}
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div>📧 Email: <a href={`mailto:${query.email}`} style={{ color: 'var(--primary-light)', textDecoration: 'none' }}>{query.email}</a></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>📞 Phone: <strong style={{ color: 'var(--text-main)' }}>{query.phoneNumber}</strong></span>
+                        <a 
+                          href={`tel:${query.phoneNumber}`} 
+                          title="Call User"
+                          style={{
+                            background: 'rgba(16, 185, 129, 0.1)',
+                            color: '#10b981',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            textDecoration: 'none',
+                            fontWeight: '600'
+                          }}
+                        >
+                          📞 Call
+                        </a>
+                        <a 
+                          href={`https://wa.me/${query.phoneNumber.replace(/[^0-9]/g, '')}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          title="Message on WhatsApp"
+                          style={{
+                            background: 'rgba(37, 211, 102, 0.1)',
+                            color: '#25D366',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            textDecoration: 'none',
+                            fontWeight: '600'
+                          }}
+                        >
+                          💬 WhatsApp
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Submit time */}
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    Logged: {query.timestamp ? new Date(query.timestamp).toLocaleString() : 'Just now'}
+                  </div>
+                </div>
+
+                <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.05)', margin: '0' }} />
+
+                {/* Subject & Message details */}
+                <div>
+                  <div style={{ fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px', fontSize: '14px' }}>
+                    Subject: {query.subject}
+                  </div>
+                  <div style={{ 
+                    background: 'rgba(0,0,0,0.2)', 
+                    padding: '16px', 
+                    borderRadius: '12px', 
+                    fontSize: '14px', 
+                    color: 'var(--text-dim)', 
+                    lineHeight: '1.6',
+                    whiteSpace: 'pre-wrap'
+                  }}>
+                    {query.message}
+                  </div>
+                </div>
+
+                {/* Actions row */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                  {query.status !== 'resolved' && (
+                    <button 
+                      onClick={() => handleUpdateQueryStatus(query.id, 'resolved')}
+                      style={{ 
+                        background: 'rgba(16, 185, 129, 0.1)', 
+                        border: 'none', 
+                        color: '#10b981', 
+                        padding: '8px 16px', 
+                        borderRadius: '8px', 
+                        fontSize: '12px', 
+                        fontWeight: '700', 
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseOver={e => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)'}
+                      onMouseOut={e => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'}
+                    >
+                      ✓ Mark Resolved
+                    </button>
+                  )}
+                  {query.status !== 'spam' && (
+                    <button 
+                      onClick={() => handleUpdateQueryStatus(query.id, 'spam')}
+                      style={{ 
+                        background: 'rgba(239, 68, 68, 0.05)', 
+                        border: 'none', 
+                        color: '#ef4444', 
+                        padding: '8px 16px', 
+                        borderRadius: '8px', 
+                        fontSize: '12px', 
+                        fontWeight: '700', 
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseOver={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                      onMouseOut={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)'}
+                    >
+                      ⚠ Mark Spam
+                    </button>
+                  )}
+                  {query.status !== 'pending' && (
+                    <button 
+                      onClick={() => handleUpdateQueryStatus(query.id, 'pending')}
+                      style={{ 
+                        background: 'rgba(255, 255, 255, 0.05)', 
+                        border: 'none', 
+                        color: 'var(--text-dim)', 
+                        padding: '8px 16px', 
+                        borderRadius: '8px', 
+                        fontSize: '12px', 
+                        fontWeight: '700', 
+                        cursor: 'pointer' 
+                      }}
+                    >
+                      Reopen
+                    </button>
                   )}
                 </div>
               </div>

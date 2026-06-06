@@ -4,6 +4,7 @@ function ContactUs() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phoneNumber: '',
     subject: '',
     category: 'support',
     message: ''
@@ -45,6 +46,14 @@ function ContactUs() {
       setError('Please enter a valid email address');
       return false;
     }
+    if (!formData.phoneNumber.trim()) {
+      setError('Please enter your phone number');
+      return false;
+    }
+    if (!/^\+?[0-9\s\-()]{10,20}$/.test(formData.phoneNumber.trim())) {
+      setError('Please enter a valid phone number (at least 10 digits)');
+      return false;
+    }
     if (!formData.subject.trim()) {
       setError('Please enter a subject');
       return false;
@@ -75,7 +84,24 @@ function ContactUs() {
     setError('');
 
     try {
-      // Direct API Submission (No mailto fallback as requested)
+      // 1. Direct write to Firestore 'support_queries'
+      const { addDoc, collection } = await import('firebase/firestore');
+      const { db } = await import('../services/firebase');
+      
+      console.log('🔥 Writing contact query directly to Firestore support_queries...');
+      await addDoc(collection(db, 'support_queries'), {
+        name: formData.name,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        subject: formData.subject,
+        category: formData.category,
+        message: formData.message,
+        status: 'pending',
+        timestamp: new Date().toISOString(),
+        createdAt: new Date()
+      });
+
+      // 2. Direct API Submission (No mailto fallback as requested)
       const apiUrl = '/api/contact';
       
       console.log('📤 Sending secure feedback directly from website...');
@@ -96,14 +122,13 @@ function ContactUs() {
 
       if (response.ok && data.success) {
         setSubmitted(true);
-        showToastMessage('✅ Your message has been sent directly to the team!', 'success');
+        showToastMessage('✅ Your query has been logged and sent directly to the team!', 'success');
         resetForm();
       } else {
-        // Handle specific server-side configuration issues
-        if (data.message && data.message.includes('not configured')) {
-          throw new Error('Email service is currently being configured. Please check back in a few minutes.');
-        }
-        throw new Error(data.message || 'Failed to send message via website. Please try again later.');
+        // Fallback: If email delivery fails, the query is still logged in Firestore successfully!
+        setSubmitted(true);
+        showToastMessage('✅ Your query was successfully logged in our system!', 'success');
+        resetForm();
       }
 
     } catch (err) {
@@ -119,6 +144,7 @@ function ContactUs() {
       setFormData({
         name: '',
         email: '',
+        phoneNumber: '',
         subject: '',
         category: 'support',
         message: ''
@@ -262,6 +288,51 @@ function ContactUs() {
                 e.target.style.background = 'rgba(15, 23, 42, 0.5)';
               }}
             />
+          </div>
+
+          {/* Phone Number Field */}
+          <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: 'var(--text-main)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              <span>📞</span> Phone Number
+            </label>
+            <input
+              type="tel"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              placeholder="e.g. +91 9876543210"
+              style={{
+                background: 'rgba(15, 23, 42, 0.5)',
+                border: '1px solid var(--primary-glow)',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                color: 'var(--text-main)',
+                fontSize: '14px',
+                transition: 'all 0.3s ease',
+                outline: 'none',
+                boxShadow: '0 0 0 0 rgba(139, 92, 246, 0)'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'rgba(139, 92, 246, 0.6)';
+                e.target.style.boxShadow = '0 0 0 3px var(--primary-glow)';
+                e.target.style.background = 'rgba(15, 23, 42, 0.8)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'var(--primary-glow)';
+                e.target.style.boxShadow = '0 0 0 0 rgba(139, 92, 246, 0)';
+                e.target.style.background = 'rgba(15, 23, 42, 0.5)';
+              }}
+            />
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+              🔒 Note: Your phone number is only visible to admins to help resolve your query.
+            </span>
           </div>
 
           {/* Subject Field */}
