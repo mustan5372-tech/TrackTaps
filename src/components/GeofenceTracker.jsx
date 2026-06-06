@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAppStore from '../store/appStore';
-import geofenceService from '../services/geofenceService';
+import geofenceService, {
+  parseLatitude,
+  parseLongitude,
+  formatLatitudeDisplay,
+  formatLongitudeDisplay
+} from '../services/geofenceService';
 import AttendanceEngine from '../services/attendanceEngine';
 
 export default function GeofenceTracker() {
@@ -14,14 +19,21 @@ export default function GeofenceTracker() {
   const [radius, setRadius] = useState(100);
   const [wifiSsid, setWifiSsid] = useState('');
   const [logs, setLogs] = useState([]);
+
+  // Coordinate string inputs supporting decimal degrees and suffix N/S/E/W
+  const [latInput, setLatInput] = useState('');
+  const [lngInput, setLngInput] = useState('');
   
   // Simulation states
   const [simulatedInside, setSimulatedInside] = useState(false);
   const [simulatedWifi, setSimulatedWifi] = useState('');
   const [activePromptClass, setActivePromptClass] = useState(null);
   
-  // Geolocation watch ID
+  // Geolocation watch ID & Leaflet Map instances
   const watchIdRef = useRef(null);
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const circleRef = useRef(null);
 
   // Load configuration on mount
   useEffect(() => {
@@ -32,6 +44,9 @@ export default function GeofenceTracker() {
     setRadius(config.radius);
     setWifiSsid(config.wifiSsid);
     setLogs(config.logs);
+
+    setLatInput(formatLatitudeDisplay(config.lat));
+    setLngInput(formatLongitudeDisplay(config.lng));
 
     // Listen for log updates in real-time
     const handleLogsUpdate = (e) => {
@@ -53,6 +68,154 @@ export default function GeofenceTracker() {
       }
     };
   }, []);
+
+  // Initialize and Sync Leaflet Map
+  useEffect(() => {
+    let isMounted = true;
+    
+    const initLeafletMap = () => {
+      if (!window.L) return;
+      const container = document.getElementById('geofence-map');
+      if (!container) return;
+      
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      
+      const mapLat = lat || 19.123000;
+      const mapLng = lng || 72.877000;
+      
+      const map = window.L.map('geofence-map', {
+        zoomControl: true,
+        attributionControl: false
+      }).setView([mapLat, mapLng], 15);
+      
+      mapRef.current = map;
+      
+      // Load dark-themed CartoDB tiles
+      window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19
+      }).addTo(map);
+      
+      // Custom neon pin marker HTML style
+      const pinStyle = `
+        background-color: #8b5cf6;
+        width: 18px;
+        height: 18px;
+        display: block;
+        left: -9px;
+        top: -9px;
+        position: relative;
+        border-radius: 50%;
+        border: 2.5px solid #ffffff;
+        box-shadow: 0 0 15px #8b5cf6, 0 0 5px rgba(255,255,255,0.5);
+      `;
+      
+      const pinIcon = window.L.divIcon({
+        className: 'custom-leaflet-marker',
+        iconAnchor: [0, 0],
+        html: `<span style="${pinStyle}" />`
+      });
+
+      // Add marker at specified coordinates
+      const marker = window.L.marker([mapLat, mapLng], {
+        draggable: true,
+        icon: pinIcon
+      }).addTo(map);
+      markerRef.current = marker;
+      
+      // Add circle representing geofence radius
+      const circle = window.L.circle([mapLat, mapLng], {
+        color: '#8b5cf6',
+        fillColor: '#8b5cf6',
+        fillOpacity: 0.15,
+        weight: 1.5,
+        radius: radius
+      }).addTo(map);
+      circleRef.current = circle;
+      
+      // Listen to marker drag events to update values
+      marker.on('drag', (e) => {
+        const pos = marker.getLatLng();
+        circle.setLatLng(pos);
+        if (isMounted) {
+          const newLat = parseFloat(pos.lat.toFixed(6));
+          const newLng = parseFloat(pos.lng.toFixed(6));
+          setLat(newLat);
+          setLng(newLng);
+          setLatInput(formatLatitudeDisplay(newLat));
+          setLngInput(formatLongitudeDisplay(newLng));
+        }
+      });
+
+      // Listen to map clicks to re-center target location
+      map.on('click', (e) => {
+        const { lat: clickLat, lng: clickLng } = e.latlng;
+        const newLat = parseFloat(clickLat.toFixed(6));
+        const newLng = parseFloat(clickLng.toFixed(6));
+        
+        marker.setLatLng([newLat, newLng]);
+        circle.setLatLng([newLat, newLng]);
+        
+        if (isMounted) {
+          setLat(newLat);
+          setLng(newLng);
+          setLatInput(formatLatitudeDisplay(newLat));
+          setLngInput(formatLongitudeDisplay(newLng));
+        }
+        geofenceService.logEvent('Marker positioned via map click.', 'info');
+      });
+    };
+
+    // Load Leaflet CDN script/css dynamically
+    if (typeof window !== 'undefined') {
+      if (!window.L) {
+        if (!document.getElementById('leaflet-css')) {
+          const link = document.createElement('link');
+          link.id = 'leaflet-css';
+          link.rel = 'stylesheet';
+          link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+          document.head.appendChild(link);
+        }
+        if (!document.getElementById('leaflet-js')) {
+          const script = document.createElement('script');
+          script.id = 'leaflet-js';
+          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          script.onload = () => {
+            if (isMounted) initLeafletMap();
+          };
+          document.body.appendChild(script);
+        }
+      } else {
+        initLeafletMap();
+      }
+    }
+
+    return () => {
+      isMounted = false;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
+  // Synchronize Leaflet marker & circle with state updates (typed coordinate changes or captured location)
+  useEffect(() => {
+    if (mapRef.current && markerRef.current && circleRef.current) {
+      const mapLat = lat || 19.123000;
+      const mapLng = lng || 72.877000;
+      
+      const currentPos = markerRef.current.getLatLng();
+      if (currentPos.lat !== mapLat || currentPos.lng !== mapLng) {
+        markerRef.current.setLatLng([mapLat, mapLng]);
+        circleRef.current.setLatLng([mapLat, mapLng]);
+        mapRef.current.panTo([mapLat, mapLng]);
+      }
+      circleRef.current.setRadius(radius);
+    }
+  }, [lat, lng, radius]);
 
   // Set up geolocation tracking when enabled
   useEffect(() => {
@@ -82,14 +245,18 @@ export default function GeofenceTracker() {
     }
   }, [enabled]);
 
-  // Fetch current GPS coordinates
+  // Fetch current GPS coordinates from device sensors
   const handleFetchCurrentLocation = () => {
     if (typeof window !== 'undefined' && 'geolocation' in navigator) {
       geofenceService.logEvent('Fetching current GPS coordinates...', 'info');
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLat(parseFloat(position.coords.latitude.toFixed(6)));
-          setLng(parseFloat(position.coords.longitude.toFixed(6)));
+          const currentLat = parseFloat(position.coords.latitude.toFixed(6));
+          const currentLng = parseFloat(position.coords.longitude.toFixed(6));
+          setLat(currentLat);
+          setLng(currentLng);
+          setLatInput(formatLatitudeDisplay(currentLat));
+          setLngInput(formatLongitudeDisplay(currentLng));
           geofenceService.logEvent('Successfully captured current location!', 'success');
         },
         (error) => {
@@ -103,15 +270,51 @@ export default function GeofenceTracker() {
     }
   };
 
+  // Coordinate string input handlers
+  const handleLatChange = (value) => {
+    setLatInput(value);
+    const parsed = parseLatitude(value);
+    if (!isNaN(parsed) && parsed >= -90 && parsed <= 90) {
+      setLat(parsed);
+    }
+  };
+
+  const handleLatBlur = () => {
+    const parsed = parseLatitude(latInput);
+    setLatInput(formatLatitudeDisplay(parsed));
+  };
+
+  const handleLngChange = (value) => {
+    setLngInput(value);
+    const parsed = parseLongitude(value);
+    if (!isNaN(parsed) && parsed >= -180 && parsed <= 180) {
+      setLng(parsed);
+    }
+  };
+
+  const handleLngBlur = () => {
+    const parsed = parseLongitude(lngInput);
+    setLngInput(formatLongitudeDisplay(parsed));
+  };
+
   // Save config
   const handleSaveConfig = () => {
+    const finalLat = parseLatitude(latInput);
+    const finalLng = parseLongitude(lngInput);
+
     geofenceService.saveConfig({
       enabled,
-      lat,
-      lng,
+      lat: finalLat,
+      lng: finalLng,
       radius,
       wifiSsid
     });
+    
+    setLat(finalLat);
+    setLng(finalLng);
+    setLatInput(formatLatitudeDisplay(finalLat));
+    setLngInput(formatLongitudeDisplay(finalLng));
+    
     geofenceService.logEvent('Geofence configuration saved.', 'success');
     alert('Configurations saved successfully!');
   };
@@ -327,17 +530,37 @@ export default function GeofenceTracker() {
           </h4>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+            {/* Interactive Leaflet Map Selector */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '6px' }}>
+                <span>Interactive Map Selector</span>
+                <span style={{ color: '#8b5cf6' }}>Tap Map or Drag Pin to Set</span>
+              </div>
+              <div 
+                id="geofence-map" 
+                style={{ 
+                  height: '240px', 
+                  width: '100%', 
+                  borderRadius: '16px', 
+                  border: '1px solid rgba(139, 92, 246, 0.3)',
+                  zIndex: 10,
+                  overflow: 'hidden',
+                  background: '#0a0a14'
+                }} 
+              />
+            </div>
+
             <div style={{ display: 'flex', gap: '12px' }}>
               <div style={{ flex: 1 }}>
                 <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '6px' }}>
                   College Latitude
                 </label>
                 <input
-                  type="number"
-                  step="any"
-                  value={lat || ''}
-                  onChange={(e) => setLat(parseFloat(e.target.value) || 0)}
-                  placeholder="e.g. 19.123456"
+                  type="text"
+                  value={latInput}
+                  onChange={(e) => handleLatChange(e.target.value)}
+                  onBlur={() => handleLatBlur()}
+                  placeholder="e.g. 19.123456 N"
                   style={{
                     width: '100%',
                     background: 'rgba(0,0,0,0.2)',
@@ -355,11 +578,11 @@ export default function GeofenceTracker() {
                   College Longitude
                 </label>
                 <input
-                  type="number"
-                  step="any"
-                  value={lng || ''}
-                  onChange={(e) => setLng(parseFloat(e.target.value) || 0)}
-                  placeholder="e.g. 72.987654"
+                  type="text"
+                  value={lngInput}
+                  onChange={(e) => handleLngChange(e.target.value)}
+                  onBlur={() => handleLngBlur()}
+                  placeholder="e.g. 72.987654 E"
                   style={{
                     width: '100%',
                     background: 'rgba(0,0,0,0.2)',

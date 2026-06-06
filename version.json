@@ -1,8 +1,8 @@
 {
-  "version": "1.7.0",
+  "version": "1.8.0",
   "min_required_version": "1.0.0",
   "platform": "production",
-  "last_updated": "2026-06-05",
+  "last_updated": "2026-06-06",
   "update_url": "https://www.tracktaps.online/download",
-  "changelog": "🔋 Offline Mode: Full offline manual attendance tracking support, local assets load support for native app client, and automated offline-to-online sync engine."
+  "changelog": "🗺️ Geotrack 2.0: Interactive dark-themed map coordinate selector, decimal degree coordinate syntax with N/S/E/W parsing, and expanded field tester tools."
 }

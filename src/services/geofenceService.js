@@ -2,6 +2,48 @@ import useAppStore from '../store/appStore';
 import AttendanceEngine from './attendanceEngine';
 import notificationService from './notificationService';
 
+// Parse latitude string (e.g. "19.1234 N" or "-19.1234") to numeric value
+export function parseLatitude(valStr) {
+  if (typeof valStr === 'number') return valStr;
+  if (!valStr) return 0;
+  const clean = valStr.toString().trim().toUpperCase();
+  const num = parseFloat(clean.replace(/[^0-9.-]/g, ''));
+  if (isNaN(num)) return 0;
+  if (clean.endsWith('S')) {
+    return -Math.abs(num);
+  }
+  return num;
+}
+
+// Parse longitude string (e.g. "72.9876 W" or "-72.9876") to numeric value
+export function parseLongitude(valStr) {
+  if (typeof valStr === 'number') return valStr;
+  if (!valStr) return 0;
+  const clean = valStr.toString().trim().toUpperCase();
+  const num = parseFloat(clean.replace(/[^0-9.-]/g, ''));
+  if (isNaN(num)) return 0;
+  if (clean.endsWith('W')) {
+    return -Math.abs(num);
+  }
+  return num;
+}
+
+// Format latitude numeric to display string (e.g. 19.123456 -> "19.123456° N")
+export function formatLatitudeDisplay(lat) {
+  if (lat === undefined || lat === null || isNaN(lat)) return '0.000000° N';
+  const val = Math.abs(lat).toFixed(6);
+  const suffix = lat >= 0 ? 'N' : 'S';
+  return `${val}° ${suffix}`;
+}
+
+// Format longitude numeric to display string (e.g. 72.987654 -> "72.987654° E")
+export function formatLongitudeDisplay(lng) {
+  if (lng === undefined || lng === null || isNaN(lng)) return '0.000000° E';
+  const val = Math.abs(lng).toFixed(6);
+  const suffix = lng >= 0 ? 'E' : 'W';
+  return `${val}° ${suffix}`;
+}
+
 // Haversine formula to calculate distance in meters between two lat/lng points
 export function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371e3; // Earth's radius in meters

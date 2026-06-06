@@ -1,8 +1,8 @@
 {
-  "version": "1.7.1",
+  "version": "1.8.0",
   "min_required_version": "1.0.0",
   "platform": "production",
-  "last_updated": "2026-06-05",
+  "last_updated": "2026-06-06",
   "update_url": "https://www.tracktaps.online/download",
-  "changelog": "📍 Automated Geotrack Beta: Added background college coordinates geofencing, campus Wi-Fi network recognition, diagnostics logs, and full simulation sandbox for test users."
+  "changelog": "🗺️ Geotrack 2.0: Interactive dark-themed map coordinate selector, decimal degree coordinate syntax with N/S/E/W parsing, and expanded field tester tools."
 }
