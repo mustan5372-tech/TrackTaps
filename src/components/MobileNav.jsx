@@ -99,6 +99,16 @@ function MobileNav() {
     moreItems.push({ icon: '🔐', label: 'Admin', path: '/admin' });
   }
 
+  // BETA GATE ACCESS: Show Beta Sandbox in More menu if authorized
+  const isBetaUser = !!user && (
+    user.email?.toLowerCase() === 'beta@tracktaps.online' ||
+    role === 'owner' ||
+    role === 'core_admin'
+  );
+  if (isBetaUser) {
+    moreItems.push({ icon: '🧪', label: 'Beta Sandbox', path: '/beta-test' });
+  }
+
   const isMoreActive = moreItems.some(item => location.pathname === item.path);
 
   return (
