@@ -99,14 +99,14 @@ function MobileNav() {
     moreItems.push({ icon: '🔐', label: 'Admin', path: '/admin' });
   }
 
-  // BETA GATE ACCESS: Show Beta Sandbox in More menu if authorized
-  const isBetaUser = !!user && (
-    user.email?.toLowerCase() === 'beta@tracktaps.online' ||
-    role === 'owner' ||
-    role === 'core_admin'
-  );
-  if (isBetaUser) {
-    moreItems.push({ icon: '🧪', label: 'Beta Sandbox', path: '/beta-test' });
+  // GEOTRACK ACCESS: Show GeoTrack in More menu for all users
+  if (user) {
+    const settingsIndex = moreItems.findIndex(item => item.path === '/settings');
+    if (settingsIndex !== -1) {
+      moreItems.splice(settingsIndex, 0, { icon: '📍', label: 'GeoTrack (Auto)', path: '/geotrack' });
+    } else {
+      moreItems.push({ icon: '📍', label: 'GeoTrack (Auto)', path: '/geotrack' });
+    }
   }
 
   const isMoreActive = moreItems.some(item => location.pathname === item.path);

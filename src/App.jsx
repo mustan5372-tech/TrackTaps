@@ -37,7 +37,6 @@ import OfflineBanner from './components/OfflineBanner';
 import notificationService from './services/notificationService';
 import NotificationPrompt from './components/NotificationPrompt';
 import InstagramFollowPopup from './components/InstagramFollowPopup';
-import BetaFeatureGate from './components/BetaFeatureGate';
 import GeofenceTracker from './components/GeofenceTracker';
 
 const SafeRoute = ({ children }) => {
@@ -63,12 +62,12 @@ const SafeRoute = ({ children }) => {
   );
 };
 
-const BetaSandbox = () => {
+const GeoTrackPortal = () => {
   return (
     <div style={{ padding: '24px', color: 'var(--text-main)', maxWidth: '800px', margin: '0 auto' }}>
-      <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', letterSpacing: '-0.02em' }}>🧪 Beta Sandbox</h2>
+      <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', letterSpacing: '-0.02em' }}>🗺️ GeoTrack Auto-Attendance</h2>
       <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '30px', lineHeight: '1.5' }}>
-        This is a testing environment for future beta features. You are only able to view this page because you are logged in with a Beta/Test access account!
+        Enable background geofencing and network recognition to automatically receive notifications and mark attendance when you arrive at your college campus.
       </p>
       
       <GeofenceTracker />
@@ -367,7 +366,7 @@ function App() {
           <Route path="/guide" element={<SafeRoute><Guide /></SafeRoute>} />
           <Route path="/terms" element={<SafeRoute><Terms /></SafeRoute>} />
           <Route path="/privacy" element={<SafeRoute><Privacy /></SafeRoute>} />
-          <Route path="/beta-test" element={<SafeRoute><BetaFeatureGate><BetaSandbox /></BetaFeatureGate></SafeRoute>} />
+          <Route path="/geotrack" element={<SafeRoute><GeoTrackPortal /></SafeRoute>} />
         </Routes>
       </Suspense>
     </BrowserRouter>

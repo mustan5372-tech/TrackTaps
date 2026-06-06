@@ -41,19 +41,13 @@ function Sidebar() {
     }
   }
 
-  // BETA GATE ACCESS: Show Beta Sandbox navigation link if authorized
-  const isBetaUser = !!user && (
-    user.email?.toLowerCase() === 'beta@tracktaps.online' ||
-    role === 'owner' ||
-    role === 'core_admin'
-  );
-
-  if (isBetaUser) {
+  // GEOTRACK ACCESS: Show GeoTrack Auto-attendance page for all users
+  if (user) {
     const settingsIndex = navItems.findIndex(item => item.path === '/settings');
     if (settingsIndex !== -1) {
-      navItems.splice(settingsIndex, 0, { icon: '🧪', label: 'Beta Sandbox', path: '/beta-test' });
+      navItems.splice(settingsIndex, 0, { icon: '📍', label: 'GeoTrack (Auto)', path: '/geotrack' });
     } else {
-      navItems.push({ icon: '🧪', label: 'Beta Sandbox', path: '/beta-test' });
+      navItems.push({ icon: '📍', label: 'GeoTrack (Auto)', path: '/geotrack' });
     }
   }
 

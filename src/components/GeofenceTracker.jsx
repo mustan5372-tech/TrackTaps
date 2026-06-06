@@ -678,7 +678,7 @@ export default function GeofenceTracker() {
         {/* 🛠️ Mock Field Tester / Simulator */}
         <div className="dashboard-card" style={{ padding: '24px', border: '1px dashed rgba(139, 92, 246, 0.4)' }}>
           <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🛠️</span> Beta Field Tester / Simulator
+            <span>🛠️</span> GeoTrack Field Simulator / Tester
           </h4>
           <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: 'var(--text-dim)' }}>
             Simulate location and Wi-Fi networks in real-time to test triggers without leaving your home.

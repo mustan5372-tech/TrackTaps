@@ -2,27 +2,27 @@ import useAppStore from '../store/appStore';
 import AttendanceEngine from './attendanceEngine';
 import notificationService from './notificationService';
 
-// Parse latitude string (e.g. "19.1234 N" or "-19.1234") to numeric value
+// Parse latitude string (e.g. "19.1234 N", "S 19.1234", or "-19.1234") to numeric value
 export function parseLatitude(valStr) {
   if (typeof valStr === 'number') return valStr;
   if (!valStr) return 0;
   const clean = valStr.toString().trim().toUpperCase();
   const num = parseFloat(clean.replace(/[^0-9.-]/g, ''));
   if (isNaN(num)) return 0;
-  if (clean.endsWith('S')) {
+  if (clean.includes('S') || clean.includes('SOUTH')) {
     return -Math.abs(num);
   }
   return num;
 }
 
-// Parse longitude string (e.g. "72.9876 W" or "-72.9876") to numeric value
+// Parse longitude string (e.g. "72.9876 E", "W 72.9876", or "-72.9876") to numeric value
 export function parseLongitude(valStr) {
   if (typeof valStr === 'number') return valStr;
   if (!valStr) return 0;
   const clean = valStr.toString().trim().toUpperCase();
   const num = parseFloat(clean.replace(/[^0-9.-]/g, ''));
   if (isNaN(num)) return 0;
-  if (clean.endsWith('W')) {
+  if (clean.includes('W') || clean.includes('WEST')) {
     return -Math.abs(num);
   }
   return num;
