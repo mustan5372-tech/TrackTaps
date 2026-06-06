@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
-function ContactUs() {
+function ContactUs({ initialCategory = 'support', minimal = false }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phoneNumber: '',
     subject: '',
-    category: 'support',
+    category: initialCategory,
     message: ''
   });
 
@@ -155,44 +155,49 @@ function ContactUs() {
 
   return (
     <section className="contact-us-section" style={{
-      marginTop: '48px',
+      marginTop: minimal ? '0' : '48px',
       padding: '0'
     }}>
       {/* Section Header */}
-      <div
-        style={{
-          textAlign: 'center',
-          marginBottom: '48px',
-          opacity: 1,
-          transform: 'translateY(0)'
-        }}
-      >
-        <h2 style={{
-          fontSize: '36px',
-          fontWeight: '800',
-          color: 'var(--text-main)',
-          marginBottom: '12px',
-          background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%)',
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
-        }}>
-          Need Help?
-        </h2>
-        <p style={{
-          fontSize: '16px',
-          color: 'var(--text-dim)',
-          maxWidth: '600px',
-          margin: '0 auto',
-          lineHeight: '1.6'
-        }}>
-          Send your questions, feedback, or support requests directly to the TrackTaps team.
-        </p>
-      </div>
+      {!minimal && (
+        <div
+          style={{
+            textAlign: 'center',
+            marginBottom: '48px',
+            opacity: 1,
+            transform: 'translateY(0)'
+          }}
+        >
+          <h2 style={{
+            fontSize: '36px',
+            fontWeight: '800',
+            color: 'var(--text-main)',
+            marginBottom: '12px',
+            background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            Need Help?
+          </h2>
+          <p style={{
+            fontSize: '16px',
+            color: 'var(--text-dim)',
+            maxWidth: '600px',
+            margin: '0 auto',
+            lineHeight: '1.6'
+          }}>
+            Send your questions, feedback, or support requests directly to the TrackTaps team.
+          </p>
+        </div>
+      )}
 
       {/* Contact Form Container */}
       <div
-        style={{
+        style={minimal ? {
+          opacity: 1,
+          transform: 'translateY(0)'
+        } : {
           background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%)',
           border: '1px solid var(--primary-glow)',
           borderRadius: '24px',

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Browser } from '@capacitor/browser';
+import ContactUs from '../components/ContactUs';
 
 const FAQCard = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -120,6 +121,15 @@ function Guide() {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [loadingAction, setLoadingAction] = useState(null); // 'whatsapp' | 'email' | 'bug' | 'feature' | null
   const [errorMsg, setErrorMsg] = useState('');
+  const [supportMethod, setSupportMethod] = useState(null); // null | 'choice' | 'in_app'
+  const [selectedCategory, setSelectedCategory] = useState('support'); // 'support' | 'bug' | 'feature'
+  const [emailDetails, setEmailDetails] = useState({ subject: '', body: '' });
+
+  const handleSupportChoice = (category, subject, body = '') => {
+    setSelectedCategory(category);
+    setEmailDetails({ subject, body });
+    setSupportMethod('choice');
+  };
 
   const WHATSAPP_LINK = "https://chat.whatsapp.com/FnqY8vehe4wLrRgK6MKVly";
   const SUPPORT_EMAIL = "tracktaps@gmail.com";
@@ -146,6 +156,12 @@ function Guide() {
         }
       }
     }
+  };
+
+  const handleCloseModal = () => {
+    setShowSupportModal(false);
+    setErrorMsg('');
+    setSupportMethod(null);
   };
 
   const handleEmailAction = (subject, body = '') => {
@@ -320,18 +336,20 @@ function Guide() {
               exit={{ opacity: 0, scale: 0.9 }}
               style={{
                 width: '100%',
-                maxWidth: '460px',
+                maxWidth: supportMethod === 'in_app' ? '550px' : '460px',
                 background: 'rgba(15, 23, 42, 0.95)',
                 border: '1px solid var(--primary-glow)',
                 borderRadius: '24px',
                 padding: '32px 24px',
                 boxShadow: '0 8px 32px rgba(139, 92, 246, 0.25)',
-                position: 'relative'
+                position: 'relative',
+                maxHeight: '90vh',
+                overflowY: 'auto'
               }}
             >
               {/* Close Button */}
               <button 
-                onClick={() => { setShowSupportModal(false); setErrorMsg(''); }}
+                onClick={handleCloseModal}
                 style={{
                   position: 'absolute',
                   top: '20px',
@@ -344,135 +362,246 @@ function Guide() {
                   height: '32px',
                   cursor: 'pointer',
                   fontWeight: '900',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  zIndex: 10
                 }}
               >
                 ✕
               </button>
 
-              <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 8px' }}>Need Help?</h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '24px' }}>
-                Select an option below to connect with our official support channels immediately.
-              </p>
+              {supportMethod === null ? (
+                <>
+                  <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 8px' }}>Need Help?</h3>
+                  <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '24px' }}>
+                    Select an option below to connect with our official support channels immediately.
+                  </p>
 
-              {/* Error messages fallback */}
-              {errorMsg && (
-                <div style={{
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.2)',
-                  color: '#f87171',
-                  borderRadius: '12px',
-                  padding: '12px',
-                  fontSize: '12px',
-                  marginBottom: '16px',
-                  lineHeight: '1.5'
-                }}>
-                  {errorMsg}
-                </div>
+                  {/* Error messages fallback */}
+                  {errorMsg && (
+                    <div style={{
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                      color: '#f87171',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      fontSize: '12px',
+                      marginBottom: '16px',
+                      lineHeight: '1.5'
+                    }}>
+                      {errorMsg}
+                    </div>
+                  )}
+
+                  {/* Support Options List */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    
+                    {/* Option 1: WhatsApp Community */}
+                    <button
+                      onClick={() => handleOpenLink(WHATSAPP_LINK, 'whatsapp')}
+                      disabled={loadingAction === 'whatsapp'}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px',
+                        borderRadius: '14px',
+                        border: '1px solid rgba(37, 211, 102, 0.2)',
+                        background: 'rgba(37, 211, 102, 0.05)',
+                        color: '#25d366',
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '20px' }}>🟢</span> Join WhatsApp Community
+                      </span>
+                      <span>{loadingAction === 'whatsapp' ? 'Opening...' : '→'}</span>
+                    </button>
+
+                    {/* Option 2: Email support */}
+                    <button
+                      onClick={() => handleSupportChoice('support', 'TrackTaps Help Inquiry')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px',
+                        borderRadius: '14px',
+                        border: '1px solid rgba(59, 130, 246, 0.2)',
+                        background: 'rgba(59, 130, 246, 0.05)',
+                        color: '#60a5fa',
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '20px' }}>📧</span> Email Support
+                      </span>
+                      <span>→</span>
+                    </button>
+
+                    {/* Option 3: Bug Report */}
+                    <button
+                      onClick={() => handleSupportChoice('bug', 'Bug Report - TrackTaps', 'Please describe the bug details, expected behavior, and screenshot links if available:')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px',
+                        borderRadius: '14px',
+                        border: '1px solid rgba(239, 68, 68, 0.2)',
+                        background: 'rgba(239, 68, 68, 0.05)',
+                        color: '#f87171',
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '20px' }}>🐞</span> Report a Bug
+                      </span>
+                      <span>→</span>
+                    </button>
+
+                    {/* Option 4: Feature Request */}
+                    <button
+                      onClick={() => handleSupportChoice('feature', 'Feature Suggestion - TrackTaps', 'Provide your idea or feature request details here:')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px',
+                        borderRadius: '14px',
+                        border: '1px solid rgba(139, 92, 246, 0.2)',
+                        background: 'rgba(139, 92, 246, 0.05)',
+                        color: '#c084fc',
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '20px' }}>💡</span> Suggest a Feature
+                      </span>
+                      <span>→</span>
+                    </button>
+
+                  </div>
+                </>
+              ) : supportMethod === 'choice' ? (
+                <>
+                  <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 8px' }}>
+                    {selectedCategory === 'bug' ? '🐞 Bug Reporting' : selectedCategory === 'feature' ? '💡 Feature Suggestion' : '📧 Email Support'}
+                  </h3>
+                  <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '24px', lineHeight: '1.4' }}>
+                    How would you like to submit your {selectedCategory === 'bug' ? 'bug report' : selectedCategory === 'feature' ? 'feature suggestion' : 'inquiry'}?
+                  </p>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <button
+                      onClick={() => setSupportMethod('in_app')}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        padding: '16px',
+                        borderRadius: '14px',
+                        border: '1.5px solid var(--primary)',
+                        background: 'rgba(139, 92, 246, 0.08)',
+                        color: 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <span style={{ fontWeight: '800', fontSize: '15px', color: 'var(--primary-light)', marginBottom: '4px' }}>
+                        ⚡ Submit In-App (Recommended)
+                      </span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                        Send your query directly to our admins without opening any email apps.
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        handleEmailAction(emailDetails.subject, emailDetails.body);
+                        handleCloseModal();
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        padding: '16px',
+                        borderRadius: '14px',
+                        border: '1.5px solid rgba(255,255,255,0.08)',
+                        background: 'rgba(255,255,255,0.02)',
+                        color: 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <span style={{ fontWeight: '800', fontSize: '15px', color: 'var(--text-main)', marginBottom: '4px' }}>
+                        📧 Open Email App
+                      </span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                        Compose the email using Gmail, Outlook, or your default mail application.
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => setSupportMethod(null)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-muted)',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        marginTop: '8px',
+                        textAlign: 'center',
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      ← Back to Options
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 4px' }}>
+                    {selectedCategory === 'bug' ? '🐞 Submit Bug Report' : selectedCategory === 'feature' ? '💡 Suggest a Feature' : '📩 Support Inquiry'}
+                  </h3>
+                  <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '20px' }}>
+                    Fill out the form below to submit directly to our core administration team.
+                  </p>
+
+                  <ContactUs initialCategory={selectedCategory} minimal={true} />
+
+                  <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                    <button
+                      onClick={() => setSupportMethod('choice')}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-muted)',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      ← Back
+                    </button>
+                  </div>
+                </>
               )}
-
-              {/* Support Options List */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                
-                {/* Option 1: WhatsApp Community */}
-                <button
-                  onClick={() => handleOpenLink(WHATSAPP_LINK, 'whatsapp')}
-                  disabled={loadingAction === 'whatsapp'}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '16px',
-                    borderRadius: '14px',
-                    border: '1px solid rgba(37, 211, 102, 0.2)',
-                    background: 'rgba(37, 211, 102, 0.05)',
-                    color: '#25d366',
-                    fontWeight: '700',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '20px' }}>🟢</span> Join WhatsApp Community
-                  </span>
-                  <span>{loadingAction === 'whatsapp' ? 'Opening...' : '→'}</span>
-                </button>
-
-                {/* Option 2: Email support */}
-                <button
-                  onClick={() => handleEmailAction("TrackTaps Help Inquiry")}
-                  disabled={loadingAction === 'email'}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '16px',
-                    borderRadius: '14px',
-                    border: '1px solid rgba(59, 130, 246, 0.2)',
-                    background: 'rgba(59, 130, 246, 0.05)',
-                    color: '#60a5fa',
-                    fontWeight: '700',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '20px' }}>📧</span> Email Support
-                  </span>
-                  <span>{loadingAction === 'email' ? 'Preparing...' : '→'}</span>
-                </button>
-
-                {/* Option 3: Bug Report */}
-                <button
-                  onClick={() => handleEmailAction("Bug Report - TrackTaps", "Please describe the bug details, expected behavior, and screenshot links if available:")}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '16px',
-                    borderRadius: '14px',
-                    border: '1px solid rgba(239, 68, 68, 0.2)',
-                    background: 'rgba(239, 68, 68, 0.05)',
-                    color: '#f87171',
-                    fontWeight: '700',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '20px' }}>🐞</span> Report a Bug
-                  </span>
-                  <span>→</span>
-                </button>
-
-                {/* Option 4: Feature Request */}
-                <button
-                  onClick={() => handleEmailAction("Feature Suggestion - TrackTaps", "Provide your idea or feature request details here:")}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '16px',
-                    borderRadius: '14px',
-                    border: '1px solid rgba(139, 92, 246, 0.2)',
-                    background: 'rgba(139, 92, 246, 0.05)',
-                    color: '#c084fc',
-                    fontWeight: '700',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '20px' }}>💡</span> Suggest a Feature
-                  </span>
-                  <span>→</span>
-                </button>
-
-              </div>
             </motion.div>
           </div>
         )}
