@@ -1,8 +1,8 @@
 {
-  "version": "1.8.1",
+  "version": "1.8.2",
   "min_required_version": "1.0.0",
   "platform": "production",
-  "last_updated": "2026-06-06",
+  "last_updated": "2026-06-07",
   "update_url": "https://www.tracktaps.online/download",
-  "changelog": "🗺️ Geotrack Live: Auto-attendance tracking released to all plans (functional for Mega Saver) with premium upgrade support."
+  "changelog": "✨ Floating UI: Beautiful transparent pill-shaped floating bottom navigation bar. 🗺️ Geotrack Live: Auto-attendance tracking upgrades."
 }
