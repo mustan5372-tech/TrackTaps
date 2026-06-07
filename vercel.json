@@ -5,7 +5,7 @@
   "redirects": [
     {
       "source": "/download",
-      "destination": "https://github.com/mustan5372-tech/TrackTaps/raw/main/TrackTaps.apk",
+      "destination": "/TrackTaps_v1.8.2.apk",
       "permanent": false
     }
   ],
@@ -16,7 +16,11 @@
     },
     {
       "source": "/TrackTaps.apk",
-      "destination": "/TrackTaps.apk"
+      "destination": "/TrackTaps_v1.8.2.apk"
+    },
+    {
+      "source": "/TrackTaps_v1.8.2.apk",
+      "destination": "/TrackTaps_v1.8.2.apk"
     },
     {
       "source": "/((?!api/).*)",
