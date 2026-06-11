@@ -19,3 +19,7 @@ promo-video/
 .env.development
 .env.production
 scratch/
+
+# Ignore compiled binaries/APKs
+*.apk
+public/*.apk
