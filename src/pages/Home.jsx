@@ -1529,22 +1529,57 @@ function Home() {
           </div>
           <div className="attendance-overview-content" style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
             <motion.div 
-              initial={{ rotate: -180, opacity: 0 }}
-              whileInView={{ rotate: 0, opacity: 1 }}
+              initial={{ scale: 0.8, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
               transition={{ duration: 1, ease: "easeOut" }}
               className="progress-ring-container" 
-              style={{ position: 'relative', width: '120px', height: '120px' }}
+              style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              <svg className="progress-ring-svg" width="120" height="120" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="60" cy="60" r="54" fill="none" stroke="var(--primary-glow)" strokeWidth="6"></circle>
+              <svg className="progress-ring-svg" width="120" height="120" style={{ transform: 'rotate(-90deg)', position: 'absolute', top: 0, left: 0 }}>
+                <circle cx="60" cy="60" r="54" fill="none" stroke="var(--primary-glow)" strokeWidth="6" style={{ opacity: 0.3 }}></circle>
                 <motion.circle 
                   initial={{ pathLength: 0 }}
                   whileInView={{ pathLength: dashboardStats.overallPercentage / 100 }}
                   transition={{ duration: 1.5, ease: "easeInOut" }}
                   cx="60" cy="60" r="54" fill="none" stroke="var(--primary-light)" strokeWidth="6" strokeLinecap="round"
+                  style={{ filter: 'drop-shadow(0 0 4px var(--primary-glow))' }}
                 />
               </svg>
-              <span className="progress-percentage-text" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '800', color: 'var(--primary-light)' }}>{dashboardStats.overallPercentage}%</span>
+              <div style={{
+                width: '92px',
+                height: '92px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                position: 'relative',
+                background: 'rgba(15, 23, 42, 0.4)',
+                border: '1.5px solid rgba(255, 255, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 2
+              }}>
+                <svg viewBox="0 0 120 120" style={{ position: 'absolute', bottom: 0, left: 0, width: '120px', height: '120px', zIndex: 1, opacity: 0.85 }}>
+                  <motion.path
+                    animate={{ x: [-120, 0] }}
+                    transition={{ repeat: Infinity, duration: 4, ease: 'linear' }}
+                    d={`M-120,${108 - (96 * (dashboardStats.overallPercentage / 100))} Q-60,${108 - (96 * (dashboardStats.overallPercentage / 100)) - 6} 0,${108 - (96 * (dashboardStats.overallPercentage / 100))} T120,${108 - (96 * (dashboardStats.overallPercentage / 100))} T240,${108 - (96 * (dashboardStats.overallPercentage / 100))} L240,120 L-120,120 Z`}
+                    fill="url(#liquid-wave-gradient)"
+                  />
+                  <defs>
+                    <linearGradient id="liquid-wave-gradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--primary-light)" />
+                      <stop offset="100%" stopColor="var(--primary)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <span className="progress-percentage-text" style={{ 
+                  zIndex: 3, 
+                  fontSize: '22px', 
+                  fontWeight: '900', 
+                  color: 'white', 
+                  textShadow: '0 2px 4px rgba(0,0,0,0.5)' 
+                }}>{dashboardStats.overallPercentage}%</span>
+              </div>
             </motion.div>
             <div className="mini-stats" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div className="mini-stat-item">

@@ -219,13 +219,15 @@ function BunkCalculator() {
           padding: 24px;
         }
         .calculator-card {
-          background: var(--surface-glass);
-          border: 1px solid var(--border);
-          border-radius: 24px;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 32px;
           padding: 32px;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+          backdrop-filter: blur(24px) saturate(180%);
+          WebkitBackdropFilter: blur(24px) saturate(180%);
+          box-shadow: 0 20px 50px rgba(0,0,0,0.2);
         }
       `}</style>
       <header className="bunk-calculator-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -258,10 +260,10 @@ function BunkCalculator() {
         <motion.div 
           whileHover={{ scale: 1.05 }}
           style={{ 
-            background: 'var(--primary-glow)', 
-            padding: '8px 12px', 
-            borderRadius: '12px', 
-            border: '1px solid var(--primary-light)',
+            background: 'rgba(139, 92, 246, 0.12)', 
+            padding: '8px 16px', 
+            borderRadius: '100px', 
+            border: '1px solid rgba(139, 92, 246, 0.3)',
             display: 'flex',
             alignItems: 'center',
             gap: '8px'
@@ -282,10 +284,10 @@ function BunkCalculator() {
               onChange={(e) => setSelectedSubjectId(e.target.value)}
               style={{
                 width: '100%',
-                background: 'var(--surface-bright)',
-                border: '1px solid var(--border)',
-                borderRadius: '16px',
-                padding: '18px 20px',
+                background: 'rgba(0, 0, 0, 0.3)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                borderRadius: '100px',
+                padding: '16px 24px',
                 color: 'var(--text-main)',
                 fontSize: '16px',
                 fontWeight: '700',
@@ -293,16 +295,17 @@ function BunkCalculator() {
                 cursor: 'pointer',
                 outline: 'none',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)'
               }}
               onFocus={(e) => e.target.style.borderColor = 'var(--primary-light)'}
-              onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
+              onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.15)'}
             >
               {subjects.map(s => (
                 <option key={s.id} value={s.id} style={{ background: '#0f172a' }}>{s.name}</option>
               ))}
             </select>
-            <div style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-dim)' }}>
+            <div style={{ position: 'absolute', right: '24px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-dim)' }}>
               ▼
             </div>
           </div>
@@ -366,7 +369,7 @@ function BunkCalculator() {
               transition={{ duration: 0.3 }}
             >
               <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '32px' }}>
-                <div style={{ padding: '24px', background: 'var(--surface)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ padding: '24px', background: 'rgba(255, 255, 255, 0.06)', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(10px)' }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '12px', fontWeight: '800', letterSpacing: '0.1em' }}>Current Attendance</div>
                   <div style={{ fontSize: '36px', fontWeight: '950', color: getStatusColor(selectedStats?.percentage || 0), letterSpacing: '-1px' }}>{selectedStats?.percentage || 0}%</div>
                   <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '6px', fontWeight: '600' }}>
@@ -375,10 +378,10 @@ function BunkCalculator() {
                 </div>
                 <div style={{ 
                   padding: '24px', 
-                  background: (selectedStats?.bunkableNow || 0) > 0 ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)', 
+                  background: (selectedStats?.bunkableNow || 0) > 0 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)', 
                   borderRadius: '24px', 
-                  border: `1px solid ${(selectedStats?.bunkableNow || 0) > 0 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
-                  boxShadow: 'var(--shadow-sm)' 
+                  border: `1px solid ${(selectedStats?.bunkableNow || 0) > 0 ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`,
+                  backdropFilter: 'blur(10px)'
                 }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '12px', fontWeight: '800', letterSpacing: '0.1em' }}>Safe to Bunk</div>
                   <div style={{ fontSize: '36px', fontWeight: '950', color: (selectedStats?.bunkableNow || 0) > 0 ? 'var(--success)' : 'var(--danger)', letterSpacing: '-1px' }}>
@@ -394,11 +397,13 @@ function BunkCalculator() {
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   style={{ 
-                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(15, 23, 42, 0.4) 100%)', 
+                    background: 'rgba(139, 92, 246, 0.08)', 
                     borderRadius: '24px', 
                     padding: '24px', 
-                    border: '1px solid var(--primary-glow)', 
+                    border: '1px solid rgba(139, 92, 246, 0.2)', 
                     marginBottom: '32px',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
                     position: 'relative',
                     overflow: 'hidden'
                   }}
@@ -437,11 +442,13 @@ function BunkCalculator() {
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   style={{ 
-                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(15, 23, 42, 0.4) 100%)', 
+                    background: 'rgba(245, 158, 11, 0.08)', 
                     borderRadius: '24px', 
                     padding: '24px', 
                     border: '1px solid rgba(245, 158, 11, 0.2)', 
                     marginBottom: '32px',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '12px'
@@ -460,7 +467,7 @@ function BunkCalculator() {
                 </motion.div>
               )}
 
-              <div style={{ background: 'rgba(139, 92, 246, 0.05)', borderRadius: '24px', padding: '28px', border: '1px solid var(--primary-glow)', marginBottom: '32px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ background: 'rgba(139, 92, 246, 0.08)', borderRadius: '24px', padding: '28px', border: '1px solid rgba(139, 92, 246, 0.2)', marginBottom: '32px', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-20px', right: '-20px', fontSize: '60px', opacity: 0.05 }}>📊</div>
                 <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--primary-light)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                    <span>⚡</span> AI Prediction Insights
@@ -488,13 +495,15 @@ function BunkCalculator() {
                 </div>
               </div>
 
-              {/* Interactive "What-If" AI Skip Planner */}
+              {/* Interactive Bunk Slider & Trajectory Timeline */}
               <div style={{ 
-                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)', 
+                background: 'rgba(255, 255, 255, 0.06)', 
                 borderRadius: '24px', 
                 padding: '28px', 
-                border: '1.5px dashed rgba(99, 102, 241, 0.4)', 
+                border: '1px solid rgba(255, 255, 255, 0.15)', 
                 marginBottom: '32px', 
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
                 position: 'relative', 
                 overflow: 'hidden' 
               }}>
@@ -503,129 +512,183 @@ function BunkCalculator() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
                   <span style={{ fontSize: '22px' }}>🔮</span>
                   <h4 style={{ fontSize: '14px', fontWeight: '900', color: '#818cf8', margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    What-If AI Skip Planner
+                    Interactive Bunk Timeline Simulator
                   </h4>
-                  <span style={{ fontSize: '10px', background: 'rgba(99, 102, 241, 0.2)', color: '#a5b4fc', padding: '2px 8px', borderRadius: '20px', fontWeight: '800' }}>INTERACTIVE PREDICTOR</span>
+                  <span style={{ fontSize: '10px', background: 'rgba(99, 102, 241, 0.2)', color: '#a5b4fc', padding: '2px 8px', borderRadius: '20px', fontWeight: '800' }}>TRAJECTORY PROJECTION</span>
                 </div>
 
                 <p style={{ fontSize: '13px', color: 'var(--text-dim)', lineHeight: 1.5, margin: '0 0 24px 0' }}>
-                  Plan your skips class-by-class for the next 5 sessions. Toggle the checkboxes to simulate skips; the AI engine dynamically recalculates the exact trajectory below.
+                  Drag the slider below to simulate skipping the next classes and project your attendance trajectory day-by-day.
                 </p>
 
-                {/* Checklist grid */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
-                  {(() => {
-                    const todayStr = new Date().toISOString().split('T')[0];
-                    const upcoming5 = (calendarEvents || [])
-                      .filter(e => e.subjectName === selectedSubject?.name && e.date >= todayStr)
-                      .sort((a, b) => a.date.localeCompare(b.date))
-                      .slice(0, 5);
-
-                    if (upcoming5.length === 0) {
-                      return (
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px' }}>
-                          No upcoming sessions scheduled in this semester.
-                        </div>
-                      );
-                    }
-
-                    return upcoming5.map((cls, idx) => {
-                      const holiday = semesterSettings?.holidays?.find(h => h.date === cls.date);
-                      const isSkipped = !!customSkips[cls.id];
-                      return (
-                        <div 
-                          key={cls.id} 
-                          onClick={() => {
-                            if (holiday) return;
-                            setCustomSkips(prev => ({
-                              ...prev,
-                              [cls.id]: !prev[cls.id]
-                            }));
-                          }}
-                          style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'space-between', 
-                            background: holiday ? 'rgba(139, 92, 246, 0.08)' : isSkipped ? 'rgba(239, 68, 68, 0.08)' : 'rgba(15, 23, 42, 0.3)', 
-                            padding: '12px 16px', 
-                            borderRadius: '14px', 
-                            border: `1px solid ${holiday ? 'rgba(139, 92, 246, 0.25)' : isSkipped ? 'rgba(239, 68, 68, 0.25)' : 'var(--border)'}`,
-                            cursor: holiday ? 'not-allowed' : 'pointer',
-                            userSelect: 'none',
-                            transition: 'all 0.2s'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <input
-                              type="checkbox"
-                              checked={isSkipped || !!holiday}
-                              disabled={!!holiday}
-                              readOnly
-                              style={{ width: '16px', height: '16px', accentColor: holiday ? '#a78bfa' : '#ef4444', cursor: 'pointer' }}
-                            />
-                            <div>
-                              <div style={{ fontSize: '13px', fontWeight: '750', color: holiday ? '#a78bfa' : isSkipped ? '#fca5a5' : 'white' }}>
-                                Session {idx + 1}: {new Date(cls.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                              </div>
-                              <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                                {cls.timeSlot} • {cls.dayName}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          {holiday ? (
-                            <span style={{ fontSize: '11px', fontWeight: '850', color: '#a78bfa', background: 'rgba(139, 92, 246, 0.15)', padding: '4px 10px', borderRadius: '8px' }}>
-                              🎉 HOLIDAY Break
-                            </span>
-                          ) : isSkipped ? (
-                            <span style={{ fontSize: '11px', fontWeight: '800', color: '#f87171', background: 'rgba(239, 68, 68, 0.15)', padding: '4px 10px', borderRadius: '8px' }}>
-                              Simulated Skip ✗
-                            </span>
-                          ) : (
-                            <span style={{ fontSize: '11px', fontWeight: '700', color: '#34d399', background: 'rgba(16, 185, 129, 0.15)', padding: '4px 10px', borderRadius: '8px' }}>
-                              Attending ✓
-                            </span>
-                          )}
-                        </div>
-                      );
-                    });
-                  })()}
+                {/* Slider Input */}
+                <div style={{ marginBottom: '32px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'white', fontSize: '14px', fontWeight: '800', marginBottom: '10px' }}>
+                    <span>Simulated Skips (Bunks):</span>
+                    <span style={{ color: simulatedBunks > 0 ? 'var(--danger)' : 'var(--success)' }}>
+                      {simulatedBunks} {simulatedBunks === 1 ? 'Class' : 'Classes'}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    value={simulatedBunks}
+                    onChange={(e) => setSimulatedBunks(parseInt(e.target.value))}
+                    style={{
+                      width: '100%',
+                      accentColor: '#818cf8',
+                      cursor: 'pointer',
+                      height: '6px',
+                      borderRadius: '3px',
+                      background: 'rgba(255,255,255,0.1)'
+                    }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    <span>0 skips (All Attended)</span>
+                    <span>10 skips</span>
+                  </div>
                 </div>
 
-                {/* Calculate What-If live stats */}
+                {/* Horizontal Timeline Track */}
+                <div style={{ overflowX: 'auto', paddingBottom: '16px', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', gap: '16px', minWidth: '600px', padding: '4px' }}>
+                    {(() => {
+                      const upcoming10 = (calendarEvents || [])
+                        .filter(e => e.subjectName === selectedSubject?.name && e.date >= todayStr)
+                        .sort((a, b) => a.date.localeCompare(b.date))
+                        .slice(0, 10);
+
+                      if (upcoming10.length === 0) {
+                        return (
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px', width: '100%' }}>
+                            No upcoming sessions scheduled in this semester.
+                          </div>
+                        );
+                      }
+
+                      // Compute cumulative trajectory
+                      const conducted = Number(selectedStats?.total) || 0;
+                      const present = Number(selectedStats?.present) || 0;
+                      let cumulativeTotal = conducted;
+                      let cumulativePresent = present;
+
+                      return upcoming10.map((cls, idx) => {
+                        const holiday = semesterSettings?.holidays?.find(h => h.date === cls.date);
+                        const isSkipped = !holiday && idx < simulatedBunks;
+                        
+                        if (!holiday) {
+                          cumulativeTotal += 1;
+                          if (!isSkipped) {
+                            cumulativePresent += 1;
+                          }
+                        }
+
+                        const currentPct = cumulativeTotal > 0 ? Math.round((cumulativePresent / cumulativeTotal) * 100) : 0;
+                        const isPctSafe = currentPct >= targetPct;
+
+                        return (
+                          <div 
+                            key={cls.id}
+                            style={{
+                              flex: '1',
+                              minWidth: '110px',
+                              background: isSkipped ? 'rgba(239, 68, 68, 0.08)' : holiday ? 'rgba(139, 92, 246, 0.08)' : 'rgba(16, 185, 129, 0.08)',
+                              border: `1px solid ${isSkipped ? 'rgba(239, 68, 68, 0.25)' : holiday ? 'rgba(139, 92, 246, 0.25)' : 'rgba(16, 185, 129, 0.25)'}`,
+                              borderRadius: '16px',
+                              padding: '12px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '6px',
+                              alignItems: 'center',
+                              textAlign: 'center',
+                              position: 'relative'
+                            }}
+                          >
+                            <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700' }}>
+                              SESSION {idx + 1}
+                            </span>
+                            
+                            {/* Date Badge */}
+                            <span style={{ fontSize: '11px', fontWeight: '800', color: 'white' }}>
+                              {new Date(cls.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </span>
+                            
+                            {/* Action Icon / Status */}
+                            <div style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '50%',
+                              background: isSkipped ? 'rgba(239, 68, 68, 0.2)' : holiday ? 'rgba(139, 92, 246, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                              color: isSkipped ? 'var(--danger)' : holiday ? 'var(--primary-light)' : 'var(--success)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '14px',
+                              fontWeight: '950',
+                              margin: '4px 0'
+                            }}>
+                              {holiday ? '🎉' : isSkipped ? '✗' : '✓'}
+                            </div>
+
+                            <span style={{ fontSize: '9px', fontWeight: '800', color: isSkipped ? '#fca5a5' : holiday ? '#c084fc' : '#6ee7b7' }}>
+                              {holiday ? 'HOLIDAY' : isSkipped ? 'SIM SKIPPED' : 'ATTENDING'}
+                            </span>
+
+                            {/* Live Projection Percentage */}
+                            <div style={{
+                              marginTop: '8px',
+                              padding: '2px 8px',
+                              borderRadius: '100px',
+                              background: isPctSafe ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                              color: isPctSafe ? 'var(--success)' : 'var(--danger)',
+                              fontSize: '11px',
+                              fontWeight: '900'
+                            }}>
+                              {currentPct}%
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+
+                {/* Live Final Projection Summary Card */}
                 {(() => {
-                  const todayStr = new Date().toISOString().split('T')[0];
-                  const upcoming5 = (calendarEvents || [])
+                  const upcoming10 = (calendarEvents || [])
                     .filter(e => e.subjectName === selectedSubject?.name && e.date >= todayStr)
                     .sort((a, b) => a.date.localeCompare(b.date))
-                    .slice(0, 5);
+                    .slice(0, 10);
 
                   const conducted = Number(selectedStats?.total) || 0;
                   const present = Number(selectedStats?.present) || 0;
-                  
-                  let whatIfTotal = conducted;
-                  let whatIfPresent = present;
-                  
-                  upcoming5.forEach(cls => {
+                  let finalTotal = conducted;
+                  let finalPresent = present;
+
+                  upcoming10.forEach((cls, idx) => {
                     const holiday = semesterSettings?.holidays?.find(h => h.date === cls.date);
                     if (!holiday) {
-                      whatIfTotal += 1;
-                      if (!customSkips[cls.id]) {
-                        whatIfPresent += 1;
+                      finalTotal += 1;
+                      if (idx < simulatedBunks) {
+                        // skipped
+                      } else {
+                        finalPresent += 1;
                       }
                     }
                   });
 
-                  const whatIfPercentage = whatIfTotal > 0 ? Math.round((whatIfPresent / whatIfTotal) * 100) : 0;
-                  const isWhatIfSafe = whatIfPercentage >= targetPct;
-                  const dropAmount = Math.max(0, (selectedStats?.percentage || 0) - whatIfPercentage);
+                  const finalPct = finalTotal > 0 ? Math.round((finalPresent / finalTotal) * 100) : 0;
+                  const isSafe = finalPct >= targetPct;
+                  const changeAmt = finalPct - (selectedStats?.percentage || 0);
 
                   return (
                     <div style={{ 
-                      background: isWhatIfSafe ? 'rgba(16, 185, 129, 0.06)' : 'rgba(239, 68, 68, 0.06)', 
-                      border: `1.5px solid ${isWhatIfSafe ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`, 
-                      borderRadius: '20px', 
+                      background: isSafe ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)', 
+                      border: `1.5px solid ${isSafe ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`, 
+                      borderRadius: '24px', 
                       padding: '20px',
+                      backdropFilter: 'blur(10px)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -633,30 +696,28 @@ function BunkCalculator() {
                     }}>
                       <div>
                         <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '800', marginBottom: '4px' }}>
-                          What-If Predicted Score
+                          Final Projected Attendance
                         </div>
-                        <div style={{ fontSize: '28px', fontWeight: '950', color: isWhatIfSafe ? 'var(--success)' : 'var(--danger)', letterSpacing: '-0.5px' }}>
-                          {whatIfPercentage}%
+                        <div style={{ fontSize: '28px', fontWeight: '950', color: isSafe ? 'var(--success)' : 'var(--danger)', letterSpacing: '-1px' }}>
+                          {finalPct}%
                         </div>
                         <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px', fontWeight: '600' }}>
-                          {dropAmount > 0 
-                            ? `Drops from current by ${dropAmount}%` 
-                            : 'No change to current score'}
+                          {changeAmt === 0 ? 'No change to current score' : changeAmt > 0 ? `Increases by +${changeAmt}%` : `Drops by ${changeAmt}%`}
                         </div>
                       </div>
                       
                       <div style={{ 
-                        background: isWhatIfSafe ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', 
-                        color: isWhatIfSafe ? '#34d399' : '#f87171',
+                        background: isSafe ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', 
+                        color: isSafe ? '#34d399' : '#f87171',
                         padding: '8px 16px',
-                        borderRadius: '12px',
+                        borderRadius: '100px',
                         fontSize: '12px',
                         fontWeight: '900',
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px',
                         textAlign: 'center'
                       }}>
-                        {isWhatIfSafe ? '🛡️ SAFE PLAN' : '⚠️ ATTENDANCE DROPS'}
+                        {isSafe ? '🛡️ SAFE TRAJECTORY' : '🚨 CRITICAL DROP'}
                       </div>
                     </div>
                   );
@@ -666,10 +727,12 @@ function BunkCalculator() {
               {/* AI Strategic Action Checklist */}
               <div className="dashboard-card" style={{ 
                 padding: '28px', 
-                background: 'rgba(139, 92, 246, 0.04)', 
-                border: '1px solid rgba(139, 92, 246, 0.15)', 
+                background: 'rgba(139, 92, 246, 0.08)', 
+                border: '1px solid rgba(139, 92, 246, 0.2)', 
                 borderRadius: '24px',
                 marginBottom: '32px',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
                 position: 'relative',
                 overflow: 'hidden'
               }}>
@@ -731,15 +794,15 @@ function BunkCalculator() {
               </div>
 
               <div style={{ display: 'flex', gap: '12px' }}>
-                <div style={{ flex: 1, padding: '18px', background: 'rgba(15, 23, 42, 0.5)', borderRadius: '20px', textAlign: 'center', border: '1px solid var(--border)' }}>
+                <div style={{ flex: 1, padding: '18px', background: 'rgba(255, 255, 255, 0.06)', borderRadius: '24px', textAlign: 'center', border: '1px solid rgba(255, 255, 255, 0.12)' }}>
                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '800' }}>Total Scheduled</div>
                    <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-main)' }}>{selectedStats?.totalPlanned || 0}</div>
                 </div>
-                <div style={{ flex: 1, padding: '18px', background: 'rgba(15, 23, 42, 0.5)', borderRadius: '20px', textAlign: 'center', border: '1px solid var(--border)' }}>
+                <div style={{ flex: 1, padding: '18px', background: 'rgba(255, 255, 255, 0.06)', borderRadius: '24px', textAlign: 'center', border: '1px solid rgba(255, 255, 255, 0.12)' }}>
                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '800' }}>Classes Left</div>
                    <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-main)' }}>{selectedStats?.remainingClasses || 0}</div>
                 </div>
-                <div style={{ flex: 1, padding: '18px', background: 'rgba(15, 23, 42, 0.5)', borderRadius: '20px', textAlign: 'center', border: '1px solid var(--border)' }}>
+                <div style={{ flex: 1, padding: '18px', background: 'rgba(255, 255, 255, 0.06)', borderRadius: '24px', textAlign: 'center', border: '1px solid rgba(255, 255, 255, 0.12)' }}>
                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '800' }}>Bunk Buffer</div>
                    <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--primary-light)' }}>{Math.max(0, (selectedStats?.remainingClasses || 0) - (selectedStats?.mustAttend || 0))}</div>
                 </div>
@@ -915,14 +978,15 @@ function BunkCalculator() {
       <motion.div
         variants={fadeInUp}
         style={{
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(15, 23, 42, 0.4) 100%)',
+          background: 'rgba(16, 185, 129, 0.08)',
           border: '1px solid rgba(16, 185, 129, 0.2)',
           borderRadius: '24px',
           padding: '24px',
           display: 'flex',
           alignItems: 'center',
           gap: '20px',
-          boxShadow: 'var(--shadow-sm)'
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)'
         }}
       >
         <div style={{ fontSize: '28px' }}>💡</div>

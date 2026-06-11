@@ -166,6 +166,34 @@ body.theme-pod, html.theme-pod {
     --text-dim: #a5b4fc;
 }
 
+/* Sunset - Warm Orange/Coral Gradient */
+body.theme-sunset, html.theme-sunset {
+    --bg-primary: #0f0a0a;
+    --bg-deep: #050202;
+    --surface: #1a0f0f;
+    --surface-glass: rgba(26, 15, 15, 0.8);
+    --border: rgba(249, 115, 22, 0.25);
+    --text-main: #fff7ed;
+    --text-dim: #fdba74;
+    --primary: #f97316;
+    --primary-light: #ffedd5;
+    --primary-glow: rgba(249, 115, 22, 0.4);
+}
+
+/* Emerald - Mint/Forest Green Gradient */
+body.theme-emerald, html.theme-emerald {
+    --bg-primary: #022c22;
+    --bg-deep: #011c15;
+    --surface: #064e3b;
+    --surface-glass: rgba(6, 78, 59, 0.8);
+    --border: rgba(16, 185, 129, 0.25);
+    --text-main: #f0fdf4;
+    --text-dim: #6ee7b7;
+    --primary: #10b981;
+    --primary-light: #d1fae5;
+    --primary-glow: rgba(16, 185, 129, 0.4);
+}
+
 /* Base Styles & Reset */
 * {
     margin: 0;
@@ -327,30 +355,32 @@ button:active:not(:disabled), .nav-btn:active, .mobile-nav-btn:active {
 
 .nav-btn {
     padding: 12px 16px;
-    border-radius: var(--radius-sm);
+    border-radius: 14px;
     color: var(--text-dim);
     text-decoration: none;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 14px;
-    transition: all var(--transition);
+    gap: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: transparent;
     border: 1px solid transparent;
+    position: relative;
 }
 
 .nav-btn:hover {
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(139, 92, 246, 0.08);
     color: var(--primary-light);
-    transform: translateX(4px);
+    transform: translateX(3px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .nav-btn.active {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(168, 85, 247, 0.05) 100%);
     color: var(--primary-light);
-    border-color: var(--border);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border-color: rgba(139, 92, 246, 0.15);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 15px rgba(0, 0, 0, 0.15), 0 0 8px rgba(139, 92, 246, 0.06);
 }
 
 .nav-btn.active::before {
@@ -702,11 +732,11 @@ button:active:not(:disabled), .nav-btn:active, .mobile-nav-btn:active {
 }
 
 .dashboard-card {
-    background: var(--surface);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 28px;
     padding: 24px;
     display: flex;
     flex-direction: column;

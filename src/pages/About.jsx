@@ -383,13 +383,13 @@ const RoadmapPhase = React.memo(({ phase, items, index }) => {
         whileHover={{ y: -5 }}
         className="roadmap-phase-card"
         style={{
-          background: 'var(--surface-glass)',
-          border: '1px solid var(--border)',
-          borderRadius: '20px',
+          background: 'rgba(255, 255, 255, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          borderRadius: '28px',
           padding: '24px',
           marginBottom: '40px',
-          backdropFilter: 'blur(var(--glass-blur))',
-          WebkitBackdropFilter: 'blur(var(--glass-blur))',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           cursor: 'default',
           willChange: 'transform'
         }}
@@ -682,7 +682,7 @@ function About() {
                 background: 'var(--primary)', 
                 color: 'white', 
                 padding: '16px 36px', 
-                borderRadius: '16px', 
+                borderRadius: '100px', 
                 textDecoration: 'none', 
                 fontWeight: '800', 
                 fontSize: '16px', 
@@ -706,7 +706,7 @@ function About() {
                 background: 'rgba(139, 92, 246, 0.08)', 
                 color: 'var(--text-main)', 
                 padding: '16px 36px', 
-                borderRadius: '16px', 
+                borderRadius: '100px', 
                 textDecoration: 'none', 
                 fontWeight: '800', 
                 fontSize: '16px', 
@@ -821,7 +821,7 @@ function About() {
               background: 'linear-gradient(45deg, #f58529, #dd2a7b, #8134af, #515bd4)',
               color: 'white',
               padding: '16px 36px',
-              borderRadius: '16px',
+              borderRadius: '100px',
               fontWeight: '800',
               fontSize: '15px',
               textDecoration: 'none',
@@ -842,7 +842,7 @@ function About() {
               { icon: '🤖', title: 'AI Assistant', desc: 'Get smart predictions on how many classes you can skip safely.' },
               { icon: '📊', title: 'Life Optimization', desc: 'Simplify your academic schedule with our automated timetable system.' }
             ].map((f, idx) => (
-              <div key={idx} style={{ background: 'var(--surface-glass)', border: '1px solid var(--border)', borderRadius: '20px', padding: '32px', textAlign: 'center' }}>
+              <div key={idx} style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', padding: '32px', textAlign: 'center', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
                 <div style={{ fontSize: '32px', marginBottom: '16px' }}>{f.icon}</div>
                 <h3 style={{ color: 'var(--text-main)', fontSize: '18px', fontWeight: '800', marginBottom: '12px' }}>{f.title}</h3>
                 <p style={{ color: 'var(--text-dim)', fontSize: '14px', lineHeight: '1.6' }}>{f.desc}</p>

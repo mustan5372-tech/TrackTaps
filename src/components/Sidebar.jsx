@@ -54,9 +54,12 @@ function Sidebar() {
   const isPremium = subscription?.status === 'active' || role === 'owner' || role === 'core_admin';
 
   return (
-    <aside className="sidebar" data-nosnippet style={{
-      borderRight: isPremium ? '1px solid rgba(234, 179, 8, 0.25)' : '1px solid var(--border)',
-      boxShadow: isPremium ? '5px 0 35px rgba(234, 179, 8, 0.05)' : 'none'
+    <aside className="sidebar liquid-glass-sidebar" data-nosnippet style={{
+      borderRight: isPremium ? '1px solid rgba(234, 179, 8, 0.25)' : '1px solid rgba(255, 255, 255, 0.08)',
+      boxShadow: isPremium ? '5px 0 35px rgba(234, 179, 8, 0.05)' : 'none',
+      background: 'rgba(15, 23, 42, 0.35)',
+      backdropFilter: 'blur(28px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(28px) saturate(180%)',
     }}>
       <div className={`sidebar-branding ${isPremium ? 'premium-glow' : ''}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: '20px' }}>
         <Link to="/" className="logo-link" style={{ display: 'inline-block' }}>
@@ -77,20 +80,24 @@ function Sidebar() {
           whileHover={{ scale: 1.1, rotate: 180 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => window.location.reload()}
+          className="liquid-glass-pill-icon"
           style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(255, 255, 255, 0.06)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
             color: 'var(--text-dim)',
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
+            width: '34px',
+            height: '34px',
+            borderRadius: '100px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '14px',
             cursor: 'pointer',
             padding: 0,
-            marginLeft: '10px'
+            marginLeft: '10px',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.2)'
           }}
           title="Refresh App"
         >
@@ -105,18 +112,44 @@ function Sidebar() {
             <Link
               key={item.path}
               to={item.path}
-              className={`nav-btn ${isActive ? 'active' : ''}`}
+              className={`nav-btn liquid-glass-nav-btn ${isActive ? 'active' : ''}`}
               style={isActive && isPremium ? {
-                background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(139, 92, 246, 0.25) 100%)',
+                background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.12) 0%, rgba(139, 92, 246, 0.18) 100%)',
                 borderLeft: '4px solid #f59e0b',
-                boxShadow: '0 4px 15px rgba(234, 179, 8, 0.1)'
+                boxShadow: '0 4px 15px rgba(234, 179, 8, 0.1), inset 0 1px 0 rgba(255,255,255,0.06)'
               } : {}}
             >
-              <span className="nav-icon" style={{ fontSize: '20px' }}>{item.icon}</span>
+              <span className="nav-icon-pill" style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '2px 7px',
+                borderRadius: '100px',
+                background: isActive 
+                  ? (isPremium 
+                    ? 'linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(139, 92, 246, 0.25) 100%)' 
+                    : 'linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(168, 85, 247, 0.15) 100%)')
+                  : 'transparent',
+                border: isActive 
+                  ? (isPremium ? '1px solid rgba(234, 179, 8, 0.3)' : '1px solid rgba(139, 92, 246, 0.3)')
+                  : '1px solid transparent',
+                boxShadow: isActive 
+                  ? (isPremium 
+                    ? 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(234, 179, 8, 0.15)'
+                    : 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(139, 92, 246, 0.15)')
+                  : 'none',
+                fontSize: '20px',
+                lineHeight: '1',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                flexShrink: 0
+              }}>
+                {item.icon}
+              </span>
               <span className="nav-label" style={{ 
                 fontSize: '15px', 
                 fontWeight: '700', 
-                color: isActive && isPremium ? '#f59e0b' : 'inherit'
+                color: isActive && isPremium ? '#f59e0b' : 'inherit',
+                letterSpacing: '-0.01em'
               }}>{item.label}</span>
             </Link>
           );
@@ -126,16 +159,23 @@ function Sidebar() {
       {isPremium && (
         <div className="premium-sidebar-footer" style={{ padding: '24px', marginTop: 'auto' }}>
           <div style={{
-            background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
-            border: '1px solid rgba(234, 179, 8, 0.35)',
-            borderRadius: '18px',
-            padding: '16px',
+            background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)',
+            border: '1px solid rgba(234, 179, 8, 0.3)',
+            borderRadius: '100px',
+            padding: '12px 20px',
             textAlign: 'center',
-            boxShadow: '0 4px 20px rgba(234, 179, 8, 0.15)'
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 20px rgba(234, 179, 8, 0.1)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px'
           }}>
-            <div style={{ fontSize: '18px', marginBottom: '8px' }}>👑</div>
-            <span style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '2px' }}>ELITE MEMBER</span>
-            <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '500' }}>Cloud Sync Active</span>
+            <span style={{ fontSize: '16px' }}>👑</span>
+            <span style={{ fontSize: '11px', fontWeight: '900', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.15em' }}>ELITE MEMBER</span>
+            <span style={{ fontSize: '4px', color: 'rgba(245, 158, 11, 0.4)' }}>●</span>
+            <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '500' }}>Cloud Sync</span>
           </div>
         </div>
       )}

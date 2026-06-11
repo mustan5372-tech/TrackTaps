@@ -10,9 +10,9 @@ const FAQCard = ({ question, answer }) => {
     <div 
       onClick={() => setIsOpen(!isOpen)}
       style={{
-        background: 'rgba(255, 255, 255, 0.02)',
-        border: '1px solid rgba(255, 255, 255, 0.05)',
-        borderRadius: '12px',
+        background: 'rgba(255, 255, 255, 0.04)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '16px',
         padding: '16px',
         cursor: 'pointer',
         transition: 'all 0.2s ease'
@@ -51,7 +51,11 @@ const GuideCard = ({ title, icon, color, steps }) => {
         padding: '24px',
         borderLeft: `4px solid ${color}`,
         cursor: 'pointer',
-        background: isOpen ? 'rgba(255,255,255,0.02)' : 'var(--surface-glass)',
+        background: isOpen ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: '28px',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
         transition: 'background 0.3s'
       }}
       onClick={() => setIsOpen(!isOpen)}
@@ -272,7 +276,7 @@ function Guide() {
         </div>
 
         {/* Quick Troubleshooting Guide */}
-        <div className="dashboard-card" style={{ padding: '24px' }}>
+        <div className="dashboard-card" style={{ padding: '24px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 12px' }}>🛠️ Troubleshooting Quick Card</h3>
           <ul style={{ paddingLeft: '20px', fontSize: '13px', color: 'var(--text-dim)', display: 'flex', flexDirection: 'column', gap: '12px', lineHeight: '1.6' }}>
             <li><strong>Empty Calendar Events:</strong> Double check your timetable is fully filled in the Timetable section.</li>
@@ -287,9 +291,11 @@ function Guide() {
         padding: '32px 24px', 
         textAlign: 'center', 
         background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(15, 23, 42, 0.4) 100%)',
-        border: '1px solid var(--primary-glow)',
-        borderRadius: '20px',
-        boxShadow: '0 4px 20px rgba(139, 92, 246, 0.1)'
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: '28px',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 8px 32px rgba(139, 92, 246, 0.15)'
       }}>
         <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '12px' }}>Still need help?</h3>
         <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px', lineHeight: '1.6' }}>
@@ -309,7 +315,7 @@ function Guide() {
               color: '#fff',
               border: 'none',
               padding: '14px 32px',
-              borderRadius: '12px',
+              borderRadius: '100px',
               fontWeight: '800',
               cursor: 'pointer',
               fontSize: '14px'
@@ -332,7 +338,7 @@ function Guide() {
               border: '1px solid rgba(255, 255, 255, 0.1)',
               color: 'var(--text-main)',
               padding: '14px 32px',
-              borderRadius: '12px',
+              borderRadius: '100px',
               fontWeight: '800',
               cursor: 'pointer',
               fontSize: '14px',
@@ -368,9 +374,11 @@ function Guide() {
               style={{
                 width: '100%',
                 maxWidth: supportMethod === 'in_app' ? '550px' : '460px',
-                background: 'rgba(15, 23, 42, 0.95)',
-                border: '1px solid var(--primary-glow)',
-                borderRadius: '24px',
+                background: 'rgba(15, 23, 42, 0.85)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                borderRadius: '28px',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
                 padding: '32px 24px',
                 boxShadow: '0 8px 32px rgba(139, 92, 246, 0.25)',
                 position: 'relative',
@@ -387,7 +395,7 @@ function Guide() {
                   right: '20px',
                   background: 'rgba(255,255,255,0.05)',
                   border: 'none',
-                  borderRadius: '50%',
+                  borderRadius: '100px',
                   color: 'white',
                   width: '32px',
                   height: '32px',
@@ -434,8 +442,8 @@ function Guide() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '16px',
-                        borderRadius: '14px',
+                        padding: '16px 20px',
+                        borderRadius: '100px',
                         border: '1px solid rgba(37, 211, 102, 0.2)',
                         background: 'rgba(37, 211, 102, 0.05)',
                         color: '#25d366',
@@ -458,8 +466,8 @@ function Guide() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '16px',
-                        borderRadius: '14px',
+                        padding: '16px 20px',
+                        borderRadius: '100px',
                         border: '1px solid rgba(59, 130, 246, 0.2)',
                         background: 'rgba(59, 130, 246, 0.05)',
                         color: '#60a5fa',
@@ -482,8 +490,8 @@ function Guide() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '16px',
-                        borderRadius: '14px',
+                        padding: '16px 20px',
+                        borderRadius: '100px',
                         border: '1px solid rgba(239, 68, 68, 0.2)',
                         background: 'rgba(239, 68, 68, 0.05)',
                         color: '#f87171',
@@ -506,8 +514,8 @@ function Guide() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '16px',
-                        borderRadius: '14px',
+                        padding: '16px 20px',
+                        borderRadius: '100px',
                         border: '1px solid rgba(139, 92, 246, 0.2)',
                         background: 'rgba(139, 92, 246, 0.05)',
                         color: '#c084fc',
@@ -541,8 +549,8 @@ function Guide() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'flex-start',
-                        padding: '16px',
-                        borderRadius: '14px',
+                        padding: '16px 20px',
+                        borderRadius: '24px',
                         border: '1.5px solid var(--primary)',
                         background: 'rgba(139, 92, 246, 0.08)',
                         color: 'white',
@@ -568,10 +576,10 @@ function Guide() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'flex-start',
-                        padding: '16px',
-                        borderRadius: '14px',
-                        border: '1.5px solid rgba(255,255,255,0.08)',
-                        background: 'rgba(255,255,255,0.02)',
+                        padding: '16px 20px',
+                        borderRadius: '24px',
+                        border: '1.5px solid rgba(255, 255, 255, 0.15)',
+                        background: 'rgba(255, 255, 255, 0.03)',
                         color: 'white',
                         cursor: 'pointer',
                         transition: 'all 0.2s',

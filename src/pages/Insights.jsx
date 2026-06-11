@@ -240,12 +240,12 @@ function Insights() {
           onClick={handleExport}
           style={{
             padding: '10px 20px',
-            background: isPremium ? 'var(--primary-glow)' : 'var(--primary-glow)',
-            border: `1px solid ${isPremium ? 'var(--primary-glow)' : 'var(--primary-glow)'}`,
-            borderRadius: '10px',
+            background: 'rgba(139, 92, 246, 0.12)',
+            border: '1px solid rgba(139, 92, 246, 0.3)',
+            borderRadius: '100px',
             color: isPremium ? 'var(--success)' : 'var(--primary-light)',
             fontSize: '13px',
-            fontWeight: '600',
+            fontWeight: '700',
             cursor: 'pointer'
           }}
         >
@@ -288,6 +288,118 @@ function Insights() {
         </div>
       </div>
 
+      {/* Attendance Heatmap */}
+      {(() => {
+        const start = semesterSettings?.startDate ? new Date(semesterSettings.startDate) : new Date(new Date().setMonth(new Date().getMonth() - 4));
+        const end = semesterSettings?.endDate ? new Date(semesterSettings.endDate) : new Date();
+        
+        const dailyStats = {};
+        const markedEvents = (calendarEvents || []).filter(e => {
+          const state = attendanceData[e.id]?.state;
+          return state === 'present' || state === 'absent';
+        });
+        
+        markedEvents.forEach(e => {
+          if (!dailyStats[e.date]) {
+            dailyStats[e.date] = { present: 0, total: 0 };
+          }
+          if (attendanceData[e.id]?.state === 'present') {
+            dailyStats[e.date].present += 1;
+          }
+          dailyStats[e.date].total += 1;
+        });
+        
+        const daysList = [];
+        const curr = new Date(start);
+        const startDay = curr.getDay();
+        curr.setDate(curr.getDate() - startDay);
+        
+        const totalWeeks = 18;
+        const totalDays = totalWeeks * 7;
+        
+        for (let i = 0; i < totalDays; i++) {
+          const dateStr = curr.toISOString().split('T')[0];
+          const stats = dailyStats[dateStr];
+          let status = 'none';
+          if (stats && stats.total > 0) {
+            if (stats.present === stats.total) status = 'perfect';
+            else if (stats.present === 0) status = 'missed-all';
+            else status = 'missed-some';
+          }
+          daysList.push({
+            date: new Date(curr),
+            dateStr,
+            status,
+            stats
+          });
+          curr.setDate(curr.getDate() + 1);
+        }
+        
+        const weeks = [];
+        for (let i = 0; i < daysList.length; i += 7) {
+          weeks.push(daysList.slice(i, i + 7));
+        }
+        
+        const getCellColor = (status) => {
+          switch (status) {
+            case 'perfect': return 'var(--success, #10b981)';
+            case 'missed-some': return 'var(--warning, #f59e0b)';
+            case 'missed-all': return 'var(--danger, #ef4444)';
+            default: return 'rgba(255, 255, 255, 0.05)';
+          }
+        };
+        
+        return (
+          <div className="dashboard-card" style={{ padding: '24px', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <h3 style={{ color: 'var(--text-main)', fontSize: '16px', fontWeight: '700', margin: 0 }}>📊 Attendance Heatmap</h3>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Daily consistency grid</p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', fontSize: '10px', alignItems: 'center', color: 'var(--text-dim)', flexWrap: 'wrap' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'rgba(255,255,255,0.05)' }} /> None</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'var(--danger, #ef4444)' }} /> Missed All</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'var(--warning, #f59e0b)' }} /> Missed Some</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'var(--success, #10b981)' }} /> Perfect</span>
+              </div>
+            </div>
+            
+            <div style={{ overflowX: 'auto', paddingBottom: '8px', display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateRows: 'repeat(7, 10px)', gap: '4px', marginRight: '4px', fontSize: '8px', color: 'var(--text-muted)', justifyContent: 'center', alignContent: 'center' }}>
+                <span>Su</span>
+                <span>Mo</span>
+                <span>Tu</span>
+                <span>We</span>
+                <span>Th</span>
+                <span>Fr</span>
+                <span>Sa</span>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {weeks.map((week, wIdx) => (
+                  <div key={wIdx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {week.map((day, dIdx) => (
+                      <div
+                        key={dIdx}
+                        title={`${day.date.toLocaleDateString()}: ${day.status === 'none' ? 'No classes marked' : `${day.stats.present}/${day.stats.total} present`}`}
+                        style={{
+                          width: '10px',
+                          height: '10px',
+                          borderRadius: '2px',
+                          background: getCellColor(day.status),
+                          transition: 'all 0.15s ease',
+                          cursor: day.status !== 'none' ? 'pointer' : 'default'
+                        }}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ACADEMIC SAFETY CHECK - RETENTION PHASE 3 */}
       <div className="dashboard-card" style={{ padding: '24px', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
         <h3 style={{ color: 'var(--danger)', marginBottom: '16px', fontSize: '16px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -310,7 +422,7 @@ function Insights() {
             if (!dropRisk1 && !dropRisk2) return null;
 
             return (
-              <div key={subject.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+              <div key={subject.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(10px)' }}>
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>{subject.name}</div>
                   <div style={{ fontSize: '11px', color: 'var(--danger)', fontWeight: '600', marginTop: '4px' }}>
@@ -330,7 +442,7 @@ function Insights() {
       </div>
 
       {/* Semester Countdown */}
-      <div className="dashboard-card" style={{ padding: '24px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '24px' }}>
+      <div className="dashboard-card" style={{ padding: '24px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', marginBottom: '24px', borderRadius: '28px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h3 style={{ color: 'var(--text-main)', fontSize: '15px', fontWeight: '700', margin: 0 }}>📅 Semester Countdown</h3>
@@ -353,8 +465,8 @@ function Insights() {
           className="dashboard-card" 
           style={{ 
             padding: '24px', 
-            background: 'linear-gradient(135deg, var(--primary-glow) 0%, rgba(15, 23, 42, 0.4) 100%)',
-            border: '1px solid var(--primary-glow)'
+            background: 'rgba(139, 92, 246, 0.08)',
+            border: '1px solid rgba(139, 92, 246, 0.2)'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -383,7 +495,7 @@ function Insights() {
               }
 
               return (
-                <div key={subject.id} style={{ background: 'rgba(15, 23, 42, 0.6)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div key={subject.id} style={{ background: 'rgba(255, 255, 255, 0.04)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>{subject.name}</span>
                     <span style={{ fontSize: '11px', color: stats.percentage >= (subject.criteria || attendanceSettings?.defaultTarget || 75) ? 'var(--success)' : 'var(--danger)', fontWeight: '700' }}>
@@ -420,8 +532,8 @@ function Insights() {
             padding: '32px', 
             textAlign: 'center', 
             cursor: 'pointer',
-            background: 'rgba(139, 92, 246, 0.05)',
-            border: '1px dashed var(--primary-glow)'
+            background: 'rgba(139, 92, 246, 0.08)',
+            border: '1.5px dashed rgba(139, 92, 246, 0.3)'
           }}
         >
           <div style={{ fontSize: '24px', marginBottom: '12px' }}>🔒</div>
@@ -505,15 +617,17 @@ function Insights() {
             <div 
               key={badge.id}
               style={{
-                background: 'rgba(15, 23, 42, 0.4)',
-                border: '1px solid var(--border)',
-                borderRadius: '16px',
-                padding: '16px',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '24px',
+                padding: '20px',
                 display: 'flex',
                 gap: '12px',
                 alignItems: 'flex-start',
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)'
               }}
             >
               <div style={{
@@ -545,10 +659,10 @@ function Insights() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          background: lvl.achieved && !isLockedByPremium ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.01)',
-                          padding: '6px 10px',
-                          borderRadius: '8px',
-                          border: `1px solid ${lvl.achieved && !isLockedByPremium ? 'rgba(16, 185, 129, 0.2)' : 'var(--border)'}`,
+                          background: lvl.achieved && !isLockedByPremium ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                          padding: '8px 12px',
+                          borderRadius: '100px',
+                          border: `1px solid ${lvl.achieved && !isLockedByPremium ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}`,
                           opacity: isLockedByPremium ? 0.5 : 1
                         }}
                       >
@@ -564,7 +678,7 @@ function Insights() {
                         {isLockedByPremium ? (
                           <span 
                             onClick={() => navigate('/premium')}
-                            style={{ fontSize: '9px', background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '2px 6px', borderRadius: '4px', fontWeight: '900', cursor: 'pointer' }}
+                            style={{ fontSize: '9px', background: 'rgba(139, 92, 246, 0.15)', color: 'var(--primary-light)', padding: '2px 8px', borderRadius: '100px', fontWeight: '900', cursor: 'pointer' }}
                           >
                             💎 LOCK
                           </span>

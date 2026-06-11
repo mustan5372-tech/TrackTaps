@@ -99,17 +99,19 @@ function Today() {
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/')}
             style={{
-              background: 'rgba(255, 255, 255, 0.04)',
-              border: '1px solid var(--border)',
-              borderRadius: '12px',
-              padding: '8px 16px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '100px',
+              padding: '8px 20px',
               color: 'var(--text-main)',
               fontSize: '13px',
               fontWeight: '700',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '6px',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)'
             }}
           >
             ← Dashboard
@@ -146,9 +148,12 @@ function Today() {
             animate={{ opacity: 1, y: 0 }}
             className="dashboard-card" 
             style={{ 
-              padding: '24px',
-              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)',
-              border: '1px solid var(--primary-glow)',
+              padding: '28px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '28px',
+              backdropFilter: 'blur(24px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(180%)',
               boxShadow: '0 8px 32px rgba(139, 92, 246, 0.05)'
             }}
           >
@@ -193,7 +198,14 @@ function Today() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
             className="dashboard-card" 
-            style={{ padding: '20px', border: '1px solid var(--border)' }}
+            style={{ 
+              padding: '24px', 
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '28px',
+              backdropFilter: 'blur(20px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(160%)'
+            }}
           >
             <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '12px' }}>
               ⚡ Bulk Log Attendance
@@ -204,9 +216,9 @@ function Today() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleMarkAll('present')}
                 style={{
-                  background: 'rgba(16, 185, 129, 0.08)',
+                  background: 'rgba(16, 185, 129, 0.12)',
                   border: '1px solid rgba(16, 185, 129, 0.25)',
-                  borderRadius: '12px',
+                  borderRadius: '100px',
                   padding: '12px',
                   color: 'var(--success)',
                   fontWeight: '800',
@@ -226,9 +238,9 @@ function Today() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleMarkAll('absent')}
                 style={{
-                  background: 'rgba(239, 68, 68, 0.08)',
+                  background: 'rgba(239, 68, 68, 0.12)',
                   border: '1px solid rgba(239, 68, 68, 0.25)',
-                  borderRadius: '12px',
+                  borderRadius: '100px',
                   padding: '12px',
                   color: 'var(--danger)',
                   fontWeight: '800',
@@ -248,9 +260,9 @@ function Today() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleMarkAll('off')}
                 style={{
-                  background: 'rgba(245, 158, 11, 0.08)',
+                  background: 'rgba(245, 158, 11, 0.12)',
                   border: '1px solid rgba(245, 158, 11, 0.25)',
-                  borderRadius: '12px',
+                  borderRadius: '100px',
                   padding: '12px',
                   color: 'var(--warning)',
                   fontWeight: '800',
@@ -270,9 +282,9 @@ function Today() {
                 whileTap={{ scale: 0.98 }}
                 onClick={handleClearAll}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  borderRadius: '100px',
                   padding: '12px',
                   color: 'var(--text-main)',
                   fontWeight: '700',
@@ -306,17 +318,20 @@ function Today() {
                   transition={{ delay: idx * 0.05 }}
                   className="dashboard-card"
                   style={{
-                    padding: '20px',
-                    border: '1px solid var(--border)',
+                    padding: '24px',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '28px',
                     background: attendance === 'present' 
-                      ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.04) 0%, var(--surface-glass) 100%)' 
+                      ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(255, 255, 255, 0.06) 100%)' 
                       : attendance === 'absent' 
-                      ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.04) 0%, var(--surface-glass) 100%)'
-                      : 'var(--surface-glass)',
+                      ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(255, 255, 255, 0.06) 100%)'
+                      : 'rgba(255, 255, 255, 0.08)',
+                    backdropFilter: 'blur(24px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
                     boxShadow: attendance === 'present'
-                      ? '0 4px 20px rgba(16, 185, 129, 0.04)'
+                      ? '0 8px 30px rgba(16, 185, 129, 0.06)'
                       : attendance === 'absent'
-                      ? '0 4px 20px rgba(239, 68, 68, 0.04)'
+                      ? '0 8px 30px rgba(239, 68, 68, 0.06)'
                       : 'none',
                     display: 'flex',
                     flexDirection: 'column',
@@ -367,10 +382,10 @@ function Today() {
                   {/* Interactive Status Switcher */}
                   <div style={{ 
                     display: 'flex', 
-                    background: 'rgba(0,0,0,0.2)', 
-                    padding: '4px', 
-                    borderRadius: '10px', 
-                    border: '1px solid rgba(255, 255, 255, 0.03)',
+                    background: 'rgba(0,0,0,0.3)', 
+                    padding: '6px', 
+                    borderRadius: '100px', 
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
                     alignItems: 'center'
                   }}>
                     {[
@@ -387,9 +402,9 @@ function Today() {
                             flex: 1,
                             background: isSelected ? opt.bg : 'transparent',
                             border: isSelected ? `1px solid ${opt.border}` : '1px solid transparent',
-                            borderRadius: '8px',
+                            borderRadius: '100px',
                             color: isSelected ? opt.color : 'var(--text-dim)',
-                            padding: '8px 12px',
+                            padding: '8px 16px',
                             fontSize: '12px',
                             fontWeight: '800',
                             cursor: 'pointer',
@@ -438,8 +453,11 @@ function Today() {
             className="dashboard-card" 
             style={{ 
               padding: '24px', 
-              background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)',
-              border: '1px solid rgba(234, 179, 8, 0.2)' 
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)', 
+              borderRadius: '28px',
+              backdropFilter: 'blur(24px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(180%)'
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>

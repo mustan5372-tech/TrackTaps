@@ -65,11 +65,13 @@ const SuccessModal = ({ isOpen, onClose, planName }) => {
         style={{
           width: '100%',
           maxWidth: '450px',
-          background: 'rgba(30, 41, 59, 0.95)',
+          background: 'rgba(15, 23, 42, 0.85)',
           borderRadius: '32px',
-          border: '1px solid rgba(255,255,255,0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
           padding: '40px 32px',
           textAlign: 'center',
+          backdropFilter: 'blur(30px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(30px) saturate(180%)',
           boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
         }}
       >
@@ -100,7 +102,7 @@ const SuccessModal = ({ isOpen, onClose, planName }) => {
               padding: '12px 24px',
               background: '#25D366',
               color: 'white',
-              borderRadius: '12px',
+              borderRadius: '100px',
               textDecoration: 'none',
               fontWeight: '700',
               fontSize: '14px',
@@ -119,7 +121,7 @@ const SuccessModal = ({ isOpen, onClose, planName }) => {
           style={{
             width: '100%',
             padding: '16px',
-            borderRadius: '16px',
+            borderRadius: '100px',
             background: 'var(--primary-light)',
             color: 'white',
             border: 'none',
@@ -321,9 +323,10 @@ function Premium() {
                 style={{
                   padding: '48px 32px',
                   borderRadius: '32px',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  backdropFilter: 'blur(20px)',
-                  border: plan.bestValue ? '2px solid #f59e0b' : plan.popular ? '2px solid var(--primary-light)' : '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  backdropFilter: 'blur(24px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                  border: plan.bestValue ? '2.5px solid #f59e0b' : plan.popular ? '2.5px solid var(--primary-light)' : '1px solid rgba(255,255,255,0.15)',
                   display: 'flex',
                   flexDirection: 'column',
                   position: 'relative',
@@ -367,7 +370,7 @@ function Premium() {
                   style={{
                     width: '100%',
                     padding: '18px',
-                    borderRadius: '16px',
+                    borderRadius: '100px',
                     background: isCurrentPlan ? 'rgba(255,255,255,0.05)' : plan.color,
                     color: 'white',
                     border: 'none',
@@ -415,7 +418,7 @@ function Premium() {
         </motion.div>
 
         {/* Comparison Table */}
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="dashboard-card" style={{ padding: '60px 48px', borderRadius: '40px', background: 'rgba(15, 23, 42, 0.4)' }}>
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="dashboard-card" style={{ padding: '60px 48px', borderRadius: '40px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)' }}>
           <h3 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '800', marginBottom: '64px' }}>Feature Comparison</h3>
           
           <div className="comparison-header" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '24px', marginBottom: '24px' }}>

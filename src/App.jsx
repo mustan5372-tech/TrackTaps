@@ -75,6 +75,25 @@ const GeoTrackPortal = () => {
   );
 };
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    // Reset window/document scrolling (critical for mobile view, APK, and normal body scroll)
+    window.scrollTo(0, 0);
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+
+    // Reset container scrolling (critical for desktop layout where .content-wrapper scrolls)
+    const contentWrapper = document.querySelector('.content-wrapper');
+    if (contentWrapper) {
+      contentWrapper.scrollTop = 0;
+    }
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   const { initAuth, isAuthLoading, isRestoringSession, isSigningOut, isAuthModalOpen, setAuthModalOpen } = useAppStore();
   const [isStaging, setIsStaging] = React.useState(false);
@@ -223,6 +242,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       {isStaging && (
         <div style={{
           position: 'fixed',

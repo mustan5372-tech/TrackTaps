@@ -307,7 +307,7 @@ function Settings() {
 
       <div className="settings-grid" style={{ display: 'grid', gap: '24px', maxWidth: '800px' }}>
         {/* Account & Sync */}
-        <div className="dashboard-card">
+        <div className="dashboard-card" style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <div className="card-header">
             <span className="card-title">☁️ Account & Cloud Sync</span>
           </div>
@@ -322,7 +322,7 @@ function Settings() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 zIndex: 10,
-                borderRadius: '16px',
+                borderRadius: '28px',
                 backdropFilter: 'blur(4px)'
               }}>
                 <motion.div
@@ -353,7 +353,7 @@ function Settings() {
                     color: 'var(--text-main)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     padding: '16px',
-                    borderRadius: '16px',
+                    borderRadius: '100px',
                     fontWeight: '700',
                     cursor: isAuthLoading ? 'not-allowed' : 'pointer',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -371,7 +371,7 @@ function Settings() {
                 <div className="profile-card" style={{ 
                   background: 'rgba(255, 255, 255, 0.03)', 
                   border: '1px solid rgba(255, 255, 255, 0.05)', 
-                  borderRadius: '16px',
+                  borderRadius: '24px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '16px'
@@ -420,7 +420,7 @@ function Settings() {
                         border: '1px solid rgba(239, 68, 68, 0.2)', 
                         color: '#ef4444', 
                         padding: '8px 16px', 
-                        borderRadius: '10px', 
+                        borderRadius: '100px', 
                         fontSize: '12px', 
                         fontWeight: '700',
                         cursor: 'pointer' 
@@ -465,7 +465,7 @@ function Settings() {
                       border: '1px solid var(--primary-glow)',
                       color: 'var(--primary-light)',
                       padding: '12px',
-                      borderRadius: '8px',
+                      borderRadius: '100px',
                       fontWeight: '600',
                       cursor: 'pointer',
                       opacity: isSyncing ? 0.7 : 1
@@ -481,7 +481,7 @@ function Settings() {
                       border: '1px solid var(--primary-glow)',
                       color: 'var(--primary-light)',
                       padding: '12px',
-                      borderRadius: '8px',
+                      borderRadius: '100px',
                       fontWeight: '600',
                       cursor: 'pointer',
                       opacity: isSyncing ? 0.7 : 1
@@ -507,7 +507,7 @@ function Settings() {
 
 
         {/* Attendance Criteria */}
-        <div className="dashboard-card" style={{ position: 'relative' }}>
+        <div className="dashboard-card" style={{ position: 'relative', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span className="card-title">📊 Attendance Criteria</span>
             <AnimatePresence>
@@ -604,7 +604,7 @@ function Settings() {
         </div>
 
         {/* Premium Appearance */}
-        <div className="dashboard-card" style={{ overflow: 'hidden' }}>
+        <div className="dashboard-card" style={{ overflow: 'hidden', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span className="card-title">🎨 Premium Themes & Appearance</span>
             {subscription?.status !== 'active' && (
@@ -639,6 +639,8 @@ function Settings() {
                 { id: 'gold', name: 'Royal Gold', type: 'premium', bg: '#0c0a09', primary: '#f59e0b', icon: '👑' },
                 { id: 'minimal', name: 'Minimal White', type: 'premium', bg: '#ffffff', primary: '#111827', icon: '⬜' },
                 { id: 'pod', name: 'Pod Purple', type: 'premium', bg: 'var(--bg-primary)', primary: '#6366f1', icon: '📦' },
+                { id: 'sunset', name: 'Sunset Warm', type: 'premium', bg: '#1a0f0f', primary: '#f97316', icon: '🌇' },
+                { id: 'emerald', name: 'Emerald Mint', type: 'premium', bg: '#064e3b', primary: '#10b981', icon: '🌿' },
                 { id: 'custom', name: 'Premium Custom', type: 'premium', bg: 'linear-gradient(135deg, #ef4444 0%, #3b82f6 50%, #10b981 100%)', primary: 'hsl(var(--custom-hue, 270), 91%, 65%)', icon: '🎨' },
               ].map(t => {
                 const isLocked = t.type === 'premium' && subscription?.status !== 'active';
@@ -749,7 +751,7 @@ function Settings() {
         </div>
 
         {/* Pod.ai Integration */}
-        <div className="dashboard-card">
+        <div className="dashboard-card" style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <div className="card-header">
             <span className="card-title">🔗 Pod.ai Integration</span>
           </div>
@@ -761,7 +763,7 @@ function Settings() {
               href="/pod" 
               style={{
                 padding: '12px',
-                borderRadius: '8px',
+                borderRadius: '100px',
                 border: 'none',
                 background: 'linear-gradient(135deg, #a855f7 0%, var(--primary) 100%)',
                 color: 'var(--text-main)',
@@ -778,7 +780,7 @@ function Settings() {
         </div>
 
         {/* Subscription & Billing */}
-        <div className="dashboard-card" style={{ marginTop: '24px' }}>
+        <div className="dashboard-card" style={{ marginTop: '24px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span className="card-title">💳 Subscription & Billing</span>
             {subscription?.plan === 'plus' && (
@@ -809,8 +811,8 @@ function Settings() {
               <button
                 onClick={() => navigate('/premium')}
                 style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
+                  padding: '8px 20px',
+                  borderRadius: '100px',
                   background: subscription?.plan === 'plus' ? 'rgba(255,255,255,0.05)' : 'var(--primary-glow)',
                   color: subscription?.plan === 'plus' ? 'var(--text-main)' : 'var(--primary-light)',
                   border: '1px solid var(--primary-glow)',
@@ -831,7 +833,7 @@ function Settings() {
         </div>
 
         {/* Timetable Settings */}
-        <div className="dashboard-card">
+        <div className="dashboard-card" style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <div className="card-header">
             <span className="card-title">🕒 Timetable Settings</span>
           </div>
@@ -844,12 +846,14 @@ function Settings() {
                 onChange={(e) => handleChange('defaultDuration', parseInt(e.target.value))}
                 style={{
                   width: '100%',
-                  background: 'var(--surface)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
                   color: 'var(--text-main)',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  fontFamily: 'inherit'
+                  padding: '10px 16px',
+                  borderRadius: '100px',
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -863,12 +867,14 @@ function Settings() {
                 onChange={(e) => handleChange('gridStartHour', parseInt(e.target.value))}
                 style={{
                   width: '100%',
-                  background: 'var(--surface)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
                   color: 'var(--text-main)',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  fontFamily: 'inherit'
+                  padding: '10px 16px',
+                  borderRadius: '100px',
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -882,12 +888,14 @@ function Settings() {
                 onChange={(e) => handleChange('gridEndHour', parseInt(e.target.value))}
                 style={{
                   width: '100%',
-                  background: 'var(--surface)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
                   color: 'var(--text-main)',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  fontFamily: 'inherit'
+                  padding: '10px 16px',
+                  borderRadius: '100px',
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -895,7 +903,7 @@ function Settings() {
         </div>
 
         {/* Data Management */}
-        <div className="dashboard-card">
+        <div className="dashboard-card" style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <div className="card-header">
             <span className="card-title">💾 Data Management</span>
           </div>
@@ -904,24 +912,24 @@ function Settings() {
               onClick={handleExportData}
               style={{
                 padding: '12px',
-                borderRadius: '8px',
+                borderRadius: '100px',
                 border: '1px solid var(--primary-glow)',
                 background: 'var(--primary-glow)',
                 color: 'var(--primary-light)',
                 cursor: 'pointer',
-                fontWeight: '500'
+                fontWeight: '600'
               }}
             >
               📥 Export Data
             </button>
             <label style={{
               padding: '12px',
-              borderRadius: '8px',
+              borderRadius: '100px',
               border: '1px solid var(--primary-glow)',
               background: 'var(--primary-glow)',
               color: 'var(--primary-light)',
               cursor: 'pointer',
-              fontWeight: '500',
+              fontWeight: '600',
               textAlign: 'center'
             }}>
               📤 Import Data
@@ -935,18 +943,18 @@ function Settings() {
             <button
               onClick={() => {
                 if (window.confirm('Are you sure you want to clear all local data? This will NOT delete your Cloud Backup or log you out.')) {
-                  clearAppData();
-                  alert('Local data cleared! You can restore it from the cloud if you have a backup.');
+                   clearAppData();
+                   alert('Local data cleared! You can restore it from the cloud if you have a backup.');
                 }
               }}
               style={{
                 padding: '12px',
-                borderRadius: '8px',
+                borderRadius: '100px',
                 border: '1px solid #ef4444',
                 background: 'rgba(239, 68, 68, 0.1)',
                 color: '#ef4444',
                 cursor: 'pointer',
-                fontWeight: '500'
+                fontWeight: '600'
               }}
             >
               🗑️ Clear All Data
@@ -960,7 +968,7 @@ function Settings() {
               }}
               style={{
                 padding: '12px',
-                borderRadius: '8px',
+                borderRadius: '100px',
                 border: '1px solid var(--primary-light)',
                 background: 'rgba(139, 92, 246, 0.1)',
                 color: 'var(--primary-light)',
@@ -974,7 +982,7 @@ function Settings() {
               onClick={() => navigate('/guide')}
               style={{
                 padding: '12px',
-                borderRadius: '8px',
+                borderRadius: '100px',
                 border: '1px solid var(--border)',
                 background: 'var(--surface-bright)',
                 color: 'var(--text-main)',
@@ -990,8 +998,11 @@ function Settings() {
         {/* Campus Launch Referral */}
         <div className="dashboard-card" style={{ 
           background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
-          border: '1px solid var(--primary-glow)',
-          overflow: 'hidden'
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          borderRadius: '28px',
+          overflow: 'hidden',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)'
         }}>
           <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span className="card-title">🎁 Campus Launch Campaign</span>
@@ -1025,7 +1036,7 @@ function Settings() {
               onClick={() => navigate('/referral')}
               style={{
                 padding: '14px',
-                borderRadius: '12px',
+                borderRadius: '100px',
                 background: 'var(--primary-glow)',
                 color: 'var(--primary-light)',
                 border: '1px solid var(--primary-glow)',
@@ -1039,7 +1050,7 @@ function Settings() {
         </div>
 
         {/* About */}
-        <div className="dashboard-card">
+        <div className="dashboard-card" style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <div className="card-header">
             <span className="card-title">ℹ️ About TrackTaps</span>
           </div>
@@ -1062,7 +1073,7 @@ function Settings() {
         </div>
 
         {/* Community & Leaderboard */}
-        <div className="dashboard-card" style={{ border: '1px solid var(--primary-glow)', background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(15, 23, 42, 0.2) 100%)' }}>
+        <div className="dashboard-card" style={{ border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(15, 23, 42, 0.2) 100%)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <div className="card-header">
             <span className="card-title">🏆 Global Community</span>
           </div>
@@ -1074,7 +1085,7 @@ function Settings() {
               onClick={() => navigate('/community')}
               style={{
                 padding: '14px',
-                borderRadius: '12px',
+                borderRadius: '100px',
                 background: 'var(--primary)',
                 color: 'white',
                 border: 'none',

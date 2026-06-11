@@ -22,7 +22,7 @@ function DownloadPage() {
 
   const triggerDownload = () => {
     // Redirect directly to the self-hosted path to download the latest compiled APK
-    window.location.href = '/TrackTaps_v1.8.2.apk';
+    window.location.href = '/TrackTaps_v2.0.0.apk';
   };
 
   return (
@@ -114,7 +114,7 @@ function DownloadPage() {
         </h2>
         
         <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: '0 0 32px 0' }}>
-          Please wait while the latest stable Version 1.8.2 APK package downloads to your phone.
+          Please wait while the latest stable Version 2.0.0 APK package downloads to your phone.
         </p>
 
         {/* Retry trigger */}

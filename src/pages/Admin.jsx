@@ -451,12 +451,13 @@ function Admin() {
             onClick={() => setActiveTab('users')}
             style={{ 
               padding: '10px 20px', 
-              background: activeTab === 'users' ? 'var(--primary)' : 'var(--surface-glass)', 
-              border: '1px solid var(--primary-glow)',
-              borderRadius: '12px',
+              background: activeTab === 'users' ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)', 
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '100px',
               color: activeTab === 'users' ? 'white' : 'var(--text-dim)',
               fontWeight: '700',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              transition: 'all 0.2s'
             }}
           >
             Users
@@ -465,12 +466,13 @@ function Admin() {
             onClick={() => setActiveTab('reports')}
             style={{ 
               padding: '10px 20px', 
-              background: activeTab === 'reports' ? 'var(--primary)' : 'var(--surface-glass)', 
-              border: '1px solid var(--primary-glow)',
-              borderRadius: '12px',
+              background: activeTab === 'reports' ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)', 
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '100px',
               color: activeTab === 'reports' ? 'white' : 'var(--text-dim)',
               fontWeight: '700',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              transition: 'all 0.2s'
             }}
           >
             Reports {reports.filter(r => r.status === 'pending').length > 0 && `(${reports.filter(r => r.status === 'pending').length})`}
@@ -479,12 +481,13 @@ function Admin() {
             onClick={() => setActiveTab('analytics')}
             style={{ 
               padding: '10px 20px', 
-              background: activeTab === 'analytics' ? 'var(--primary)' : 'var(--surface-glass)', 
-              border: '1px solid var(--primary-glow)',
-              borderRadius: '12px',
+              background: activeTab === 'analytics' ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)', 
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '100px',
               color: activeTab === 'analytics' ? 'white' : 'var(--text-dim)',
               fontWeight: '700',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              transition: 'all 0.2s'
             }}
           >
             📊 Analytics
@@ -493,12 +496,13 @@ function Admin() {
             onClick={() => setActiveTab('queries')}
             style={{ 
               padding: '10px 20px', 
-              background: activeTab === 'queries' ? 'var(--primary)' : 'var(--surface-glass)', 
-              border: '1px solid var(--primary-glow)',
-              borderRadius: '12px',
+              background: activeTab === 'queries' ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)', 
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '100px',
               color: activeTab === 'queries' ? 'white' : 'var(--text-dim)',
               fontWeight: '700',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              transition: 'all 0.2s'
             }}
           >
             📬 Queries {queries.filter(q => q.status === 'pending').length > 0 && `(${queries.filter(q => q.status === 'pending').length})`}
@@ -507,10 +511,17 @@ function Admin() {
             onClick={() => { fetchAdminData(); fetchReports(); fetchVisitorAnalytics(); fetchSupportQueries(); }}
             style={{ 
               padding: '10px', 
-              background: 'var(--surface-glass)', 
-              border: '1px solid var(--primary-glow)',
-              borderRadius: '12px',
-              cursor: 'pointer'
+              background: 'rgba(255, 255, 255, 0.08)', 
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: 'var(--text-main)',
+              transition: 'all 0.2s'
             }}
           >
             🔄
@@ -540,7 +551,19 @@ function Admin() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
                   className="dashboard-card"
-                  style={{ padding: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ 
+                    padding: '20px', 
+                    textAlign: 'center', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '24px',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)'
+                  }}
                 >
                   <div style={{ fontSize: '20px', marginBottom: '8px' }}>{stat.icon}</div>
                   <div style={{ color: 'var(--text-dim)', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', fontWeight: '700' }}>{stat.label}</div>
@@ -551,7 +574,14 @@ function Admin() {
           )}
 
       {/* User Management */}
-      <div className="dashboard-card" style={{ padding: 'clamp(16px, 4vw, 32px)' }}>
+      <div className="dashboard-card" style={{ 
+        padding: 'clamp(16px, 4vw, 32px)',
+        background: 'rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: '28px',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)'
+      }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
           <h3 style={{ fontSize: '18px', fontWeight: '700' }}>User Management ({stats.totalUsers} Total Users)</h3>
           <input 
@@ -560,14 +590,15 @@ function Admin() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ 
-              background: 'rgba(15, 23, 42, 0.6)', 
-              border: '1px solid var(--primary-glow)', 
+              background: 'rgba(0, 0, 0, 0.3)', 
+              border: '1px solid rgba(255, 255, 255, 0.15)', 
               color: 'var(--text-main)',
-              padding: '10px 16px',
-              borderRadius: '10px',
+              padding: '10px 20px',
+              borderRadius: '100px',
               width: '100%',
               maxWidth: '300px',
-              fontFamily: 'inherit'
+              fontFamily: 'inherit',
+              outline: 'none'
             }}
           />
         </div>
@@ -637,10 +668,10 @@ function Admin() {
                           display: 'flex', 
                           flexDirection: 'column', 
                           gap: '8px', 
-                          background: 'rgba(255,255,255,0.02)', 
-                          padding: '12px', 
-                          borderRadius: '12px',
-                          border: '1px solid rgba(255,255,255,0.05)'
+                          background: 'rgba(255, 255, 255, 0.03)', 
+                          padding: '12px 16px', 
+                          borderRadius: '24px',
+                          border: '1px solid rgba(255, 255, 255, 0.08)'
                         }}>
                           <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Plan Control</div>
                           <div style={{ display: 'flex', gap: '8px' }}>
@@ -648,13 +679,14 @@ function Admin() {
                               id={`plan-select-${u.uid}`}
                               defaultValue="monthly"
                               style={{ 
-                                background: 'rgba(15, 23, 42, 0.8)', 
+                                background: 'rgba(0, 0, 0, 0.3)', 
                                 color: 'var(--text-main)', 
-                                border: '1px solid var(--primary-glow)', 
-                                borderRadius: '8px', 
+                                border: '1px solid rgba(255, 255, 255, 0.15)', 
+                                borderRadius: '100px', 
                                 fontSize: '12px', 
-                                padding: '6px 10px',
-                                flex: 1
+                                padding: '6px 14px',
+                                flex: 1,
+                                outline: 'none'
                               }}
                             >
                               {planOptions.map(p => (
@@ -668,11 +700,11 @@ function Admin() {
                                 handleAction('assign_plan', u, plan);
                               }}
                               style={{ 
-                                background: 'var(--primary-glow)', 
+                                background: 'var(--primary)', 
                                 border: 'none', 
-                                color: 'var(--primary-light)', 
-                                padding: '6px 12px', 
-                                borderRadius: '8px', 
+                                color: 'white', 
+                                padding: '6px 16px', 
+                                borderRadius: '100px', 
                                 fontSize: '11px', 
                                 cursor: 'pointer', 
                                 fontWeight: '800',
@@ -700,7 +732,7 @@ function Admin() {
                             alert("✅ Report submitted to moderation queue.");
                           }
                         }}
-                        style={{ background: 'rgba(245, 158, 11, 0.1)', border: 'none', color: '#f59e0b', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                        style={{ background: 'rgba(245, 158, 11, 0.1)', border: 'none', color: '#f59e0b', padding: '6px 16px', borderRadius: '100px', fontSize: '11px', cursor: 'pointer', fontWeight: '700' }}
                       >
                         ⚠️ Report
                       </button>
@@ -710,13 +742,13 @@ function Admin() {
                         <>
                           <button 
                             onClick={() => handleAction('mark_paid', u)}
-                            style={{ background: 'rgba(16, 185, 129, 0.1)', border: 'none', color: '#10b981', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                            style={{ background: 'rgba(16, 185, 129, 0.1)', border: 'none', color: '#10b981', padding: '6px 16px', borderRadius: '100px', fontSize: '11px', cursor: 'pointer', fontWeight: '700' }}
                           >
                             Mark Paid
                           </button>
                           <button 
                             onClick={() => handleAction('remove_premium', u)}
-                            style={{ background: 'rgba(245, 158, 11, 0.1)', border: 'none', color: '#f59e0b', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                            style={{ background: 'rgba(245, 158, 11, 0.1)', border: 'none', color: '#f59e0b', padding: '6px 16px', borderRadius: '100px', fontSize: '11px', cursor: 'pointer', fontWeight: '700' }}
                           >
                             Remove
                           </button>
@@ -726,14 +758,14 @@ function Admin() {
                       {u.banned ? (
                         <button 
                           onClick={() => handleAction('unban', u)}
-                          style={{ background: 'rgba(16, 185, 129, 0.1)', border: 'none', color: '#10b981', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                          style={{ background: 'rgba(16, 185, 129, 0.1)', border: 'none', color: '#10b981', padding: '6px 16px', borderRadius: '100px', fontSize: '11px', cursor: 'pointer', fontWeight: '700' }}
                         >
                           Unban
                         </button>
                       ) : (
                         <button 
                           onClick={() => handleAction('ban', u)}
-                          style={{ background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#ef4444', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                          style={{ background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#ef4444', padding: '6px 16px', borderRadius: '100px', fontSize: '11px', cursor: 'pointer', fontWeight: '700' }}
                         >
                           Ban
                         </button>
@@ -741,7 +773,7 @@ function Admin() {
                       
                       <button 
                         onClick={() => handleAction('delete', u)}
-                        style={{ background: 'rgba(239, 68, 68, 0.05)', border: 'none', color: '#ef4444', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', opacity: 0.6 }}
+                        style={{ background: 'rgba(239, 68, 68, 0.05)', border: 'none', color: '#ef4444', padding: '6px 16px', borderRadius: '100px', fontSize: '11px', cursor: 'pointer', opacity: 0.6, fontWeight: '700' }}
                       >
                         Delete
                       </button>
@@ -755,16 +787,16 @@ function Admin() {
       </div>
     </>
       ) : activeTab === 'reports' ? (
-        <div className="dashboard-card" style={{ padding: '32px' }}>
+        <div className="dashboard-card" style={{ padding: '32px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '24px' }}>Moderation Queue</h3>
           <div style={{ display: 'grid', gap: '16px' }}>
             {reports.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>No reports found.</p>
             ) : reports.map(report => (
               <div key={report.id} className="report-card" style={{ 
-                background: 'rgba(255,255,255,0.02)', 
-                border: '1px solid rgba(255,255,255,0.05)', 
-                borderRadius: '16px', 
+                background: 'rgba(255, 255, 255, 0.04)', 
+                border: '1px solid rgba(255, 255, 255, 0.1)', 
+                borderRadius: '24px', 
                 padding: '20px',
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -786,13 +818,13 @@ function Admin() {
                     <>
                       <button 
                         onClick={() => handleResolveReport('dismiss', report)}
-                        style={{ background: 'rgba(16, 185, 129, 0.1)', border: 'none', color: '#10b981', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                        style={{ background: 'rgba(16, 185, 129, 0.1)', border: 'none', color: '#10b981', padding: '8px 20px', borderRadius: '100px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
                       >
                         Keep User
                       </button>
                       <button 
                         onClick={() => handleResolveReport('delete', report)}
-                        style={{ background: '#ef4444', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                        style={{ background: '#ef4444', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '100px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
                       >
                         Delete Account
                       </button>
@@ -808,7 +840,7 @@ function Admin() {
           </div>
         </div>
       ) : activeTab === 'queries' ? (
-        <div className="dashboard-card" style={{ padding: '32px' }}>
+        <div className="dashboard-card" style={{ padding: '32px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>📬 Contact & Support Queries</span>
             <span style={{ fontSize: '12px', background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '4px 12px', borderRadius: '100px' }}>
@@ -825,10 +857,10 @@ function Admin() {
               onChange={e => setQuerySearchTerm(e.target.value)}
               style={{
                 width: '100%',
-                padding: '12px 20px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(0,0,0,0.2)',
+                padding: '12px 24px',
+                borderRadius: '100px',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                background: 'rgba(0, 0, 0, 0.3)',
                 color: 'white',
                 fontSize: '14px',
                 outline: 'none',
@@ -878,13 +910,13 @@ function Admin() {
                     ? 'rgba(239, 68, 68, 0.02)' 
                     : query.status === 'resolved' 
                       ? 'rgba(16, 185, 129, 0.02)' 
-                      : 'rgba(255,255,255,0.02)', 
+                      : 'rgba(255, 255, 255, 0.04)', 
                   border: query.status === 'spam' 
                     ? '1.5px dashed rgba(239, 68, 68, 0.2)' 
                     : query.status === 'resolved' 
                       ? '1.5px solid rgba(16, 185, 129, 0.2)' 
-                      : '1.5px solid rgba(255,255,255,0.05)', 
-                  borderRadius: '20px', 
+                      : '1.5px solid rgba(255, 255, 255, 0.1)', 
+                  borderRadius: '24px', 
                   padding: '24px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -1008,8 +1040,8 @@ function Admin() {
                           background: 'rgba(16, 185, 129, 0.1)', 
                           border: 'none', 
                           color: '#10b981', 
-                          padding: '8px 16px', 
-                          borderRadius: '8px', 
+                          padding: '8px 20px', 
+                          borderRadius: '100px', 
                           fontSize: '12px', 
                           fontWeight: '700', 
                           cursor: 'pointer',
@@ -1028,8 +1060,8 @@ function Admin() {
                           background: 'rgba(239, 68, 68, 0.05)', 
                           border: 'none', 
                           color: '#ef4444', 
-                          padding: '8px 16px', 
-                          borderRadius: '8px', 
+                          padding: '8px 20px', 
+                          borderRadius: '100px', 
                           fontSize: '12px', 
                           fontWeight: '700', 
                           cursor: 'pointer',
@@ -1048,8 +1080,8 @@ function Admin() {
                           background: 'rgba(255, 255, 255, 0.05)', 
                           border: 'none', 
                           color: 'var(--text-dim)', 
-                          padding: '8px 16px', 
-                          borderRadius: '8px', 
+                          padding: '8px 20px', 
+                          borderRadius: '100px', 
                           fontSize: '12px', 
                           fontWeight: '700', 
                           cursor: 'pointer' 
@@ -1074,7 +1106,7 @@ function Admin() {
               { label: "Returning Visitors", value: visitorStats.returningVisitors, desc: `Ratio: ${visitorStats.totalVisitors > 0 ? Math.round((visitorStats.returningVisitors / visitorStats.totalVisitors) * 100) : 0}%`, color: "#8b5cf6" },
               { label: "Avg Session Duration", value: `${Math.floor(visitorStats.averageSessionDuration / 60)}m ${visitorStats.averageSessionDuration % 60}s`, desc: "Interaction time", color: "#eab308" }
             ].map((card, idx) => (
-              <div key={idx} className="dashboard-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div key={idx} className="dashboard-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '24px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
                 <div style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '4px' }}>{card.label}</div>
                 <div style={{ fontSize: '24px', fontWeight: '850', color: card.color, marginBottom: '4px' }}>{card.value}</div>
                 <div style={{ color: 'var(--text-dim)', fontSize: '12px' }}>{card.desc}</div>
@@ -1086,7 +1118,7 @@ function Admin() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
             
             {/* Growth & Conversion Funnel */}
-            <div className="dashboard-card" style={{ padding: '24px' }}>
+            <div className="dashboard-card" style={{ padding: '24px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
               <h3 style={{ fontSize: '16px', fontWeight: '750', marginBottom: '20px' }}>📈 Startup Growth Funnel</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 
@@ -1122,7 +1154,7 @@ function Admin() {
             </div>
 
             {/* Platform Breakdown */}
-            <div className="dashboard-card" style={{ padding: '24px' }}>
+            <div className="dashboard-card" style={{ padding: '24px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
               <h3 style={{ fontSize: '16px', fontWeight: '750', marginBottom: '20px' }}>📱 Platform Distribution</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {[
@@ -1149,11 +1181,11 @@ function Admin() {
           </div>
 
           {/* Feature Leaderboard */}
-          <div className="dashboard-card" style={{ padding: '24px' }}>
+          <div className="dashboard-card" style={{ padding: '24px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
             <h3 style={{ fontSize: '16px', fontWeight: '750', marginBottom: '20px' }}>🔥 Feature Popularity & Adoption</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
               {visitorStats.featuresRanked.map((feat, idx) => (
-                <div key={idx} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={idx} style={{ background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '16px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>{feat.name}</div>
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>Rank #{idx + 1}</div>

@@ -313,7 +313,7 @@ function MegaSaver() {
 
       {/* Access Gatekeeper for Non-Premium / Non-Mega Users */}
       {!isPremium ? (
-        <div className="dashboard-card" style={{ padding: '48px 32px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%)', border: '1px dashed var(--primary-glow)', borderRadius: '28px' }}>
+        <div className="dashboard-card" style={{ padding: '48px 32px', textAlign: 'center', background: 'rgba(245, 158, 11, 0.05)', border: '1.5px dashed rgba(245, 158, 11, 0.3)', borderRadius: '28px', backdropFilter: 'blur(20px)' }}>
           <div style={{ fontSize: '64px', marginBottom: '20px' }}>🔒</div>
           <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>Unlock Coordinated Timetable Sync</h3>
           <p style={{ color: 'var(--text-dim)', fontSize: '14px', maxWidth: '500px', margin: '0 auto 24px', lineHeight: 1.6 }}>
@@ -328,7 +328,7 @@ function MegaSaver() {
               color: 'white',
               border: 'none',
               padding: '14px 32px',
-              borderRadius: '12px',
+              borderRadius: '100px',
               fontSize: '14px',
               fontWeight: '800',
               cursor: 'pointer'
@@ -362,7 +362,7 @@ function MegaSaver() {
                   color: 'white',
                   border: 'none',
                   padding: '12px',
-                  borderRadius: '10px',
+                  borderRadius: '100px',
                   fontSize: '13px',
                   fontWeight: '800',
                   cursor: 'pointer',
@@ -388,10 +388,10 @@ function MegaSaver() {
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
                 style={{
-                  background: 'rgba(0,0,0,0.2)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '10px',
-                  padding: '12px',
+                  background: 'rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: '100px',
+                  padding: '12px 24px',
                   color: 'white',
                   fontSize: '14px',
                   fontWeight: '700',
@@ -406,11 +406,11 @@ function MegaSaver() {
                 onClick={handleJoinGroup}
                 disabled={loading}
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid var(--border)',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.15)',
                   color: 'var(--text-main)',
                   padding: '12px',
-                  borderRadius: '10px',
+                  borderRadius: '100px',
                   fontSize: '13px',
                   fontWeight: '750',
                   cursor: 'pointer',
@@ -432,7 +432,7 @@ function MegaSaver() {
             >
               
               {/* Group Overview Banner */}
-              <div className="dashboard-card" style={{ padding: '24px', background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(15, 23, 42, 0.6) 100%)', border: '1px solid var(--primary-glow)' }}>
+              <div className="dashboard-card" style={{ padding: '24px', background: 'rgba(139, 92, 246, 0.08)', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: 'var(--text-main)' }}>👥 {activeGroup.name}</h3>
@@ -445,11 +445,11 @@ function MegaSaver() {
                         whileTap={{ scale: 0.95 }}
                         onClick={handleShareGroup}
                         style={{
-                          background: 'var(--primary-glow)',
-                          border: '1px solid var(--primary)',
+                          background: 'rgba(139, 92, 246, 0.12)',
+                          border: '1px solid rgba(139, 92, 246, 0.3)',
                           color: 'var(--primary-light)',
                           padding: '4px 12px',
-                          borderRadius: '8px',
+                          borderRadius: '100px',
                           fontSize: '11px',
                           fontWeight: '800',
                           cursor: 'pointer',
@@ -464,16 +464,16 @@ function MegaSaver() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '11px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid var(--success)', color: 'var(--success)', padding: '4px 12px', borderRadius: '100px', fontWeight: '800' }}>
+                    <span style={{ fontSize: '11px', background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', color: 'var(--success)', padding: '4px 12px', borderRadius: '100px', fontWeight: '800' }}>
                       ● REALTIME SYNC ACTIVE
                     </span>
                     <button
                       onClick={handleLeaveGroup}
                       style={{
-                        background: 'transparent',
-                        border: '1px solid var(--border)',
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
                         color: 'var(--text-dim)',
-                        padding: '4px 10px',
+                        padding: '4px 12px',
                         borderRadius: '100px',
                         fontSize: '11px',
                         fontWeight: '750',
@@ -481,7 +481,7 @@ function MegaSaver() {
                         transition: 'all 0.2s'
                       }}
                       onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#ef4444'; }}
-                      onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-dim)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-dim)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'; }}
                     >
                       🔌 Disconnect
                     </button>
@@ -497,13 +497,15 @@ function MegaSaver() {
                     <div 
                       key={idx} 
                       style={{ 
-                        background: 'rgba(255,255,255,0.02)', 
-                        border: '1px solid var(--border)', 
-                        borderRadius: '16px', 
+                        background: 'rgba(255, 255, 255, 0.04)', 
+                        border: '1px solid rgba(255, 255, 255, 0.1)', 
+                        borderRadius: '24px', 
                         padding: '20px', 
                         display: 'flex', 
                         flexDirection: 'column',
-                        gap: '12px' 
+                        gap: '12px',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)'
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -515,7 +517,7 @@ function MegaSaver() {
                       </div>
 
                       {/* Synced Real Subjects & Percentages */}
-                      <div style={{ background: 'rgba(0,0,0,0.15)', borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '750', textTransform: 'uppercase' }}>Real Subjects Sync</div>
                         {(member.subjects || []).length === 0 ? (
                           <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>No active subjects listed</div>
@@ -553,22 +555,24 @@ function MegaSaver() {
                       <div 
                         key={idx} 
                         style={{ 
-                          background: 'rgba(0,0,0,0.15)', 
-                          border: '1px solid var(--border)', 
-                          borderRadius: '16px', 
+                          background: 'rgba(255, 255, 255, 0.04)', 
+                          border: '1px solid rgba(255, 255, 255, 0.1)', 
+                          borderRadius: '24px', 
                           padding: '20px', 
                           display: 'flex', 
                           justifyContent: 'space-between', 
                           alignItems: 'center', 
                           flexWrap: 'wrap', 
-                          gap: '12px' 
+                          gap: '12px',
+                          backdropFilter: 'blur(10px)',
+                          WebkitBackdropFilter: 'blur(10px)'
                         }}
                       >
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ 
                               fontSize: '11px', 
-                              background: rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.15)' : 'var(--primary-glow)', 
+                              background: rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(139, 92, 246, 0.15)', 
                               color: rec.action === 'Attend Class Together' ? 'var(--danger)' : 'var(--primary-light)', 
                               padding: '2px 8px', 
                               borderRadius: '100px', 
@@ -584,9 +588,9 @@ function MegaSaver() {
                         </div>
 
                         <div style={{ 
-                          background: rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', 
+                          background: rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)', 
                           border: `1.5px solid ${rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
-                          borderRadius: '12px', 
+                          borderRadius: '100px', 
                           padding: '10px 20px',
                           color: rec.action === 'Attend Class Together' ? 'var(--danger)' : 'var(--success)',
                           fontWeight: '800',

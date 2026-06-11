@@ -337,12 +337,15 @@ export default function Pod() {
         padding: '20px'
       }}>
         <div style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--primary-glow)',
-          borderRadius: '16px',
+          background: 'rgba(255, 255, 255, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          borderRadius: '32px',
           padding: '40px',
           maxWidth: '400px',
-          width: '100%'
+          width: '100%',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          boxShadow: '0 8px 32px rgba(139, 92, 246, 0.05)'
         }}>
           <h1 style={{ color: 'var(--text-main)', marginBottom: '8px', fontSize: '24px', fontWeight: '700' }}>
             Pod.ai Dashboard
@@ -377,11 +380,11 @@ export default function Pod() {
                 placeholder="your.email@medicaps.ac.in"
                 style={{
                   width: '100%',
-                  background: 'var(--surface)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: 'rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
                   color: 'var(--text-main)',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
+                  padding: '12px 20px',
+                  borderRadius: '100px',
                   fontFamily: 'inherit',
                   fontSize: '14px',
                   boxSizing: 'border-box'
@@ -401,12 +404,12 @@ export default function Pod() {
                   placeholder="Your password"
                   style={{
                     width: '100%',
-                    background: 'var(--surface)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(0,0,0,0.3)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
                     color: 'var(--text-main)',
-                    padding: '10px 12px',
+                    padding: '12px 20px',
                     paddingRight: '40px',
-                    borderRadius: '8px',
+                    borderRadius: '100px',
                     fontFamily: 'inherit',
                     fontSize: '14px',
                     boxSizing: 'border-box'
@@ -417,7 +420,7 @@ export default function Pod() {
                   onClick={() => setShowPassword(!showPassword)}
                   style={{
                     position: 'absolute',
-                    right: '12px',
+                    right: '16px',
                     top: '50%',
                     transform: 'translateY(-50%)',
                     background: 'none',
@@ -440,7 +443,7 @@ export default function Pod() {
                 color: 'var(--text-main)',
                 border: 'none',
                 padding: '12px',
-                borderRadius: '8px',
+                borderRadius: '100px',
                 fontWeight: '600',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
@@ -603,8 +606,8 @@ export default function Pod() {
                 background: 'linear-gradient(135deg, #a855f7 0%, var(--primary) 100%)',
                 border: 'none',
                 color: 'var(--text-main)',
-                padding: '10px 20px',
-                borderRadius: '12px',
+                padding: '10px 24px',
+                borderRadius: '100px',
                 cursor: (isSyncing || attendanceLoading || isActuallyLoading) ? 'not-allowed' : 'pointer',
                 fontWeight: '700',
                 fontSize: '14px',
@@ -626,8 +629,8 @@ export default function Pod() {
                 background: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.2)',
                 color: '#ef4444',
-                padding: '10px 16px',
-                borderRadius: '12px',
+                padding: '10px 20px',
+                borderRadius: '100px',
                 cursor: 'pointer',
                 fontWeight: '600',
                 fontSize: '14px'
@@ -788,12 +791,15 @@ export default function Pod() {
                       <div
                         key={classroom.token}
                         style={{
-                          background: 'var(--surface-glass)',
-                          border: '1px solid var(--border)',
-                          borderRadius: '20px',
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          border: '1px solid rgba(255, 255, 255, 0.15)',
+                          borderRadius: '28px',
                           padding: '24px',
                           transition: 'all 0.3s ease',
-                          cursor: 'default'
+                          cursor: 'default',
+                          backdropFilter: 'blur(20px)',
+                          WebkitBackdropFilter: 'blur(20px)',
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)'
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
@@ -819,7 +825,7 @@ export default function Pod() {
                         )}
                         
                         {att.success === false ? (
-                          <div style={{ padding: '16px', background: 'rgba(239,68,68,0.1)', borderRadius: '12px', border: '1px dashed #ef4444', color: '#ef4444', fontSize: '13px', textAlign: 'center' }}>
+                          <div style={{ padding: '16px', background: 'rgba(239,68,68,0.1)', borderRadius: '24px', border: '1px dashed #ef4444', color: '#ef4444', fontSize: '13px', textAlign: 'center' }}>
                             Data fetch failed. Preserving last known state.
                           </div>
                         ) : att.total === undefined ? (
@@ -835,11 +841,11 @@ export default function Pod() {
                               gap: '16px',
                               marginBottom: '20px'
                             }}>
-                              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                              <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '12px', borderRadius: '16px', border: '1.5px solid rgba(255, 255, 255, 0.08)' }}>
                                 <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '0 0 4px 0', fontWeight: '700', textTransform: 'uppercase' }}>Attended</p>
                                 <p style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>{att.attended}</p>
                               </div>
-                              <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                              <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '12px', borderRadius: '16px', border: '1.5px solid rgba(255, 255, 255, 0.08)' }}>
                                 <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '0 0 4px 0', fontWeight: '700', textTransform: 'uppercase' }}>Total</p>
                                 <p style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>{att.total}</p>
                               </div>

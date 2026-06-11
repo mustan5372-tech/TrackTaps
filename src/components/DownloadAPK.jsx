@@ -46,7 +46,7 @@ const DownloadAPK = () => {
   useEffect(() => {
     const fetchApkSize = async () => {
       try {
-        const response = await fetch('/TrackTaps_v1.8.2.apk', { method: 'HEAD' });
+        const response = await fetch('/TrackTaps_v2.0.0.apk', { method: 'HEAD' });
         const contentLength = response.headers.get('content-length');
         if (contentLength) {
           const bytes = parseInt(contentLength, 10);
@@ -110,8 +110,8 @@ const DownloadAPK = () => {
       return;
     }
     const link = document.createElement('a');
-    link.href = '/TrackTaps_v1.8.2.apk';
-    link.download = 'TrackTaps_v1.8.2.apk';
+    link.href = '/TrackTaps_v2.0.0.apk';
+    link.download = 'TrackTaps_v2.0.0.apk';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -469,34 +469,70 @@ const DownloadAPK = () => {
       {/* Conversational Assistant chat drawer */}
       <AnimatePresence>
         {isChatOpen && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 30000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 30000, display: 'flex', justifyContent: 'flex-end', height: '100vh', overflow: 'hidden' }}>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsChatOpen(false)}
-              style={{ position: 'absolute', inset: 0, background: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(12px)' }}
+              style={{ position: 'absolute', inset: 0, background: 'rgba(2, 6, 23, 0.5)', backdropFilter: 'blur(8px)' }}
             />
             
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 30 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 30 }}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 150 }}
               className="ai-assistant-modal-card"
               style={{
                 position: 'relative',
                 width: '100%',
                 maxWidth: '440px',
-                background: 'linear-gradient(135deg, #1e1b4b 0%, var(--bg-primary) 100%)',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
-                borderRadius: '28px',
+                background: 'rgba(15, 23, 42, 0.7)',
+                backdropFilter: 'blur(32px) saturate(200%)',
+                WebkitBackdropFilter: 'blur(32px) saturate(200%)',
+                borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '24px 0 0 24px',
                 padding: '24px',
                 display: 'flex',
                 flexDirection: 'column',
-                height: '520px',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(139, 92, 246, 0.2)'
+                height: '100%',
+                boxShadow: '-10px 0 40px rgba(0, 0, 0, 0.5)',
+                overflow: 'hidden'
               }}
             >
+              {/* Floating Ambient Particle Glows */}
+              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1], x: [0, 20, 0], y: [0, -20, 0] }}
+                  transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{
+                    position: 'absolute',
+                    top: '20%',
+                    left: '10%',
+                    width: '150px',
+                    height: '150px',
+                    background: 'radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)',
+                    opacity: 0.15
+                  }}
+                />
+                <motion.div
+                  animate={{ scale: [1.2, 1, 1.2], x: [0, -30, 0], y: [0, 30, 0] }}
+                  transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{
+                    position: 'absolute',
+                    bottom: '20%',
+                    right: '10%',
+                    width: '200px',
+                    height: '200px',
+                    background: 'radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%)',
+                    opacity: 0.15
+                  }}
+                />
+              </div>
+
+              {/* Ensure other child contents render above the background particles */}
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -654,6 +690,7 @@ const DownloadAPK = () => {
                     fontSize: '13px'
                   }}
                 />
+              </div>
               </div>
             </motion.div>
           </div>

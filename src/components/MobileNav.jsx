@@ -46,7 +46,14 @@ function MobileNav() {
                 className={`mobile-nav-btn ${location.pathname === item.path ? 'active' : ''}`}
                 style={{ width: '100%', maxWidth: '100px' }}
               >
-                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-icon-pill-mobile" style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: '38px', height: '26px', borderRadius: '100px',
+                  background: location.pathname === item.path ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.04)',
+                  border: location.pathname === item.path ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid rgba(255,255,255,0.05)',
+                  boxShadow: location.pathname === item.path ? 'inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 6px rgba(139,92,246,0.15)' : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                  fontSize: '16px', transition: 'all 0.3s ease'
+                }}>{item.icon}</span>
                 <span className="nav-label">{item.label}</span>
                 {location.pathname === item.path && (
                   <motion.div
@@ -128,7 +135,14 @@ function MobileNav() {
                 className={`mobile-nav-btn ${location.pathname === item.path ? 'active' : ''}`}
                 style={{ width: '100%', minWidth: '0' }}
               >
-                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-icon-pill-mobile" style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: '36px', height: '24px', borderRadius: '100px',
+                  background: location.pathname === item.path ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.04)',
+                  border: location.pathname === item.path ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid rgba(255,255,255,0.05)',
+                  boxShadow: location.pathname === item.path ? 'inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 6px rgba(139,92,246,0.15)' : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                  fontSize: '16px', transition: 'all 0.3s ease'
+                }}>{item.icon}</span>
                 <span className="nav-label">{item.label}</span>
                 {location.pathname === item.path && (
                   <motion.div
@@ -159,7 +173,14 @@ function MobileNav() {
               className={`mobile-nav-btn ${isMoreActive ? 'active' : ''}`}
               style={{ width: '100%', minWidth: '0', cursor: 'pointer' }}
             >
-              <span className="nav-icon">☰</span>
+              <span className="nav-icon-pill-mobile" style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: '36px', height: '24px', borderRadius: '100px',
+                background: isMoreActive ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.04)',
+                border: isMoreActive ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid rgba(255,255,255,0.05)',
+                boxShadow: isMoreActive ? 'inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 6px rgba(139,92,246,0.15)' : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                fontSize: '16px', transition: 'all 0.3s ease'
+              }}>☰</span>
               <span className="nav-label">More</span>
               {isMoreActive && (
                 <motion.div
@@ -278,8 +299,10 @@ function MobileNav() {
                     <motion.div
                       whileTap={{ scale: 0.95 }}
                       style={{
-                        background: location.pathname === item.path ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255,255,255,0.03)',
-                        border: location.pathname === item.path ? '1px solid rgba(139, 92, 246, 0.4)' : '1px solid rgba(255,255,255,0.06)',
+                        background: location.pathname === item.path 
+                          ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(168, 85, 247, 0.08) 100%)' 
+                          : 'rgba(255,255,255,0.03)',
+                        border: location.pathname === item.path ? '1px solid rgba(139, 92, 246, 0.35)' : '1px solid rgba(255,255,255,0.06)',
                         borderRadius: '100px',
                         padding: '12px 20px',
                         display: 'flex',
@@ -287,10 +310,22 @@ function MobileNav() {
                         gap: '12px',
                         color: location.pathname === item.path ? 'var(--primary-light)' : 'var(--text-main)',
                         transition: 'all 0.2s',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        boxShadow: location.pathname === item.path 
+                          ? 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 12px rgba(139,92,246,0.1)'
+                          : 'inset 0 1px 0 rgba(255,255,255,0.04)'
                       }}
                     >
-                      <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                      <span style={{ 
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        width: '36px', height: '28px', borderRadius: '100px',
+                        background: location.pathname === item.path ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.05)',
+                        border: location.pathname === item.path ? '1px solid rgba(139,92,246,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+                        fontSize: '17px', flexShrink: 0
+                      }}>{item.icon}</span>
                       <div style={{ textAlign: 'left' }}>
                         <div style={{ fontSize: '13.5px', fontWeight: '750' }}>{item.label}</div>
                       </div>

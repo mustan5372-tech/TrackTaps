@@ -1,8 +1,8 @@
 {
-  "version": "1.8.2",
+  "version": "2.0.0",
   "min_required_version": "1.0.0",
   "platform": "production",
   "last_updated": "2026-06-07",
   "update_url": "https://www.tracktaps.online/download",
-  "changelog": "✨ Floating UI: Beautiful transparent pill-shaped floating bottom navigation bar. 🗺️ Geotrack Live: Auto-attendance tracking upgrades."
+  "changelog": "🏆 Version 2.0.0: Unified Glassmorphism UI redesign and premium liquid-glow interface upgrades."
 }

@@ -296,8 +296,8 @@ function Timetable() {
             color: 'white',
             fontWeight: '800',
             fontSize: '13px',
-            padding: '12px 20px',
-            borderRadius: '12px',
+            padding: '12px 24px',
+            borderRadius: '100px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -320,15 +320,16 @@ function Timetable() {
               key={dayIdx}
               style={{
                 flex: '0 0 320px',
-                background: 'linear-gradient(180deg, var(--surface) 0%, rgba(15, 23, 42, 0.4) 100%)',
-                border: '1px solid var(--border)',
-                borderRadius: '24px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                borderRadius: '28px',
                 padding: '20px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '16px',
                 boxShadow: '0 8px 30px rgba(0, 0, 0, 0.25)',
-                backdropFilter: 'blur(16px)'
+                backdropFilter: 'blur(24px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(24px) saturate(180%)'
               }}
             >
               {/* Day Header */}
@@ -365,15 +366,17 @@ function Timetable() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       style={{
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                        borderRadius: '16px',
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        borderRadius: '20px',
                         padding: '14px',
                         display: 'flex',
                         gap: '12px',
                         position: 'relative',
                         alignItems: 'center',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)'
                       }}
                     >
                       {/* Subject Color Pill Accent */}
@@ -429,8 +432,8 @@ function Timetable() {
                         title="Delete Class"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <polyline points="3 6 5 6 21 6"></polyline>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                           <polyline points="3 6 5 6 21 6"></polyline>
+                           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                         </svg>
                       </button>
                     </motion.div>
@@ -445,13 +448,13 @@ function Timetable() {
                   setShowAddModal(true);
                 }}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px dashed rgba(255, 255, 255, 0.12)',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px dashed rgba(255, 255, 255, 0.2)',
                   color: 'var(--text-dim)',
                   fontWeight: '700',
                   fontSize: '13px',
                   padding: '12px',
-                  borderRadius: '14px',
+                  borderRadius: '16px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -460,12 +463,14 @@ function Timetable() {
                   transition: 'all 0.2s'
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
                   e.currentTarget.style.borderColor = 'var(--primary)';
+                  e.currentTarget.style.color = 'var(--text-main)';
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                  e.currentTarget.style.color = 'var(--text-dim)';
                 }}
               >
                 <span>+</span> Add Class
@@ -496,9 +501,9 @@ function Timetable() {
             animate={{ scale: 1, y: 0 }}
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: 'linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-primary) 100%)',
-              border: '1px solid var(--border)',
-              borderRadius: '24px',
+              background: 'rgba(15, 23, 42, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '32px',
               padding: '24px',
               maxWidth: '480px',
               width: '100%',
@@ -506,7 +511,9 @@ function Timetable() {
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
-              gap: '16px'
+              gap: '16px',
+              backdropFilter: 'blur(30px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(30px) saturate(180%)'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -534,10 +541,10 @@ function Timetable() {
                 style={{
                   width: '100%',
                   background: 'rgba(0, 0, 0, 0.3)',
-                  border: '1px solid var(--border)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
                   color: 'white',
-                  padding: '12px',
-                  borderRadius: '10px',
+                  padding: '12px 20px',
+                  borderRadius: '100px',
                   fontSize: '14px',
                   marginBottom: '12px'
                 }}
@@ -558,9 +565,9 @@ function Timetable() {
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         background: selectedSubject?.id === sub.id ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                        border: selectedSubject?.id === sub.id ? '1px solid var(--primary)' : '1px solid var(--border)',
+                        border: selectedSubject?.id === sub.id ? '1px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.12)',
                         padding: '12px 16px',
-                        borderRadius: '12px',
+                        borderRadius: '16px',
                         color: 'white',
                         cursor: 'pointer',
                         textAlign: 'left'
@@ -587,10 +594,10 @@ function Timetable() {
                 style={{
                   width: '100%',
                   background: 'rgba(0, 0, 0, 0.3)',
-                  border: '1px solid var(--border)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
                   color: 'white',
-                  padding: '12px',
-                  borderRadius: '10px',
+                  padding: '12px 20px',
+                  borderRadius: '100px',
                   fontSize: '14px'
                 }}
               />
@@ -606,7 +613,7 @@ function Timetable() {
                 color: selectedSubject ? 'white' : 'var(--text-muted)',
                 fontWeight: '800',
                 padding: '14px',
-                borderRadius: '12px',
+                borderRadius: '100px',
                 border: 'none',
                 cursor: selectedSubject ? 'pointer' : 'not-allowed',
                 marginTop: '12px',
@@ -642,9 +649,9 @@ function Timetable() {
             animate={{ scale: 1, y: 0 }}
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: 'linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-primary) 100%)',
-              border: '1px solid var(--border)',
-              borderRadius: '28px',
+              background: 'rgba(15, 23, 42, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '32px',
               padding: '30px',
               maxWidth: '640px',
               width: '100%',
@@ -652,7 +659,9 @@ function Timetable() {
               overflowY: 'auto',
               display: 'flex',
               flexDirection: 'column',
-              gap: '20px'
+              gap: '20px',
+              backdropFilter: 'blur(30px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(30px) saturate(180%)'
             }}
             className="custom-scrollbar"
           >
@@ -690,7 +699,7 @@ function Timetable() {
                     fontWeight: '800',
                     fontSize: '15px',
                     padding: '16px',
-                    borderRadius: '12px',
+                    borderRadius: '100px',
                     cursor: 'pointer',
                     boxShadow: '0 4px 20px var(--primary-glow)'
                   }}
@@ -717,7 +726,7 @@ function Timetable() {
 
                 {/* STEP 1: Upload File */}
                 {aiStep === 'upload' && (
-                  <div style={{ textAlign: 'center', padding: '30px 20px', border: '2px dashed var(--primary-glow)', background: 'rgba(139, 92, 246, 0.02)', borderRadius: '20px' }}>
+                  <div style={{ textAlign: 'center', padding: '30px 20px', border: '2.5px dashed rgba(139, 92, 246, 0.3)', background: 'rgba(139, 92, 246, 0.05)', borderRadius: '24px', backdropFilter: 'blur(10px)' }}>
                     <span style={{ fontSize: '50px', marginBottom: '16px', display: 'block' }}>📷</span>
                     <h4 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>Upload Timetable Screenshot</h4>
                     <p style={{ fontSize: '13px', color: 'var(--text-dim)', maxWidth: '400px', margin: '0 auto 24px' }}>
@@ -745,7 +754,7 @@ function Timetable() {
                         fontWeight: '800',
                         fontSize: '14px',
                         padding: '12px 24px',
-                        borderRadius: '10px',
+                        borderRadius: '100px',
                         cursor: 'pointer',
                         boxShadow: '0 4px 15px var(--primary-glow)'
                       }}
@@ -763,11 +772,11 @@ function Timetable() {
                             triggerAiImport('timetable_srm_2026.png');
                           }}
                           style={{
-                            background: 'rgba(255,255,255,0.03)',
-                            border: '1px solid rgba(255,255,255,0.05)',
+                            background: 'rgba(255,255,255,0.06)',
+                            border: '1px solid rgba(255,255,255,0.15)',
                             color: 'var(--text-dim)',
-                            padding: '6px 12px',
-                            borderRadius: '8px',
+                            padding: '6px 16px',
+                            borderRadius: '100px',
                             fontSize: '12px',
                             cursor: 'pointer'
                           }}
@@ -882,7 +891,7 @@ function Timetable() {
                         fontWeight: '800',
                         fontSize: '15px',
                         padding: '14px',
-                        borderRadius: '12px',
+                        borderRadius: '100px',
                         border: 'none',
                         cursor: 'pointer',
                         boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)'

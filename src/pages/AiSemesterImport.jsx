@@ -424,9 +424,11 @@ function AiSemesterImport() {
         <div className="dashboard-card" style={{ 
           padding: '40px 24px', 
           textAlign: 'center', 
-          border: '1px solid var(--primary-glow)', 
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)',
-          borderRadius: '24px',
+          border: '1px solid rgba(255, 255, 255, 0.15)', 
+          background: 'rgba(255, 255, 255, 0.08)',
+          borderRadius: '32px',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
           boxShadow: '0 8px 32px rgba(139, 92, 246, 0.15)',
           position: 'relative',
           overflow: 'hidden'
@@ -471,7 +473,7 @@ function AiSemesterImport() {
               background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
               boxShadow: '0 4px 20px var(--primary-glow)',
               border: 'none',
-              borderRadius: '12px'
+              borderRadius: '100px'
             }}
           >
             Upgrade to TrackTaps Plus & Unlock AI Import
@@ -499,7 +501,7 @@ function AiSemesterImport() {
 
       {/* Tabs Control */}
       {!processingState && (
-        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '6px', borderRadius: '14px', marginBottom: '24px', gap: '8px' }}>
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '6px', borderRadius: '100px', marginBottom: '24px', gap: '8px' }}>
           {[
             { id: 'pdf', label: '📄 PDF Import' },
             { id: 'image', label: '📷 Image OCR' },
@@ -512,7 +514,7 @@ function AiSemesterImport() {
               style={{
                 flex: 1,
                 padding: '12px 8px',
-                borderRadius: '10px',
+                borderRadius: '100px',
                 border: 'none',
                 background: activeTab === t.id ? 'var(--primary)' : 'transparent',
                 color: activeTab === t.id ? 'white' : 'var(--text-muted)',
@@ -537,7 +539,15 @@ function AiSemesterImport() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="dashboard-card"
-            style={{ padding: '32px 24px', border: '1px dashed var(--primary-glow)', background: 'rgba(139, 92, 246, 0.02)', textAlign: 'center' }}
+            style={{ 
+              padding: '32px 24px', 
+              border: '1px dashed rgba(255, 255, 255, 0.15)', 
+              borderRadius: '28px', 
+              background: 'rgba(255, 255, 255, 0.08)', 
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              textAlign: 'center' 
+            }}
           >
             {activeTab === 'pdf' && (
               <>
@@ -547,7 +557,7 @@ function AiSemesterImport() {
                   Select an official college brochure or calendar notice PDF to automatically parse semesters, exams, and holidays.
                 </p>
                 <input type="file" id="pdf-file" accept=".pdf" style={{ display: 'none' }} onChange={handleFileUpload} />
-                <button onClick={() => document.getElementById('pdf-file').click()} className="primary-btn" style={{ padding: '14px 28px', margin: '0 auto' }}>
+                <button onClick={() => document.getElementById('pdf-file').click()} className="primary-btn" style={{ padding: '14px 28px', margin: '0 auto', borderRadius: '100px' }}>
                   Select Calendar PDF
                 </button>
               </>
@@ -561,7 +571,7 @@ function AiSemesterImport() {
                   Snap a photo or upload a screenshot of your college timetable schedule. Our AI processes campus notice-boards with instant OCR.
                 </p>
                 <input type="file" id="image-file" accept="image/*" style={{ display: 'none' }} onChange={handleFileUpload} />
-                <button onClick={() => document.getElementById('image-file').click()} className="primary-btn" style={{ padding: '14px 28px', margin: '0 auto' }}>
+                <button onClick={() => document.getElementById('image-file').click()} className="primary-btn" style={{ padding: '14px 28px', margin: '0 auto', borderRadius: '100px' }}>
                   Select Screenshot/Photo
                 </button>
               </>
@@ -583,15 +593,15 @@ function AiSemesterImport() {
                      onChange={(e) => setUrlInput(e.target.value)}
                      style={{
                        flex: 1,
-                       padding: '12px',
+                       padding: '12px 20px',
                        background: 'rgba(0,0,0,0.3)',
-                       border: '1px solid var(--border)',
-                       borderRadius: '8px',
+                       border: '1px solid rgba(255, 255, 255, 0.15)',
+                       borderRadius: '100px',
                        color: 'white',
                        fontSize: '14px'
                      }}
                   />
-                  <button type="submit" className="primary-btn" style={{ padding: '12px 20px' }}>
+                  <button type="submit" className="primary-btn" style={{ padding: '12px 24px', borderRadius: '100px' }}>
                     Fetch
                   </button>
                 </div>
@@ -612,10 +622,10 @@ function AiSemesterImport() {
                   style={{
                     width: '100%',
                     height: '140px',
-                    padding: '12px',
+                    padding: '12px 16px',
                     background: 'rgba(0,0,0,0.3)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '24px',
                     color: 'white',
                     fontSize: '13px',
                     fontFamily: 'monospace',
@@ -632,7 +642,7 @@ function AiSemesterImport() {
                     }
                   }} 
                   className="primary-btn" 
-                  style={{ padding: '12px 28px', margin: '0 auto' }}
+                  style={{ padding: '12px 28px', margin: '0 auto', borderRadius: '100px' }}
                 >
                   🚀 NLP Extract Calendar
                 </button>
@@ -643,10 +653,10 @@ function AiSemesterImport() {
             <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>OR TRY DEMO SIMULATIONS</span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
-                <button onClick={() => handleStartImport('VIT Semester Schedule 2026.pdf')} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', color: 'var(--text-dim)', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
+                <button onClick={() => handleStartImport('VIT Semester Schedule 2026.pdf')} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255, 255, 255, 0.15)', color: 'var(--text-dim)', padding: '8px 16px', borderRadius: '100px', fontSize: '12px', cursor: 'pointer' }}>
                   VIT University 2026 Setup 🎓
                 </button>
-                <button onClick={() => handleStartImport('SRM Academic Notice.png')} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', color: 'var(--text-dim)', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
+                <button onClick={() => handleStartImport('SRM Academic Notice.png')} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255, 255, 255, 0.15)', color: 'var(--text-dim)', padding: '8px 16px', borderRadius: '100px', fontSize: '12px', cursor: 'pointer' }}>
                   SRM Academic Calendar 📅
                 </button>
               </div>
@@ -657,7 +667,15 @@ function AiSemesterImport() {
 
       {/* Processing / AI Scanning States */}
       {processingState && processingState !== 'complete' && (
-        <div className="dashboard-card" style={{ padding: '40px 24px', textAlign: 'center', background: 'rgba(15,23,42,0.4)', border: '1px solid var(--primary-glow)' }}>
+        <div className="dashboard-card" style={{ 
+          padding: '40px 24px', 
+          textAlign: 'center', 
+          background: 'rgba(255, 255, 255, 0.08)', 
+          borderRadius: '28px',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)'
+        }}>
           {/* Futuristic Scanning line animation */}
           <div style={{ position: 'relative', width: '80px', height: '80px', margin: '0 auto 24px', background: 'rgba(139,92,246,0.1)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(139,92,246,0.3)', overflow: 'hidden' }}>
             <span style={{ fontSize: '32px' }}>🤖</span>
@@ -707,8 +725,8 @@ function AiSemesterImport() {
               marginTop: '16px',
               padding: '14px 18px',
               background: 'rgba(0, 0, 0, 0.45)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: '12px',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '24px',
               textAlign: 'left',
               fontFamily: 'monospace',
               fontSize: '11px',
@@ -740,14 +758,16 @@ function AiSemesterImport() {
         >
           {/* Smart AI Confidence Header */}
           <div style={{ 
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.4) 100%)', 
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%)', 
             border: '1px solid rgba(16, 185, 129, 0.3)',
             padding: '16px 20px',
-            borderRadius: '16px',
+            borderRadius: '24px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '12px'
+            gap: '12px',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)'
           }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -766,25 +786,25 @@ function AiSemesterImport() {
 
           {/* Smart Semester Dashboard Overview Cards (Section 8) */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
-            <div className="dashboard-card" style={{ padding: '16px', textAlign: 'center' }}>
+            <div className="dashboard-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '24px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>SEMESTER DAYS</div>
               <div style={{ fontSize: '20px', fontWeight: '800', color: 'white' }}>
                 {calculateDaysBetween(editableStart, editableEnd)} Days
               </div>
             </div>
-            <div className="dashboard-card" style={{ padding: '16px', textAlign: 'center' }}>
+            <div className="dashboard-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '24px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>HOLIDAYS DETECTED</div>
               <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--primary-light)' }}>
                 {editableHolidays.length} Holidays
               </div>
             </div>
-            <div className="dashboard-card" style={{ padding: '16px', textAlign: 'center' }}>
+            <div className="dashboard-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '24px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>EXAM BLOCKS</div>
               <div style={{ fontSize: '20px', fontWeight: '800', color: '#f59e0b' }}>
                 {editableExams.length} Exams
               </div>
             </div>
-            <div className="dashboard-card" style={{ padding: '16px', textAlign: 'center' }}>
+            <div className="dashboard-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '24px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>SKIPS PRESSURE</div>
               <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--success)' }}>
                 LOW
@@ -793,7 +813,7 @@ function AiSemesterImport() {
           </div>
 
           {/* AI-Powered Smart Recommendations (Section 9) */}
-          <div className="dashboard-card" style={{ padding: '20px', border: '1px solid rgba(139,92,246,0.2)', background: 'rgba(139,92,246,0.03)' }}>
+          <div className="dashboard-card" style={{ padding: '20px', borderRadius: '28px', border: '1.5px solid rgba(139,92,246,0.3)', background: 'rgba(139,92,246,0.06)' }}>
             <h4 style={{ fontSize: '13px', color: 'var(--primary-light)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 12px' }}>🧠 AI Strategic Suggestions</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {previewData.insights.map((ins, i) => (
@@ -805,9 +825,9 @@ function AiSemesterImport() {
           </div>
 
           {/* Semester Timeline Visualization (Section 11) */}
-          <div className="dashboard-card" style={{ padding: '24px 20px' }}>
+          <div className="dashboard-card" style={{ padding: '24px 20px', borderRadius: '28px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
             <h4 style={{ fontSize: '14px', color: 'var(--text-main)', fontWeight: '800', marginBottom: '20px' }}>📅 Semester Timeline Visualization</h4>
-            <div style={{ position: 'relative', paddingLeft: '16px', borderLeft: '2px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ position: 'relative', paddingLeft: '16px', borderLeft: '2px solid rgba(255,255,255,0.15)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div style={{ position: 'relative' }}>
                 <div style={{ position: 'absolute', left: '-22px', top: '2px', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--success)' }} />
                 <div style={{ fontSize: '13px', fontWeight: '700' }}>Semester Kickoff</div>
@@ -832,8 +852,8 @@ function AiSemesterImport() {
           </div>
 
           {/* Manual Assisted Correction Mode (Section 6 & 12) */}
-          <div className="dashboard-card" style={{ padding: '24px' }}>
-            <h4 style={{ fontSize: '15px', color: 'var(--text-main)', fontWeight: '800', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '12px' }}>
+          <div className="dashboard-card" style={{ padding: '24px', borderRadius: '28px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+            <h4 style={{ fontSize: '15px', color: 'var(--text-main)', fontWeight: '800', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.15)', paddingBottom: '12px' }}>
               🔧 Manual Assisted Correction
             </h4>
 
@@ -845,7 +865,7 @@ function AiSemesterImport() {
                   type="date"
                   value={editableStart}
                   onChange={(e) => setEditableStart(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white' }}
+                  style={{ width: '100%', padding: '12px 18px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '100px', color: 'white' }}
                 />
               </div>
               <div>
@@ -854,7 +874,7 @@ function AiSemesterImport() {
                   type="date"
                   value={editableEnd}
                   onChange={(e) => setEditableEnd(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white' }}
+                  style={{ width: '100%', padding: '12px 18px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '100px', color: 'white' }}
                 />
               </div>
             </div>
@@ -864,7 +884,7 @@ function AiSemesterImport() {
               <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Detected Holidays</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {editableHolidays.map((h, index) => (
-                  <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '12px 18px', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.08)' }}>
                     <div>
                       <input 
                         type="text" 
@@ -903,7 +923,7 @@ function AiSemesterImport() {
               <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>Detected Exam Periods</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {editableExams.map((ex, index) => (
-                  <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(239, 68, 68, 0.03)', padding: '12px 14px', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
+                  <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(239, 68, 68, 0.04)', padding: '16px', borderRadius: '24px', border: '1px solid rgba(239, 68, 68, 0.15)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <input 
                         type="text" 
@@ -966,7 +986,7 @@ function AiSemesterImport() {
               fontWeight: '800',
               background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
               boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)',
-              borderRadius: '12px'
+              borderRadius: '100px'
             }}
           >
             Confirm & Populate Semester Calendar globally

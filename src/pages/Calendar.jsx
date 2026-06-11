@@ -336,11 +336,11 @@ function Calendar() {
           whileTap={{ scale: 0.98 }}
           onClick={() => window.location.href = '/ai-import'}
           style={{
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%)',
-            border: '1.5px solid var(--primary-glow)',
+            background: 'rgba(139, 92, 246, 0.12)',
+            border: '1.5px solid rgba(139, 92, 246, 0.3)',
             color: 'var(--primary-light)',
-            padding: '12px 16px',
-            borderRadius: '16px',
+            padding: '12px 20px',
+            borderRadius: '100px',
             cursor: 'pointer',
             fontWeight: '800',
             fontSize: '13px',
@@ -348,7 +348,9 @@ function Calendar() {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            boxShadow: '0 4px 15px rgba(139, 92, 246, 0.15)'
+            boxShadow: '0 4px 15px rgba(139, 92, 246, 0.1)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)'
           }}
         >
           <span>✨ AI Import Timetable</span>
@@ -359,11 +361,11 @@ function Calendar() {
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowSemesterModal(true)}
           style={{
-            background: 'var(--surface-glass)',
-            border: '1px solid var(--border)',
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
             color: 'var(--text-main)',
-            padding: '12px 16px',
-            borderRadius: '16px',
+            padding: '12px 20px',
+            borderRadius: '100px',
             cursor: 'pointer',
             fontWeight: '700',
             fontSize: '13px',
@@ -371,7 +373,8 @@ function Calendar() {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)'
           }}
         >
           <span>🎓 Semester Setup</span>
@@ -485,13 +488,16 @@ function Calendar() {
 
       {/* Calendar Grid Container */}
       <div className="calendar-grid-container" style={{
-        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(168, 85, 247, 0.02) 100%)',
-        border: '1px solid rgba(139, 92, 246, 0.1)',
-        borderRadius: '24px',
-        padding: '20px',
+        background: 'rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: '32px',
+        padding: '24px',
         maxWidth: '800px',
         width: 'calc(100% - 40px)',
-        margin: '0 auto 16px auto'
+        margin: '0 auto 16px auto',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        boxShadow: '0 8px 32px rgba(139, 92, 246, 0.05)'
       }}>
         {/* Weekday Headers */}
         <div className="calendar-weekday-headers" style={{
@@ -680,13 +686,15 @@ function Calendar() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           style={{
-            background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-glass) 100%)',
-            border: '1px solid var(--border)',
-            borderRadius: '24px',
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: '32px',
             padding: '24px',
             maxWidth: '800px',
             width: 'calc(100% - 40px)',
             margin: '0 auto 24px auto',
+            backdropFilter: 'blur(24px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
             display: 'flex',
             flexDirection: 'column',
@@ -709,13 +717,13 @@ function Calendar() {
               <div style={{ display: 'flex', gap: '6px' }}>
                 <button
                   onClick={() => handleMarkAllForDate('present')}
-                  style={{ background: 'rgba(16, 185, 129, 0.15)', border: 'none', color: '#10b981', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                  style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.25)', color: '#10b981', padding: '6px 14px', borderRadius: '100px', fontSize: '11px', fontWeight: '800', cursor: 'pointer' }}
                 >
                   ✓ All Present
                 </button>
                 <button
                   onClick={() => handleMarkAllForDate('absent')}
-                  style={{ background: 'rgba(239, 68, 68, 0.15)', border: 'none', color: '#ef4444', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                  style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#ef4444', padding: '6px 14px', borderRadius: '100px', fontSize: '11px', fontWeight: '800', cursor: 'pointer' }}
                 >
                   ✗ All Absent
                 </button>
@@ -734,14 +742,16 @@ function Calendar() {
                   <div
                     key={event.id}
                     style={{
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      border: `1px solid ${state ? `${color}40` : 'var(--border)'}`,
-                      borderRadius: '16px',
-                      padding: '14px 18px',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: `1px solid ${state ? `${color}60` : 'rgba(255, 255, 255, 0.12)'}`,
+                      borderRadius: '24px',
+                      padding: '16px 20px',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      gap: '12px'
+                      gap: '12px',
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)'
                     }}
                   >
                     <div>
@@ -758,12 +768,12 @@ function Calendar() {
                       <button
                         onClick={() => handleMarkAttendance(event.id, 'present')}
                         style={{
-                          background: state === 'present' ? '#10b981' : 'rgba(16, 185, 129, 0.05)',
+                          background: state === 'present' ? '#10b981' : 'rgba(16, 185, 129, 0.08)',
                           color: state === 'present' ? 'white' : '#10b981',
                           border: `1px solid ${state === 'present' ? '#10b981' : 'rgba(16, 185, 129, 0.2)'}`,
                           width: '32px',
                           height: '32px',
-                          borderRadius: '8px',
+                          borderRadius: '100px',
                           fontSize: '12px',
                           fontWeight: '800',
                           cursor: 'pointer',
@@ -778,12 +788,12 @@ function Calendar() {
                       <button
                         onClick={() => handleMarkAttendance(event.id, 'absent')}
                         style={{
-                          background: state === 'absent' ? '#ef4444' : 'rgba(239, 68, 68, 0.05)',
+                          background: state === 'absent' ? '#ef4444' : 'rgba(239, 68, 68, 0.08)',
                           color: state === 'absent' ? 'white' : '#ef4444',
                           border: `1px solid ${state === 'absent' ? '#ef4444' : 'rgba(239, 68, 68, 0.2)'}`,
                           width: '32px',
                           height: '32px',
-                          borderRadius: '8px',
+                          borderRadius: '100px',
                           fontSize: '12px',
                           fontWeight: '800',
                           cursor: 'pointer',
@@ -798,12 +808,12 @@ function Calendar() {
                       <button
                         onClick={() => handleMarkAttendance(event.id, 'off')}
                         style={{
-                          background: state === 'off' ? 'var(--primary)' : 'rgba(139, 92, 246, 0.05)',
+                          background: state === 'off' ? 'var(--primary)' : 'rgba(139, 92, 246, 0.08)',
                           color: state === 'off' ? 'white' : 'var(--primary-light)',
                           border: `1px solid ${state === 'off' ? 'var(--primary)' : 'rgba(139, 92, 246, 0.2)'}`,
                           width: '32px',
                           height: '32px',
-                          borderRadius: '8px',
+                          borderRadius: '100px',
                           fontSize: '12px',
                           fontWeight: '800',
                           cursor: 'pointer',
@@ -822,9 +832,9 @@ function Calendar() {
                             background: 'rgba(255,255,255,0.05)',
                             color: 'var(--text-dim)',
                             border: '1px solid rgba(255,255,255,0.1)',
-                            padding: '0 8px',
+                            padding: '0 12px',
                             height: '32px',
-                            borderRadius: '8px',
+                            borderRadius: '100px',
                             fontSize: '10px',
                             fontWeight: '700',
                             cursor: 'pointer'
@@ -844,11 +854,13 @@ function Calendar() {
               return (
                 <div style={{
                   textAlign: 'center',
-                  padding: '24px',
+                  padding: '32px 24px',
                   color: 'var(--text-dim)',
                   background: 'rgba(192, 132, 252, 0.05)',
-                  borderRadius: '16px',
-                  border: '1.5px dashed #c084fc'
+                  borderRadius: '24px',
+                  border: '1.5px dashed rgba(192, 132, 252, 0.35)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)'
                 }}>
                   <span style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>🎉</span>
                   <p style={{ margin: '0 0 6px 0', color: '#c084fc', fontWeight: '800', fontSize: '16px' }}>

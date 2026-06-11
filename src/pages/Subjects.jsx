@@ -29,10 +29,13 @@ const SubjectCard = React.memo(({
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
-        padding: '20px',
+        padding: '24px',
         cursor: 'pointer',
-        background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-glass) 100%)',
-        border: '1px solid var(--border)',
+        background: 'rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: '28px',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
         transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
       }}
     >
@@ -95,13 +98,13 @@ const SubjectCard = React.memo(({
             }}
             style={{
               width: '100%',
-              background: 'var(--primary-glow)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              padding: '8px',
+              background: 'rgba(139, 92, 246, 0.12)',
+              border: '1px solid rgba(139, 92, 246, 0.25)',
+              borderRadius: '100px',
+              padding: '10px 16px',
               color: 'var(--primary-light)',
               fontSize: '12px',
-              fontWeight: '700',
+              fontWeight: '800',
               cursor: 'pointer'
             }}
           >
@@ -115,13 +118,13 @@ const SubjectCard = React.memo(({
             }}
             style={{
               width: '100%',
-              background: 'var(--primary-glow)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              padding: '10px',
+              background: 'rgba(139, 92, 246, 0.12)',
+              border: '1px solid rgba(139, 92, 246, 0.25)',
+              borderRadius: '100px',
+              padding: '12px',
               color: 'var(--text-main)',
               fontSize: '11px',
-              fontWeight: '600',
+              fontWeight: '700',
               cursor: 'pointer',
               textAlign: 'center'
             }}
@@ -271,7 +274,7 @@ function Subjects() {
           <button 
             onClick={() => navigate('/pod')}
             className="action-btn"
-            style={{ padding: '10px 16px', background: 'var(--primary-glow)', border: 'none', color: 'var(--primary-light)', borderRadius: '10px', fontWeight: '700', cursor: 'pointer' }}
+            style={{ padding: '10px 20px', background: 'rgba(139, 92, 246, 0.12)', border: '1px solid rgba(139, 92, 246, 0.3)', color: 'var(--primary-light)', borderRadius: '100px', fontWeight: '700', cursor: 'pointer' }}
           >
             📥 Sync Pod.ai
           </button>
@@ -282,6 +285,7 @@ function Subjects() {
               setShowModal(true);
             }}
             className="primary-btn"
+            style={{ padding: '10px 20px', borderRadius: '100px' }}
           >
             + Add Subject
           </button>
