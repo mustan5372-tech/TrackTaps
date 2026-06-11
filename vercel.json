@@ -5,7 +5,17 @@
   "redirects": [
     {
       "source": "/download",
-      "destination": "/TrackTaps_v2.0.0.apk",
+      "destination": "https://github.com/mustan5372-tech/TrackTaps/releases/download/v2.0.0/TrackTaps_v2.0.0.apk",
+      "permanent": false
+    },
+    {
+      "source": "/TrackTaps.apk",
+      "destination": "https://github.com/mustan5372-tech/TrackTaps/releases/download/v2.0.0/TrackTaps_v2.0.0.apk",
+      "permanent": false
+    },
+    {
+      "source": "/TrackTaps_v2.0.0.apk",
+      "destination": "https://github.com/mustan5372-tech/TrackTaps/releases/download/v2.0.0/TrackTaps_v2.0.0.apk",
       "permanent": false
     }
   ],
@@ -13,14 +23,6 @@
     {
       "source": "/version.json",
       "destination": "/version.json"
-    },
-    {
-      "source": "/TrackTaps.apk",
-      "destination": "/TrackTaps_v2.0.0.apk"
-    },
-    {
-      "source": "/TrackTaps_v2.0.0.apk",
-      "destination": "/TrackTaps_v2.0.0.apk"
     },
     {
       "source": "/((?!api/).*)",
