@@ -495,7 +495,8 @@ html, body {
     backdrop-filter: blur(28px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
     position: relative;
-    overflow: hidden;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
 
 /* Subtle liquid glass refraction overlay */
