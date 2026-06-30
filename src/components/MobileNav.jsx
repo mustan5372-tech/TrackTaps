@@ -209,7 +209,7 @@ function MobileNav() {
       <AnimatePresence>
         {isMoreOpen && (
           <>
-            {/* Dark Blur Backdrop */}
+            {/* Glass Dim Backdrop (20-30% opacity overlay with blur) */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -218,77 +218,97 @@ function MobileNav() {
               style={{
                 position: 'fixed',
                 inset: 0,
-                background: 'rgba(2, 6, 23, 0.75)',
-                backdropFilter: 'blur(12px)',
+                background: 'rgba(2, 6, 23, 0.25)',
+                backdropFilter: 'blur(10px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(10px) saturate(140%)',
                 zIndex: 100000,
                 pointerEvents: isMoreOpen ? 'auto' : 'none'
               }}
             />
 
-            {/* Bottom Sheet Slider */}
+            {/* Apple iOS 26 Liquid Glass Bottom Sheet */}
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
               style={{
                 position: 'fixed',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                background: 'rgba(15, 23, 42, 0.65)',
+                bottom: '16px',
+                left: '12px',
+                right: '12px',
+                width: 'calc(100% - 24px)',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(216, 180, 254, 0.12) 100%)',
                 backdropFilter: 'blur(24px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                borderTop: '1.5px solid rgba(139, 92, 246, 0.35)',
-                borderRadius: '24px 24px 0 0',
-                padding: '20px 20px calc(24px + env(safe-area-inset-bottom, 16px)) 20px',
+                border: '1.5px solid rgba(255, 255, 255, 0.18)',
+                borderRadius: '36px',
+                padding: '20px 16px calc(20px + env(safe-area-inset-bottom, 0px)) 16px',
                 zIndex: 100001,
-                boxShadow: '0 -15px 40px rgba(0,0,0,0.5)',
-                maxWidth: '600px',
+                boxShadow: '0 24px 60px rgba(0, 0, 0, 0.35), 0 0 25px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.25)',
+                maxWidth: '568px',
                 margin: '0 auto',
-                pointerEvents: isMoreOpen ? 'auto' : 'none'
+                pointerEvents: isMoreOpen ? 'auto' : 'none',
+                overflow: 'hidden'
               }}
             >
-              {/* Drag Handle Pill */}
+              {/* Apple Drag Handle Capsule with soft glow */}
               <div
                 onClick={() => setIsMoreOpen(false)}
                 style={{
-                  width: '40px',
-                  height: '4px',
-                  background: 'rgba(255,255,255,0.2)',
+                  width: '48px',
+                  height: '5px',
+                  background: 'rgba(255, 255, 255, 0.3)',
                   borderRadius: '10px',
                   margin: '0 auto 20px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  boxShadow: '0 0 10px rgba(255, 255, 255, 0.25)'
                 }}
               />
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: '850', color: 'white', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>🔮</span> Additional Features
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', padding: '0 8px' }}>
+                <h3 style={{
+                  fontSize: '19px',
+                  fontWeight: '800',
+                  color: 'white',
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  letterSpacing: '-0.02em',
+                  textShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
+                }}>
+                  <span style={{ filter: 'drop-shadow(0 2px 6px rgba(139, 92, 246, 0.45))' }}>🔮</span> Additional Features
                 </h3>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9, rotate: -45 }}
                   onClick={() => setIsMoreOpen(false)}
                   style={{
-                    background: 'rgba(255,255,255,0.06)',
-                    border: 'none',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(5px)',
+                    WebkitBackdropFilter: 'blur(5px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
                     borderRadius: '50%',
-                    width: '28px',
-                    height: '28px',
-                    color: '#94a3b8',
+                    width: '32px',
+                    height: '32px',
+                    color: '#fff',
                     cursor: 'pointer',
-                    fontSize: '12px',
+                    fontSize: '13px',
                     fontWeight: 'bold',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                    transition: 'background-color 0.2s'
                   }}
                 >
                   ✕
-                </button>
+                </motion.button>
               </div>
 
-              {/* Features Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              {/* Features Grid - Glass Pills */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 {moreItems.map((item) => (
                   <Link
                     key={item.path}
@@ -297,37 +317,54 @@ function MobileNav() {
                     style={{ textDecoration: 'none' }}
                   >
                     <motion.div
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                       style={{
                         background: location.pathname === item.path 
-                          ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(168, 85, 247, 0.08) 100%)' 
-                          : 'rgba(255,255,255,0.03)',
-                        border: location.pathname === item.path ? '1px solid rgba(139, 92, 246, 0.35)' : '1px solid rgba(255,255,255,0.06)',
+                          ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(139, 92, 246, 0.18) 100%)' 
+                          : 'rgba(255, 255, 255, 0.08)',
+                        border: location.pathname === item.path 
+                          ? '1.5px solid rgba(168, 85, 247, 0.5)' 
+                          : '1px solid rgba(255, 255, 255, 0.18)',
                         borderRadius: '100px',
-                        padding: '12px 20px',
+                        height: '58px',
+                        padding: '0 18px',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '12px',
-                        color: location.pathname === item.path ? 'var(--primary-light)' : 'var(--text-main)',
-                        transition: 'all 0.2s',
+                        gap: '14px',
+                        color: location.pathname === item.path ? '#c084fc' : '#f8fafc',
                         cursor: 'pointer',
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
                         boxShadow: location.pathname === item.path 
-                          ? 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 12px rgba(139,92,246,0.1)'
-                          : 'inset 0 1px 0 rgba(255,255,255,0.04)'
+                          ? '0 8px 24px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25)'
+                          : '0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                       }}
                     >
+                      {/* Apple Control Center-style Icon bubble */}
                       <span style={{ 
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        width: '36px', height: '28px', borderRadius: '100px',
-                        background: location.pathname === item.path ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.05)',
-                        border: location.pathname === item.path ? '1px solid rgba(139,92,246,0.3)' : '1px solid rgba(255,255,255,0.06)',
-                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
-                        fontSize: '17px', flexShrink: 0
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '50%',
+                        background: location.pathname === item.path ? 'rgba(168, 85, 247, 0.3)' : 'rgba(139, 92, 246, 0.2)',
+                        backdropFilter: 'blur(5px)',
+                        WebkitBackdropFilter: 'blur(5px)',
+                        border: location.pathname === item.path ? '1.5px solid rgba(168, 85, 247, 0.45)' : '1px solid rgba(255, 255, 255, 0.15)',
+                        boxShadow: '0 2px 8px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                        fontSize: '18px',
+                        flexShrink: 0
                       }}>{item.icon}</span>
                       <div style={{ textAlign: 'left' }}>
-                        <div style={{ fontSize: '13.5px', fontWeight: '750' }}>{item.label}</div>
+                        <div style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          letterSpacing: '-0.01em',
+                          verticalAlign: 'middle'
+                        }}>{item.label}</div>
                       </div>
                     </motion.div>
                   </Link>

@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -12,7 +13,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase only if config is valid
-let app, auth, db, googleProvider;
+let app, auth, db, googleProvider, storage;
 
 try {
   if (!firebaseConfig.apiKey) {
@@ -27,6 +28,8 @@ try {
       tabManager: persistentMultipleTabManager()
     })
   });
+  
+  storage = getStorage(app);
   
   googleProvider = new GoogleAuthProvider();
   googleProvider.setCustomParameters({
@@ -45,7 +48,8 @@ try {
     signOut: disabledFn
   };
   db = {};
+  storage = {};
   googleProvider = {};
 }
 
-export { auth, db, googleProvider };
+export { app, auth, db, googleProvider, storage };

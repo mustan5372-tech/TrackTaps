@@ -214,6 +214,7 @@ const useAppStore = create(
         isSigningOut: false,
         isAuthModalOpen: false,
         isApkModalOpen: false,
+        isAccountDrawerOpen: false,
         termsAccepted: false, // Will be loaded from cloud/persist on login
         termsVersion: '',
         CURRENT_TERMS_VERSION: 'v1.0', // Centralized terms version constant
@@ -230,6 +231,7 @@ const useAppStore = create(
         
         setAuthModalOpen: (isOpen) => set({ isAuthModalOpen: isOpen }),
         setApkModalOpen: (isOpen) => set({ isApkModalOpen: isOpen }),
+        setAccountDrawerOpen: (isOpen) => set({ isAccountDrawerOpen: isOpen }),
         setUser: (user) => set({ user, isAuthLoading: false, isRestoringSession: false }),
 
         acceptTerms: async (marketingConsent = false) => {
@@ -627,6 +629,11 @@ const useAppStore = create(
                 ...get().referralData,
                 ...cloudData.referralData
               };
+            }
+
+            // Sync instagram follow modal ignore setting
+            if (cloudData && cloudData.instagramFollowPromptDisabled) {
+              localStorage.setItem(`tt_insta_disabled_${user.uid}`, 'true');
             }
 
             // Trigger atomic state update

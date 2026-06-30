@@ -38,6 +38,7 @@ import notificationService from './services/notificationService';
 import NotificationPrompt from './components/NotificationPrompt';
 import InstagramFollowPopup from './components/InstagramFollowPopup';
 import GeofenceTracker from './components/GeofenceTracker';
+import AccountDrawer from './components/AccountDrawer';
 
 const SafeRoute = ({ children }) => {
   const { user, isAuthLoading } = useAppStore();
@@ -327,6 +328,7 @@ function App() {
       </AnimatePresence>
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
       <TermsModal />
+      <AccountDrawer />
       
       <Suspense fallback={
         <div style={{

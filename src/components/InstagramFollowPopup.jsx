@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import useAppStore from '../store/appStore';
 
 function InstagramFollowPopup() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAppStore();
 
   useEffect(() => {
+    // If user has chosen to never see it, exit
+    const dontShow = localStorage.getItem('tracktaps_instagram_dont_show') === 'true';
+    const userDisabled = user ? localStorage.getItem(`tt_insta_disabled_${user.uid}`) === 'true' : false;
+
+    if (dontShow || userDisabled) {
+      return;
+    }
+
     // Check if the user is visiting the website for the first time
     const hasShownPopup = localStorage.getItem('tracktaps_instagram_popup_shown');
     
@@ -18,10 +28,26 @@ function InstagramFollowPopup() {
 
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [user]);
 
   const handleFollow = () => {
     window.open("https://www.instagram.com/tracktaps.online?igsh=MWp1aDQ4eGpmNW11Mg==", "_blank", "noopener,noreferrer");
+    setIsOpen(false);
+  };
+
+  const handleDontShowAgain = async () => {
+    localStorage.setItem('tracktaps_instagram_dont_show', 'true');
+    if (user) {
+      localStorage.setItem(`tt_insta_disabled_${user.uid}`, 'true');
+      try {
+        const { doc, setDoc } = await import('firebase/firestore');
+        const { db } = await import('../services/firebase');
+        const userRef = doc(db, 'users', user.uid);
+        await setDoc(userRef, { instagramFollowPromptDisabled: true }, { merge: true });
+      } catch (e) {
+        console.warn("⚠️ Failed to sync instagram preference to cloud:", e);
+      }
+    }
     setIsOpen(false);
   };
 
@@ -184,20 +210,41 @@ function InstagramFollowPopup() {
                   🚀 Follow @tracktaps.online
                 </motion.button>
 
-                <button
-                  onClick={() => setIsOpen(false)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#64748b',
-                    padding: '8px',
-                    fontSize: '13px',
-                    fontWeight: '700',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Maybe Later
-                </button>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: 'none',
+                      color: '#94a3b8',
+                      padding: '10px 16px',
+                      borderRadius: '12px',
+                      fontSize: '13.5px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      flex: 1
+                    }}
+                  >
+                    Maybe Later
+                  </button>
+
+                  <button
+                    onClick={handleDontShowAgain}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: 'none',
+                      color: '#64748b',
+                      padding: '10px 16px',
+                      borderRadius: '12px',
+                      fontSize: '13.5px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      flex: 1
+                    }}
+                  >
+                    Don't Show Again
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

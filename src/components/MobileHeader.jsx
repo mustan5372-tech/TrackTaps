@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import useAppStore from '../store/appStore';
 
 function MobileHeader() {
-  const { user, login, subscription, podaiSyncStatus, setAuthModalOpen, setApkModalOpen } = useAppStore();
+  const { user, login, subscription, podaiSyncStatus, setAuthModalOpen, setApkModalOpen, setAccountDrawerOpen } = useAppStore();
   
   const isNativeAPK = () => {
     return !!(window.Capacitor && window.Capacitor.isNativePlatform());
@@ -77,67 +77,59 @@ function MobileHeader() {
           </motion.button>
         )}
       </div>
- 
+  
       {/* RIGHT: Login Button or Premium Status */}
       <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         {user ? (
-          // If logged in, show premium status
-          isPremium ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: isSyncing ? 'rgba(16, 185, 129, 0.15)' : 'linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%)',
-                padding: '6px 12px',
-                borderRadius: '100px',
-                border: `1px solid ${isSyncing ? 'rgba(16, 185, 129, 0.3)' : 'rgba(234, 179, 8, 0.4)'}`,
-                boxShadow: isSyncing ? '0 0 10px rgba(16, 185, 129, 0.1)' : '0 0 12px rgba(234, 179, 8, 0.2)'
-              }}
-            >
-              <motion.div
-                animate={isSyncing ? { scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] } : {}}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                style={{
-                  width: '6px',
-                  height: '6px',
-                  borderRadius: '50%',
-                  background: isSyncing ? '#10b981' : '#f59e0b',
-                  boxShadow: isSyncing ? '0 0 8px #10b981' : '0 0 8px #f59e0b'
-                }}
-              />
-              <span style={{ fontSize: '11px', display: 'flex', alignItems: 'center' }}>👑</span>
-              <span style={{ 
-                fontSize: '10px', 
-                fontWeight: '900', 
-                color: isSyncing ? '#10b981' : '#f59e0b',
-                letterSpacing: '0.08em'
-              }}>
-                {isSyncing ? 'SYNCING' : 'ELITE PLUS'}
-              </span>
-            </motion.div>
-          ) : (
-            <div style={{
+          // If logged in, show premium circular glass profile button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setAccountDrawerOpen(true)}
+            style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: isPremium 
+                ? '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1), 0 0 10px rgba(139, 92, 246, 0.3)'
+                : '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(255, 255, 255, 0.04)',
-              padding: '6px 12px',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              position: 'relative',
+              overflow: 'hidden',
+              padding: 0
+            }}
+          >
+            {/* Inner Liquid light refraction line */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: '10%',
+              right: '10%',
+              height: '40%',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%)',
               borderRadius: '100px',
-              border: '1px solid rgba(255, 255, 255, 0.06)'
-            }}>
-              <span style={{ 
-                fontSize: '10px', 
-                fontWeight: '800', 
-                color: 'var(--text-dim)',
-                letterSpacing: '0.05em'
-              }}>
-                FREE TIER
-              </span>
-            </div>
-          )
+              pointerEvents: 'none'
+            }} />
+            
+            {/* Avatar Image */}
+            <img 
+              src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=8b5cf6&color=fff`} 
+              alt="Profile" 
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                objectFit: 'cover'
+              }}
+            />
+          </motion.button>
         ) : (
           // If NOT logged in, show Login Button
           <motion.button
