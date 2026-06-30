@@ -4458,3 +4458,346 @@ body.bottom-sheet-open .floating-ai-orb-container,
 body.bottom-sheet-open .download-apk-fab {
     display: none !important;
 }
+
+
+/* ==========================================================================
+   ⚡ TRACKTAPS V3 — PREMIUM LIQUID GLASS DESIGN SYSTEM OVERRIDES ⚡
+   ========================================================================== */
+
+/* 1. Global Theme Tokens */
+:root {
+    --bg-primary: #090B1F !important;
+    --bg-deep: #090B1F !important;
+    --primary: #8B5CF6 !important;
+    --primary-light: #B794F6 !important;
+    --primary-glow: rgba(168, 85, 247, 0.30) !important;
+    
+    --glass-bg: rgba(255, 255, 255, 0.10) !important;
+    --glass-bg-hover: rgba(255, 255, 255, 0.16) !important;
+    --glass-bg-active: rgba(255, 255, 255, 0.22) !important;
+    --glass-border: rgba(255, 255, 255, 0.18) !important;
+    --glass-border-glow: rgba(168, 85, 247, 0.30) !important;
+    --glass-blur: blur(28px) saturate(170%) !important;
+    
+    --glass-shadow: 0 20px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 20px rgba(139, 92, 246, 0.1) !important;
+    --glass-shadow-hover: 0 28px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 30px rgba(168, 85, 247, 0.25) !important;
+    
+    --border: rgba(255, 255, 255, 0.18) !important;
+    --radius-lg: 28px !important;
+    --radius-md: 20px !important;
+    --radius-sm: 100px !important;
+}
+
+/* 2. Enhanced Ambient Lighting Background */
+body, html {
+    background: radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(183, 148, 246, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                #090B1F !important;
+    background-attachment: fixed !important;
+}
+
+/* 3. True Glass Material Cards */
+.dashboard-card,
+.subject-card,
+.stat-card,
+.community-card,
+.post-card,
+.card,
+.feature-card,
+.guide-card,
+.bunk-card,
+.insights-card,
+.settings-card,
+.about-card,
+.timetable-card,
+.apk-modal-card,
+.ai-assistant-modal-card {
+    background: var(--glass-bg) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border: 1.5px solid var(--glass-border) !important;
+    border-radius: 28px !important; /* Strictly rounded 28px */
+    box-shadow: var(--glass-shadow) !important;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.3s, box-shadow 0.3s !important;
+}
+
+.dashboard-card:hover,
+.subject-card:hover,
+.stat-card:hover,
+.community-card:hover,
+.post-card:hover,
+.card:hover,
+.feature-card:hover,
+.guide-card:hover,
+.bunk-card:hover,
+.insights-card:hover,
+.settings-card:hover,
+.about-card:hover,
+.timetable-card:hover {
+    transform: translateY(-4px) scale(1.01) !important;
+    border-color: var(--glass-border-glow) !important;
+    box-shadow: var(--glass-shadow-hover) !important;
+}
+
+/* 4. Buttons: Apple Liquid Glass Capsules */
+button,
+.btn,
+.submit-btn,
+.action-btn,
+.login-btn,
+.google-btn {
+    border-radius: 100px !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    cursor: pointer !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s, border-color 0.2s, box-shadow 0.2s !important;
+}
+
+/* Light reflection overlay */
+button::before,
+.btn::before,
+.submit-btn::before,
+.action-btn::before,
+.login-btn::before,
+.google-btn::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 10% !important;
+    right: 10% !important;
+    height: 35% !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, transparent 100%) !important;
+    border-radius: 100px !important;
+    pointer-events: none !important;
+}
+
+button:hover,
+.btn:hover,
+.submit-btn:hover,
+.action-btn:hover,
+.login-btn:hover,
+.google-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 0 12px rgba(139, 92, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+button:active,
+.btn:active,
+.submit-btn:active,
+.action-btn:active,
+.login-btn:active,
+.google-btn:active {
+    transform: scale(0.96) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Primary Glass Buttons */
+button.primary,
+.btn-primary,
+button[type="submit"],
+.submit-btn {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.4) 0%, rgba(168, 85, 247, 0.3) 100%) !important;
+    border-color: rgba(168, 85, 247, 0.5) !important;
+}
+
+button.primary:hover,
+.btn-primary:hover,
+button[type="submit"]:hover,
+.submit-btn:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.5) 0%, rgba(168, 85, 247, 0.45) 100%) !important;
+    border-color: rgba(168, 85, 247, 0.7) !important;
+}
+
+/* 5. Navigation Bar (Floating Dock) & Sidebar */
+.mobile-nav {
+    background: rgba(255, 255, 255, 0.10) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border: 1.5px solid var(--glass-border) !important;
+    border-radius: 100px !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 16px !important;
+    right: 16px !important;
+    width: calc(100% - 32px) !important;
+}
+
+.sidebar {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border-right: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.mobile-header {
+    background: rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: blur(20px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Selected Mobile Tab Pill Soft Glow */
+.mobile-nav-btn.active .nav-icon-pill-mobile {
+    background: rgba(139, 92, 246, 0.25) !important;
+    border-color: rgba(139, 92, 246, 0.45) !important;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 6. Inputs & Textareas */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+select,
+textarea {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 100px !important; /* Rounded pills */
+    color: #ffffff !important;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: border-color 0.25s, box-shadow 0.25s !important;
+}
+
+textarea {
+    border-radius: 20px !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--primary-light) !important;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.35), inset 0 1px 2px rgba(0,0,0,0.15) !important;
+    outline: none !important;
+}
+
+/* 7. Dropdowns & Menus */
+.dropdown-menu,
+.select-menu,
+.menu-dropdown,
+.dropdown-content {
+    background: rgba(9, 11, 31, 0.65) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+/* 8. Bottom Sheet & Popups */
+.mobile-nav-scroll-container + div[style*="position: fixed"][style*="bottom: 16px"],
+.modal-content,
+.popup-content,
+.auth-modal,
+.settings-modal,
+.import-modal,
+.export-modal,
+.share-modal,
+.modal-body {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(216, 180, 254, 0.12) 100%) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 36px !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), 0 0 25px rgba(139, 92, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+/* 9. Feature Button Grid Overrides (Additional Features Bottom Sheet) */
+.mobile-nav-scroll-container + div div[style*="display: grid"] a div,
+.mobile-nav-scroll-container + div div[style*="display: grid"] button {
+    background: rgba(183, 148, 246, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 100px !important; /* Capsule rounded */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 8px rgba(168, 85, 247, 0.08) !important;
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s, box-shadow 0.2s !important;
+}
+
+.mobile-nav-scroll-container + div div[style*="display: grid"] a div:hover,
+.mobile-nav-scroll-container + div div[style*="display: grid"] button:hover {
+    background: rgba(183, 148, 240, 0.20) !important;
+    box-shadow: 0 8px 20px rgba(168, 85, 247, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 12px rgba(168, 85, 247, 0.15) !important;
+}
+
+.mobile-nav-scroll-container + div div[style*="display: grid"] a div:active,
+.mobile-nav-scroll-container + div div[style*="display: grid"] button:active {
+    transform: scale(0.97) !important;
+}
+
+/* 10. Close Buttons (Apple Control Center Circular Style) */
+.close-btn {
+    background: rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    color: #ffffff !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15), 0 0 8px rgba(168, 85, 247, 0.15) !important;
+    transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s !important;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.22) !important;
+    transform: scale(1.05) rotate(90deg) !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.25), 0 0 12px rgba(168, 85, 247, 0.25) !important;
+}
+
+.close-btn:active {
+    transform: scale(0.95) !important;
+}
+
+/* 11. Circular Glass Bubble Icon Containers */
+.card-icon,
+.stat-icon,
+.subject-icon,
+.insight-icon,
+.setting-icon,
+.icon-bubble {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    background: rgba(139, 92, 246, 0.2) !important;
+    backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
+    border: 1.5px solid rgba(168, 85, 247, 0.3) !important;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    flex-shrink: 0 !important;
+}
+
+/* 12. Settings Sections and Lists */
+.settings-section-card,
+.settings-group {
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 20px !important;
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+    box-shadow: var(--glass-shadow) !important;
+}

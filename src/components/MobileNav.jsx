@@ -94,7 +94,7 @@ function MobileNav() {
     { icon: '🌍', label: 'Community', path: '/community' },
     { icon: '📈', label: 'Insights', path: '/insights' },
     { icon: '🏖️', label: 'Bunks', path: '/bunk-calculator' },
-    { icon: '👥', label: 'Mega Sync', path: '/mega-saver' },
+    { icon: '🤝', label: 'Bunk Together', path: '/mega-saver' },
     { icon: '📖', label: 'Guide', path: '/guide' },
     { icon: '🎁', label: 'Referrals', path: '/referral' },
     { icon: '⚙️', label: 'Settings', path: '/settings' },
@@ -284,6 +284,7 @@ function MobileNav() {
                   whileHover={{ scale: 1.1, rotate: 90 }}
                   whileTap={{ scale: 0.9, rotate: -45 }}
                   onClick={() => setIsMoreOpen(false)}
+                  className="close-btn"
                   style={{
                     background: 'rgba(255, 255, 255, 0.1)',
                     backdropFilter: 'blur(5px)',

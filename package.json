@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node -e \"const fs = require('fs'); if (fs.existsSync('TrackTaps.apk')) { fs.copyFileSync('TrackTaps.apk', 'dist/TrackTaps_v2.0.0.apk'); console.log('Successfully copied TrackTaps.apk to dist/TrackTaps_v2.0.0.apk'); }\"",
+    "build": "vite build && node -e \"const fs = require('fs'); if (fs.existsSync('TrackTaps.apk')) { fs.copyFileSync('TrackTaps.apk', 'dist/TrackTaps_v3.0.0.apk'); console.log('Successfully copied TrackTaps.apk to dist/TrackTaps_v3.0.0.apk'); }\"",
     "preview": "vite preview",
     "start": "node server.mjs",
     "dev:server": "node server.mjs",

@@ -24,7 +24,7 @@ function MegaSaver() {
     localStorage.removeItem('tracktaps_sync_group_id');
     setGroupId('');
     setActiveGroup(null);
-    triggerToast("🔌 Disconnected from sync group successfully!");
+    triggerToast("🔌 Left Bunk Group successfully!");
   };
 
   // Helper: Toast Notifications
@@ -98,7 +98,7 @@ function MegaSaver() {
       const hostPayload = prepareMemberPayload();
       const initialGroup = {
         groupId: newPin,
-        name: `${user.displayName || 'My'}'s Study Sync Group`,
+        name: `${user.displayName || 'My'}'s Bunk Group`,
         hostUid: user.uid,
         createdAt: new Date().toISOString(),
         members: {
@@ -109,7 +109,7 @@ function MegaSaver() {
       await setDoc(groupRef, initialGroup);
       setGroupId(newPin);
       localStorage.setItem('tracktaps_sync_group_id', newPin);
-      triggerToast(`✨ Group ${newPin} created successfully!`);
+      triggerToast(`✨ Bunk Group ${newPin} created successfully!`);
     } catch (err) {
       console.error("Firestore creation error:", err);
       triggerToast("❌ Failed to create study group in cloud database.");
@@ -130,7 +130,7 @@ function MegaSaver() {
     }
     const cleanPin = pinInput.trim().toUpperCase();
     if (!cleanPin) {
-      triggerToast("⚠️ Please enter a valid Sync PIN!");
+      triggerToast("⚠️ Please enter a valid Invite Code!");
       return;
     }
 
@@ -140,7 +140,7 @@ function MegaSaver() {
       const snap = await getDoc(groupRef);
 
       if (!snap.exists()) {
-        triggerToast("🔍 Sync PIN not found. Double-check your spelling!");
+        triggerToast("🔍 Invite Code not found. Double-check your spelling!");
         setLoading(false);
         return;
       }
@@ -158,7 +158,7 @@ function MegaSaver() {
 
       setGroupId(cleanPin);
       localStorage.setItem('tracktaps_sync_group_id', cleanPin);
-      triggerToast(`🔗 Joined group ${cleanPin} successfully!`);
+      triggerToast(`🔗 Joined Bunk Group ${cleanPin} successfully!`);
     } catch (err) {
       console.error("Firestore join error:", err);
       triggerToast("❌ Failed to join study group. Try again!");
@@ -167,7 +167,6 @@ function MegaSaver() {
     }
   };
 
-  // Share study group PIN and instructions
   const handleShareGroup = async () => {
     const activePin = activeGroup?.groupId || groupId || pinInput;
     if (!activePin) {
@@ -176,9 +175,9 @@ function MegaSaver() {
     }
 
     const shareData = {
-      title: 'TrackTaps Study Sync Group Invite',
-      text: `Hey! Join my TrackTaps Coordinated Study Sync Group to link our timetables, view attendance overlays, and coordinate our class skip/bunk decisions safely!\n\nHow it works:\n1. Open TrackTaps: https://www.tracktaps.online/mega-saver\n2. Click "Join Classmate's Sync Group"\n3. Enter our unique PIN: ${activePin}\n\nLet's sync up! 👥📊`,
-      url: 'https://www.tracktaps.online/mega-saver'
+      title: 'TrackTaps Bunk Together Invite',
+      text: `Join my TrackTaps Bunk Together group!\n\nWe'll coordinate attendance together, discover safe bunks using AI, and avoid attendance shortages.\n\nInvite Code:\n${activePin}\n\nDownload TrackTaps\ntracktaps.online`,
+      url: 'https://www.tracktaps.online'
     };
 
     if (navigator.share) {
@@ -236,7 +235,7 @@ function MegaSaver() {
           if (criticalMembers.length > 0) {
             recommendations.push({
               day: 'High Alert',
-              action: 'Attend Class Together',
+              action: 'Attend Together',
               label: `High Risk for ${criticalMembers.map(m => m.name.split(' ')[0]).join(', ')}`,
               class: subName,
               savings: 'Attendance criteria not met! Attendance recommended.'
@@ -244,7 +243,7 @@ function MegaSaver() {
           } else {
             recommendations.push({
               day: 'Safe skip',
-              action: 'Coordinated Semester Bunk',
+              action: 'Safe Group Bunk',
               label: 'All Members Safe',
               class: subName,
               savings: 'Everyone is above their target criteria. Safe skip window!'
@@ -304,27 +303,28 @@ function MegaSaver() {
       <header className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>Mega Saver Sync</h2>
-            <span style={{ fontSize: '10px', background: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)', color: 'white', padding: '3px 10px', borderRadius: '100px', fontWeight: '950', letterSpacing: '0.05em' }}>MEGA EXCLUSIVE</span>
+            <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>🤝 Bunk Together</h2>
+            <span style={{ fontSize: '10px', background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)', color: 'white', padding: '3px 10px', borderRadius: '100px', fontWeight: '950', letterSpacing: '0.05em' }}>✨ Exclusive Feature</span>
           </div>
-          <p style={{ fontSize: '13px', color: 'var(--text-dim)', margin: 0 }}>Coordinated Bunk Planning & Classmate Timetable Overlays</p>
+          <p style={{ fontSize: '13px', color: 'var(--text-dim)', margin: 0 }}>Plan smarter. Bunk together. Stay safe.</p>
         </div>
       </header>
 
       {/* Access Gatekeeper for Non-Premium / Non-Mega Users */}
       {!isPremium ? (
-        <div className="dashboard-card" style={{ padding: '48px 32px', textAlign: 'center', background: 'rgba(245, 158, 11, 0.05)', border: '1.5px dashed rgba(245, 158, 11, 0.3)', borderRadius: '28px', backdropFilter: 'blur(20px)' }}>
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>🔒</div>
-          <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>Unlock Coordinated Timetable Sync</h3>
-          <p style={{ color: 'var(--text-dim)', fontSize: '14px', maxWidth: '500px', margin: '0 auto 24px', lineHeight: 1.6 }}>
-            Upgrade to the **Mega Saver Plan** to sync timetables, coordinate skip days safely with friends, plan joint study sessions, and track cumulative group attendance!
+        <div className="dashboard-card" style={{ padding: '48px 32px', textAlign: 'center', background: 'rgba(139, 92, 246, 0.05)', border: '1.5px dashed rgba(139, 92, 246, 0.3)', borderRadius: '28px', backdropFilter: 'blur(20px)' }}>
+          <div style={{ fontSize: '64px', marginBottom: '20px' }}>🤝</div>
+          <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>Unlock Bunk Together</h3>
+          <p style={{ color: 'var(--text-dim)', fontSize: '14px', maxWidth: '550px', margin: '0 auto 24px', lineHeight: 1.6 }}>
+            Plan smarter. Bunk together. Stay safe.<br /><br />
+            Create a private class group, sync attendance in real time, and discover how many lectures everyone can safely skip together.
           </p>
           <motion.button
-            whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(245, 158, 11, 0.3)' }}
+            whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(139, 92, 246, 0.3)' }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/premium')}
             style={{
-              background: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)',
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
               color: 'white',
               border: 'none',
               padding: '14px 32px',
@@ -334,7 +334,7 @@ function MegaSaver() {
               cursor: 'pointer'
             }}
           >
-            Upgrade to Mega Saver Plan 👑
+            Upgrade to Premium Plan 👑
           </motion.button>
         </div>
       ) : (
@@ -346,10 +346,10 @@ function MegaSaver() {
             {/* Create Group Box */}
             <div className="dashboard-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>✨</span> Start Coordinated Study Group
+                <span>✨</span> Create Your Bunk Group
               </h4>
               <p style={{ color: 'var(--text-dim)', fontSize: '12.5px', margin: 0, lineHeight: 1.5 }}>
-                Generate a unique database PIN, share it with your classmates, and sync your actual subject attendance.
+                Generate a secure invite code and start planning safe bunks with your classmates.
               </p>
 
               <motion.button
@@ -369,22 +369,22 @@ function MegaSaver() {
                   opacity: loading ? 0.6 : 1
                 }}
               >
-                {loading ? 'Initializing Database...' : 'Create Active Sync Group 👥'}
+                {loading ? 'Initializing...' : 'Create Bunk Group 👥'}
               </motion.button>
             </div>
 
             {/* Join Group Box */}
             <div className="dashboard-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>🔗</span> Join Classmate's Sync Group
+                <span>🔗</span> Join a Bunk Group
               </h4>
               <p style={{ color: 'var(--text-dim)', fontSize: '12.5px', margin: 0, lineHeight: 1.5 }}>
-                Paste the unique PIN provided by your classmate to link your schedules in real-time.
+                Enter your friend's invite code to synchronize attendance and unlock AI-powered group bunk planning.
               </p>
               
               <input
                 type="text"
-                placeholder="Enter PIN (e.g. TAPS-ABC123)"
+                placeholder="Enter Invite Code (e.g. TAPS-ABC123)"
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
                 style={{
@@ -417,7 +417,7 @@ function MegaSaver() {
                   opacity: loading ? 0.6 : 1
                 }}
               >
-                {loading ? 'Connecting...' : 'Join Classmate Group'}
+                {loading ? 'Connecting...' : 'Join Bunk Group'}
               </motion.button>
             </div>
 
@@ -438,7 +438,7 @@ function MegaSaver() {
                     <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: 'var(--text-main)' }}>👥 {activeGroup.name}</h3>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
-                        Active Session PIN: <strong style={{ color: 'var(--primary-light)', fontSize: '14px', letterSpacing: '0.5px' }}>{activeGroup.groupId}</strong>
+                        Invite Code: <strong style={{ color: 'var(--primary-light)', fontSize: '14px', letterSpacing: '0.5px' }}>{activeGroup.groupId}</strong>
                       </span>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
@@ -459,13 +459,13 @@ function MegaSaver() {
                           boxShadow: 'var(--shadow-sm)'
                         }}
                       >
-                        📢 Share Invite PIN
+                        📢 Share Invite Code
                       </motion.button>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ fontSize: '11px', background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', color: 'var(--success)', padding: '4px 12px', borderRadius: '100px', fontWeight: '800' }}>
-                      ● REALTIME SYNC ACTIVE
+                      🟢 Bunk Crew Online
                     </span>
                     <button
                       onClick={handleLeaveGroup}
@@ -483,7 +483,7 @@ function MegaSaver() {
                       onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#ef4444'; }}
                       onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-dim)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'; }}
                     >
-                      🔌 Disconnect
+                      Leave Group
                     </button>
                   </div>
                 </div>
@@ -491,7 +491,7 @@ function MegaSaver() {
 
               {/* Members List */}
               <div className="dashboard-card" style={{ padding: '24px' }}>
-                <h4 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '800' }}>👥 Synced Classmates ({activeGroup.members.length})</h4>
+                <h4 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '800' }}>👥 Bunk Crew ({activeGroup.members.length})</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                   {activeGroup.members.map((member, idx) => (
                     <div 
@@ -538,17 +538,27 @@ function MegaSaver() {
                     </div>
                   ))}
                 </div>
+                {activeGroup.members.length <= 1 && (
+                  <div style={{ textAlign: 'center', padding: '24px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '20px', marginTop: '16px' }}>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '13px', margin: 0 }}>
+                      No classmates have joined your Bunk Group yet. Share your invite code and start planning smarter together.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Coordinated Smart Calendar Overlays */}
               <div className="dashboard-card" style={{ padding: '24px' }}>
-                <h4 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>🔮</span> AI Coordinated Group Recommendations
+                <h4 style={{ margin: '0 0 8px', fontSize: '15px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>🤖</span> AI Bunk Recommendations
                 </h4>
+                <p style={{ color: 'var(--text-dim)', fontSize: '12.5px', marginTop: 0, marginBottom: '16px', lineHeight: 1.5 }}>
+                  Our AI analyzes everyone's attendance and recommends the safest lectures to bunk—or attend together—to maximize attendance without crossing the minimum threshold.
+                </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {activeGroup.recommendations.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-dim)', fontSize: '12px' }}>
-                      Add matching subjects to view AI Coordinated planning matrix.
+                      Add matching subjects to view AI Bunk recommendations.
                     </div>
                   ) : (
                     activeGroup.recommendations.map((rec, idx) => (
@@ -571,16 +581,16 @@ function MegaSaver() {
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ 
-                              fontSize: '11px', 
-                              background: rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(139, 92, 246, 0.15)', 
-                              color: rec.action === 'Attend Class Together' ? 'var(--danger)' : 'var(--primary-light)', 
-                              padding: '2px 8px', 
-                              borderRadius: '100px', 
-                              fontWeight: '800', 
-                              textTransform: 'uppercase' 
-                            }}>
-                              {rec.day}
-                            </span>
+                                fontSize: '11px', 
+                                background: rec.action === 'Attend Together' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(139, 92, 246, 0.15)', 
+                                color: rec.action === 'Attend Together' ? 'var(--danger)' : 'var(--primary-light)', 
+                                padding: '2px 8px', 
+                                borderRadius: '100px', 
+                                fontWeight: '800', 
+                                textTransform: 'uppercase' 
+                              }}>
+                                {rec.day}
+                              </span>
                             <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '700' }}>{rec.label}</span>
                           </div>
                           <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', marginTop: '8px' }}>{rec.class}</div>
@@ -588,14 +598,14 @@ function MegaSaver() {
                         </div>
 
                         <div style={{ 
-                          background: rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)', 
-                          border: `1.5px solid ${rec.action === 'Attend Class Together' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
-                          borderRadius: '100px', 
-                          padding: '10px 20px',
-                          color: rec.action === 'Attend Class Together' ? 'var(--danger)' : 'var(--success)',
-                          fontWeight: '800',
-                          fontSize: '13px'
-                        }}>
+                            background: rec.action === 'Attend Together' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)', 
+                            border: `1.5px solid ${rec.action === 'Attend Together' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
+                            borderRadius: '100px', 
+                            padding: '10px 20px',
+                            color: rec.action === 'Attend Together' ? 'var(--danger)' : 'var(--success)',
+                            fontWeight: '800',
+                            fontSize: '13px'
+                          }}>
                           {rec.action}
                         </div>
                       </div>

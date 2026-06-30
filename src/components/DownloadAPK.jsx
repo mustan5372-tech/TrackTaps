@@ -46,7 +46,7 @@ const DownloadAPK = () => {
   useEffect(() => {
     const fetchApkSize = async () => {
       try {
-        const response = await fetch('/TrackTaps_v2.0.0.apk', { method: 'HEAD' });
+        const response = await fetch('/TrackTaps_v3.0.0.apk', { method: 'HEAD' });
         const contentLength = response.headers.get('content-length');
         if (contentLength) {
           const bytes = parseInt(contentLength, 10);
@@ -110,8 +110,8 @@ const DownloadAPK = () => {
       return;
     }
     const link = document.createElement('a');
-    link.href = '/TrackTaps_v2.0.0.apk';
-    link.download = 'TrackTaps_v2.0.0.apk';
+    link.href = '/TrackTaps_v3.0.0.apk';
+    link.download = 'TrackTaps_v3.0.0.apk';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -795,7 +795,7 @@ const DownloadAPK = () => {
                           boxShadow: '0 8px 20px var(--primary-glow)'
                         }}
                       >
-                        Download APK ({apkSize})
+                        Download TrackTaps v3.0.0 APK ({apkSize})
                       </button>
                     </motion.div>
                   )}

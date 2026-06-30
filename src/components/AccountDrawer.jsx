@@ -426,6 +426,7 @@ function AccountDrawer() {
               )}
               <button
                 onClick={() => setAccountDrawerOpen(false)}
+                className="close-btn"
                 style={{
                   background: 'rgba(255,255,255,0.06)',
                   border: 'none',

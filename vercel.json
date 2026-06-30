@@ -19,6 +19,11 @@
       "permanent": false
     },
     {
+      "source": "/TrackTaps_v3.0.0.apk",
+      "destination": "https://github.com/mustan5372-tech/TrackTaps/raw/main/TrackTaps.apk",
+      "permanent": false
+    },
+    {
       "source": "/TrackTaps.apk",
       "destination": "https://github.com/mustan5372-tech/TrackTaps/raw/main/TrackTaps.apk",
       "permanent": false

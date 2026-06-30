@@ -22,7 +22,7 @@ function DownloadPage() {
 
   const triggerDownload = () => {
     // Redirect directly to the self-hosted path to download the latest compiled APK
-    window.location.href = '/TrackTaps_v2.0.0.apk';
+    window.location.href = '/TrackTaps_v3.0.0.apk';
   };
 
   return (
@@ -110,11 +110,11 @@ function DownloadPage() {
         </div>
 
         <h2 style={{ fontSize: '24px', fontWeight: '850', color: 'white', margin: '0 0 8px 0', letterSpacing: '-0.02em' }}>
-          {countdown > 0 ? `Starting Download in ${countdown}s...` : 'Downloading TrackTaps...'}
+          {countdown > 0 ? `Starting Download in ${countdown}s...` : 'Downloading TrackTaps v3.0.0...'}
         </h2>
         
         <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: '0 0 32px 0' }}>
-          Please wait while the latest stable Version 2.0.0 APK package downloads to your phone.
+          Please wait while the latest stable Version 3.0.0 APK package downloads to your phone.
         </p>
 
         {/* Retry trigger */}

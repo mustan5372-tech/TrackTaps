@@ -34,7 +34,7 @@ const PLANS = [
     description: 'Best value for academic excellence',
     color: '#f59e0b',
     bestValue: true,
-    features: ['Everything in Super Saver', 'GeoFence Auto-Attendance', 'Coordinated Timetable Sync', 'AI Prediction Engine', 'Advanced Academic Reports', 'Lifetime Updates']
+    features: ['Everything in Super Saver', 'GeoFence Auto-Attendance', 'Bunk Together (Group Sync)', 'AI Prediction Engine', 'Advanced Academic Reports', 'Lifetime Updates']
   }
 ];
 
