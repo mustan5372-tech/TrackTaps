@@ -7,6 +7,21 @@
       "source": "/download",
       "destination": "https://github.com/mustan5372-tech/TrackTaps/raw/main/TrackTaps.apk",
       "permanent": false
+    },
+    {
+      "source": "/TrackTaps_v1.8.2.apk",
+      "destination": "https://github.com/mustan5372-tech/TrackTaps/raw/main/TrackTaps.apk",
+      "permanent": false
+    },
+    {
+      "source": "/TrackTaps_v2.0.0.apk",
+      "destination": "https://github.com/mustan5372-tech/TrackTaps/raw/main/TrackTaps.apk",
+      "permanent": false
+    },
+    {
+      "source": "/TrackTaps.apk",
+      "destination": "https://github.com/mustan5372-tech/TrackTaps/raw/main/TrackTaps.apk",
+      "permanent": false
     }
   ],
   "rewrites": [
