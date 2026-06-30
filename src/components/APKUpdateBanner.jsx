@@ -66,13 +66,13 @@ function APKUpdateBanner() {
   const handleUpdateClick = () => {
     try {
       if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform()) {
-        window.open('https://www.tracktaps.online/TrackTaps_v2.0.0.apk', '_system');
+        window.open('https://www.tracktaps.online/download', '_system');
       } else {
-        window.open('https://www.tracktaps.online/TrackTaps_v2.0.0.apk', '_blank');
+        window.open('https://www.tracktaps.online/download', '_blank');
       }
     } catch (err) {
       console.error('Failed to launch system browser update link:', err);
-      window.open('https://www.tracktaps.online/TrackTaps_v2.0.0.apk', '_blank');
+      window.open('https://www.tracktaps.online/download', '_blank');
     }
   };
 
