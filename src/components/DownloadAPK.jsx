@@ -3,6 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 
+// ─── Centralized version constant ───
+// Update this single value for every new APK release (v4, v5, v6, etc.)
+const APP_VERSION = '3.0.0';
+
 const DownloadAPK = () => {
   const {
     subjects,
@@ -46,7 +50,7 @@ const DownloadAPK = () => {
   useEffect(() => {
     const fetchApkSize = async () => {
       try {
-        const response = await fetch('/TrackTaps_v3.0.0.apk', { method: 'HEAD' });
+        const response = await fetch(`/TrackTaps_v${APP_VERSION}.apk`, { method: 'HEAD' });
         const contentLength = response.headers.get('content-length');
         if (contentLength) {
           const bytes = parseInt(contentLength, 10);
@@ -110,8 +114,8 @@ const DownloadAPK = () => {
       return;
     }
     const link = document.createElement('a');
-    link.href = '/TrackTaps_v3.0.0.apk';
-    link.download = 'TrackTaps_v3.0.0.apk';
+    link.href = `/TrackTaps_v${APP_VERSION}.apk`;
+    link.download = `TrackTaps v${APP_VERSION}.apk`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -795,7 +799,7 @@ const DownloadAPK = () => {
                           boxShadow: '0 8px 20px var(--primary-glow)'
                         }}
                       >
-                        Download TrackTaps v3.0.0 APK ({apkSize})
+                        Download TrackTaps v{APP_VERSION} APK ({apkSize})
                       </button>
                     </motion.div>
                   )}
