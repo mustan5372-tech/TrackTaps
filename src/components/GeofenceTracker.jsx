@@ -946,7 +946,7 @@ export default function GeofenceTracker() {
           }}>
             <div style={{ fontSize: '64px', marginBottom: '20px', filter: 'drop-shadow(0 0 10px rgba(245, 158, 11, 0.4))' }}>🔒</div>
             <h3 style={{ fontSize: '22px', fontWeight: '850', marginBottom: '14px', color: '#f59e0b', letterSpacing: '-0.01em' }}>
-              Mega Saver Exclusive Feature
+              Premium Exclusive Feature
             </h3>
             <p style={{
               color: 'var(--text-dim)',
@@ -976,8 +976,8 @@ export default function GeofenceTracker() {
               }}
             >
               {subscription && subscription.status === 'active' && subscription.planType === 'half_yearly' 
-                ? 'Upgrade to Mega Saver for ₹8' 
-                : 'Unlock Mega Saver for ₹15/year'}
+                ? 'Upgrade to Premium for ₹8' 
+                : 'Unlock Premium for ₹15/year'}
             </motion.button>
           </div>
         </div>

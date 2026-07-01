@@ -381,7 +381,7 @@ function Premium() {
                     transition: 'all 0.3s ease'
                   }}
                 >
-                  {isCurrentPlan ? 'Current Plan' : loading && selectedPlan === plan.id ? 'Starting Checkout...' : (plan.id === 'yearly' && isSuperSaverActive) ? 'Upgrade to Mega Saver for ₹8' : `Upgrade to ${plan.name}`}
+                  {isCurrentPlan ? 'Current Plan' : loading && selectedPlan === plan.id ? 'Starting Checkout...' : (plan.id === 'yearly' && isSuperSaverActive) ? 'Upgrade to Premium for ₹8' : `Upgrade to ${plan.name}`}
                 </button>
               </motion.div>
             );
