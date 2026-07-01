@@ -963,6 +963,7 @@ function Settings() {
               onClick={() => {
                 localStorage.removeItem('tracktaps_onboarding_completed');
                 localStorage.removeItem('tracktaps_completed_tour');
+                localStorage.removeItem('tracktaps_onboarding_seen');
                 alert('Onboarding & Guided Tour status reset! Navigate to the Home page to run the tour.');
                 navigate('/');
               }}

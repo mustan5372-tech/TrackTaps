@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAppStore from '../store/appStore';
+import { db } from '../services/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 // Custom Confetti Component
 const Confetti = () => {
@@ -78,7 +80,9 @@ const Onboarding = () => {
   useEffect(() => {
     // Show onboarding automatically only if logged in and has not completed it yet
     if (user) {
-      const hasSeen = localStorage.getItem('tracktaps_onboarding_seen');
+      const hasSeen = localStorage.getItem('tracktaps_onboarding_seen') || 
+                      localStorage.getItem('tracktaps_onboarding_completed') || 
+                      localStorage.getItem('tracktaps_completed_tour');
       if (!hasSeen) {
         setShow(true);
       }
@@ -130,6 +134,17 @@ const Onboarding = () => {
     setTimeout(() => {
       setShow(false);
       localStorage.setItem('tracktaps_onboarding_seen', 'true');
+      localStorage.setItem('tracktaps_onboarding_completed', 'true');
+      localStorage.setItem('tracktaps_completed_tour', 'true');
+      
+      if (user && user.uid && db && typeof db.app === 'object') {
+        try {
+          const userRef = doc(db, "users", user.uid);
+          setDoc(userRef, { onboardingCompleted: true }, { merge: true });
+        } catch (e) {
+          console.warn("Failed to save onboardingCompleted to Cloud:", e);
+        }
+      }
     }, 2500);
   };
 
