@@ -249,12 +249,40 @@ function Guide() {
       
       {/* Header */}
       <header style={{ marginBottom: '32px', marginTop: '20px' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>
-          How to Use <span style={{ color: 'var(--primary-light)' }}>TrackTaps</span>
-        </h1>
-        <p style={{ color: 'var(--text-dim)', fontSize: '15px', lineHeight: '1.5' }}>
-          Master your attendance and never worry about falling behind again. Explore the interactive guides below.
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <h1 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-main)', marginBottom: '8px' }}>
+              How to Use <span style={{ color: 'var(--primary-light)' }}>TrackTaps</span>
+            </h1>
+            <p style={{ color: 'var(--text-dim)', fontSize: '15px', lineHeight: '1.5', margin: 0 }}>
+              Master your attendance and never worry about falling behind again. Explore the interactive guides below.
+            </p>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              localStorage.removeItem('tracktaps_onboarding_seen');
+              window.dispatchEvent(new Event('trigger-onboarding'));
+            }}
+            style={{
+              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.3) 100%)',
+              border: '1.5px solid rgba(139, 92, 246, 0.4)',
+              borderRadius: '16px',
+              padding: '10px 18px',
+              color: 'white',
+              fontSize: '13px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 8px 20px rgba(139, 92, 246, 0.1)'
+            }}
+          >
+            ✨ Replay Guide Tour
+          </motion.button>
+        </div>
       </header>
 
       {/* Main Guides Accordion */}
