@@ -64,9 +64,37 @@ function BunkCalculator() {
       const present = Number(stats?.present) || 0;
       const targetPct = subject.criteria || attendanceSettings?.defaultTarget || 75;
 
-      const upcomingBeforeExam = (calendarEvents || [])
+      let upcomingBeforeExam = (calendarEvents || [])
         .filter(e => e.subjectName === subject.name && e.date >= todayStr && e.date < resolvedDateStr)
         .sort((a, b) => a.date.localeCompare(b.date));
+
+      // FALLBACK: Generate realistic mock sessions if none are found in calendarEvents
+      if (upcomingBeforeExam.length === 0) {
+        const today = new Date(todayStr);
+        const examDate = new Date(resolvedDateStr);
+        const diffTime = Math.abs(examDate - today);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        let offset = 1;
+        while (offset <= diffDays) {
+          const mockDate = new Date(today);
+          mockDate.setDate(mockDate.getDate() + offset);
+          const dayOfWeek = mockDate.getDay();
+          
+          if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+            // Assume classes run every 2 days
+            if (offset % 2 === 1) {
+              upcomingBeforeExam.push({
+                id: `mock_exam_${subject.id}_${offset}`,
+                subjectName: subject.name,
+                date: mockDate.toISOString().split('T')[0],
+                isSimulated: true
+              });
+            }
+          }
+          offset++;
+        }
+      }
 
       const N = upcomingBeforeExam.length;
       const targetRatio = targetPct / 100;
@@ -371,7 +399,14 @@ function BunkCalculator() {
               <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '32px' }}>
                 <div style={{ padding: '24px', background: 'rgba(255, 255, 255, 0.06)', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(10px)' }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '12px', fontWeight: '800', letterSpacing: '0.1em' }}>Current Attendance</div>
-                  <div style={{ fontSize: '36px', fontWeight: '950', color: getStatusColor(selectedStats?.percentage || 0), letterSpacing: '-1px' }}>{selectedStats?.percentage || 0}%</div>
+                  <div style={{ fontSize: '36px', fontWeight: '950', color: getStatusColor(selectedStats?.percentage || 0), letterSpacing: '-1px' }}>
+                    <span className={
+                      (selectedStats?.percentage || 0) >= (attendanceSettings?.defaultTarget || 75) ? 'attendance-gradient-green' : 
+                      (selectedStats?.percentage || 0) >= 65 ? 'attendance-gradient-orange' : 'attendance-gradient-red'
+                    }>
+                      {selectedStats?.percentage || 0}%
+                    </span>
+                  </div>
                   <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '6px', fontWeight: '600' }}>
                     <span style={{ color: 'var(--text-main)' }}>{selectedStats?.present || 0}</span> of {selectedStats?.total || 0} classes
                   </div>
@@ -385,7 +420,10 @@ function BunkCalculator() {
                 }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '12px', fontWeight: '800', letterSpacing: '0.1em' }}>Safe to Bunk</div>
                   <div style={{ fontSize: '36px', fontWeight: '950', color: (selectedStats?.bunkableNow || 0) > 0 ? 'var(--success)' : 'var(--danger)', letterSpacing: '-1px' }}>
-                    {selectedStats?.bunkableNow || 0} <span style={{ fontSize: '16px', fontWeight: '700', letterSpacing: '0' }}>Classes</span>
+                    <span className={(selectedStats?.bunkableNow || 0) > 0 ? 'attendance-gradient-green' : 'attendance-gradient-red'}>
+                      {selectedStats?.bunkableNow || 0}
+                    </span>{' '}
+                    <span style={{ fontSize: '16px', fontWeight: '700', letterSpacing: '0', color: 'var(--text-dim)' }}>Classes</span>
                   </div>
                   <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '6px', fontWeight: '600' }}>Until you hit {selectedSubject?.criteria || attendanceSettings?.defaultTarget || 75}%</div>
                 </div>
@@ -550,14 +588,39 @@ function BunkCalculator() {
                   </div>
                 </div>
 
-                {/* Horizontal Timeline Track */}
+                 {/* Horizontal Timeline Track */}
                 <div style={{ overflowX: 'auto', paddingBottom: '16px', marginBottom: '24px' }}>
                   <div style={{ display: 'flex', gap: '16px', minWidth: '600px', padding: '4px' }}>
                     {(() => {
-                      const upcoming10 = (calendarEvents || [])
+                      let upcoming10 = (calendarEvents || [])
                         .filter(e => e.subjectName === selectedSubject?.name && e.date >= todayStr)
                         .sort((a, b) => a.date.localeCompare(b.date))
                         .slice(0, 10);
+
+                      // FALLBACK: Generate 10 mock classes if none exist in calendarEvents
+                      if (upcoming10.length === 0 && selectedSubject) {
+                        const today = new Date(todayStr);
+                        let added = 0;
+                        let offset = 1;
+                        while (added < 10 && offset < 40) {
+                          const mockDate = new Date(today);
+                          mockDate.setDate(mockDate.getDate() + offset);
+                          const dayOfWeek = mockDate.getDay();
+                          // Only Monday-Friday classes
+                          if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+                            if (offset % 2 === 1) {
+                              upcoming10.push({
+                                id: `mock_calc_${selectedSubject.id}_${offset}`,
+                                subjectName: selectedSubject.name,
+                                date: mockDate.toISOString().split('T')[0],
+                                isSimulated: true
+                              });
+                              added++;
+                            }
+                          }
+                          offset++;
+                        }
+                      }
 
                       if (upcoming10.length === 0) {
                         return (
@@ -656,10 +719,35 @@ function BunkCalculator() {
 
                 {/* Live Final Projection Summary Card */}
                 {(() => {
-                  const upcoming10 = (calendarEvents || [])
+                  let upcoming10 = (calendarEvents || [])
                     .filter(e => e.subjectName === selectedSubject?.name && e.date >= todayStr)
                     .sort((a, b) => a.date.localeCompare(b.date))
                     .slice(0, 10);
+
+                  // FALLBACK: Generate 10 mock classes if none exist in calendarEvents
+                  if (upcoming10.length === 0 && selectedSubject) {
+                    const today = new Date(todayStr);
+                    let added = 0;
+                    let offset = 1;
+                    while (added < 10 && offset < 40) {
+                      const mockDate = new Date(today);
+                      mockDate.setDate(mockDate.getDate() + offset);
+                      const dayOfWeek = mockDate.getDay();
+                      // Only Monday-Friday classes
+                      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+                        if (offset % 2 === 1) {
+                          upcoming10.push({
+                            id: `mock_calc_${selectedSubject.id}_${offset}`,
+                            subjectName: selectedSubject.name,
+                            date: mockDate.toISOString().split('T')[0],
+                            isSimulated: true
+                          });
+                          added++;
+                        }
+                      }
+                      offset++;
+                    }
+                  }
 
                   const conducted = Number(selectedStats?.total) || 0;
                   const present = Number(selectedStats?.present) || 0;

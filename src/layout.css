@@ -55,6 +55,8 @@
 }
 
 body {
+    background-color: var(--bg-deep);
+    color: var(--text-main);
     transition: background-color 0.4s ease, color 0.4s ease; /* Simplified for performance */
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -149,10 +151,10 @@ body {
     left: 16px !important;
     right: 16px !important;
     height: 66px !important;
-    background: rgba(15, 23, 42, 0.65) !important;
+    background: var(--surface-glass) !important;
     backdrop-filter: blur(20px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid rgba(139, 92, 246, 0.35) !important;
+    border: 1px solid var(--border-bright) !important;
     border-radius: 100px !important;
     z-index: 10000 !important;
     pointer-events: auto !important;
@@ -270,23 +272,32 @@ body {
 
     .mobile-header {
         display: flex;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 9999 !important;
         height: calc(64px + env(safe-area-inset-top, 0px));
         padding: env(safe-area-inset-top, 0px) var(--mobile-side-padding) 0 var(--mobile-side-padding);
-        background: rgba(7, 11, 26, 0.8);
+        background: var(--surface-glass);
         backdrop-filter: blur(24px) saturate(180%);
         -webkit-backdrop-filter: blur(24px) saturate(180%);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid var(--border);
         box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
         justify-content: space-between;
+    }
+
+    .main-content {
+        padding-top: calc(84px + env(safe-area-inset-top, 0px)) !important;
     }
 
     .mobile-nav {
         display: flex;
         height: 66px;
-        background: rgba(15, 23, 42, 0.65);
+        background: var(--surface-glass);
         backdrop-filter: blur(24px) saturate(200%);
         -webkit-backdrop-filter: blur(24px) saturate(200%);
-        border: 1px solid rgba(139, 92, 246, 0.3);
+        border: 1px solid var(--border-bright);
         border-radius: 100px;
         padding: 0 12px;
         bottom: calc(16px + env(safe-area-inset-bottom, 0px));
@@ -486,142 +497,396 @@ html, body {
 }
 
 /* ========================================
-   LIQUID GLASS THEME — Pill Icons & Frosted UI
+   LIQUID GLASS THEME V4 — APPLE LIQUID GLASS UI EVOLUTION
    ======================================== */
 
-/* Liquid Glass Sidebar Enhancement */
+:root {
+    --glass-blur: 40px;
+    --gpu-acceleration: translateZ(0);
+    --card-radius: 32px;
+    --button-radius: 100px;
+    --glass-highlight: 0.15;
+}
+
+body.light-mode {
+    --glass-highlight: 0.55;
+}
+
+/* 1. Animated Organic Liquid Glass Wallpaper */
+body {
+    position: relative;
+    background-color: var(--bg-deep) !important;
+    transition: background-color 0.4s ease;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -2;
+    background: var(--bg-deep);
+    transition: background 0.4s ease;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: -10%;
+    left: -10%;
+    width: 120vw;
+    height: 120vh;
+    z-index: -1;
+    background-image: 
+        radial-gradient(circle at 15% 25%, var(--bg-glow-1, rgba(168, 85, 247, 0.22)) 0%, transparent 50%),
+        radial-gradient(circle at 85% 15%, var(--bg-glow-2, rgba(139, 92, 246, 0.26)) 0%, transparent 60%),
+        radial-gradient(circle at 35% 85%, var(--bg-glow-3, rgba(196, 181, 253, 0.18)) 0%, transparent 55%),
+        radial-gradient(circle at 75% 75%, var(--bg-glow-4, rgba(236, 72, 153, 0.10)) 0%, transparent 50%);
+    filter: blur(90px);
+    opacity: 0.92;
+    pointer-events: none;
+    animation: bg-organic-float 22s ease-in-out infinite alternate;
+}
+
+@keyframes bg-organic-float {
+    0% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+    }
+    50% {
+        transform: translate(-3%, 4%) scale(1.04) rotate(4deg);
+    }
+    100% {
+        transform: translate(3%, -2%) scale(0.98) rotate(-3deg);
+    }
+}
+
+.app-container {
+    background: transparent !important;
+}
+
+/* 2. True Liquid Glass Sidebar */
 .liquid-glass-sidebar {
-    background: rgba(15, 23, 42, 0.35) !important;
-    backdrop-filter: blur(28px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+    background: var(--surface-glass) !important;
+    backdrop-filter: blur(var(--glass-blur)) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(200%) !important;
+    border-right: 1px solid var(--border) !important;
+    box-shadow: 20px 0 50px rgba(10, 5, 25, 0.15) !important;
     position: relative;
     overflow-y: auto !important;
     overflow-x: hidden !important;
 }
 
-/* Subtle liquid glass refraction overlay */
-.liquid-glass-sidebar::before {
+/* 3. Evolved Premium Glass Cards */
+.dashboard-card, .subject-card, .shortcut-card, .insight-card, .history-card, .calculator-card, .profile-card, .theme-card {
+    background: var(--surface-glass) !important;
+    backdrop-filter: blur(var(--glass-blur)) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(190%) !important;
+    border: 1.5px solid var(--border) !important;
+    border-top: 1.5px solid var(--border-bright) !important;
+    border-left: 1.5px solid var(--border-bright) !important;
+    border-radius: var(--card-radius) !important;
+    box-shadow: inset 0 1.5px 1.5px rgba(255, 255, 255, var(--glass-highlight)), var(--shadow-premium) !important;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease !important;
+    will-change: transform, box-shadow;
+    transform: var(--gpu-acceleration);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-card::before, .subject-card::before, .shortcut-card::before, .insight-card::before, .history-card::before, .calculator-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 200px;
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.03) 0%,
-        transparent 100%
-    );
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
     pointer-events: none;
     z-index: 0;
 }
 
-/* Liquid glass nav button base */
-.liquid-glass-nav-btn {
+/* Card hover scaling and highlight glows */
+.dashboard-card:hover, .subject-card:hover, .shortcut-card:hover, .insight-card:hover, .history-card:hover, .calculator-card:hover {
+    transform: translateY(-6px) scale(1.01) var(--gpu-acceleration) !important;
+    box-shadow: inset 0 1.5px 1.5px rgba(255, 255, 255, calc(var(--glass-highlight) + 0.1)), var(--shadow-premium), 0 0 30px var(--primary-glow) !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+}
+
+/* 4. Apple Glass Buttons */
+button, .btn, .primary-btn, .btn-primary, .action-btn, .glow-btn, .submit-btn, .confirm-btn {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-top: 1.5px solid rgba(255, 255, 255, 0.38);
+    border-radius: var(--button-radius);
+    color: var(--text-main);
+    font-weight: 750;
+    font-size: 13.5px;
+    letter-spacing: -0.01em;
+    padding: 12px 24px;
+    box-shadow: 0 8px 24px rgba(80, 60, 160, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, background 0.25s ease, opacity 0.25s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transform: var(--gpu-acceleration);
+    will-change: transform;
+}
+
+button:hover, .btn:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+    box-shadow: 0 12px 32px rgba(80, 60, 160, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    transform: translateY(-2px) scale(1.03);
+}
+
+button:active, .btn:active {
+    transform: translateY(0) scale(0.96);
+    box-shadow: 0 4px 12px rgba(80, 60, 160, 0.06);
+}
+
+/* Light mode specific buttons */
+body.light-mode button, body.light-mode .btn {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.45) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.22);
+    border-top: 1.5px solid rgba(255, 255, 255, 0.85);
+    color: var(--text-main);
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+body.light-mode button:hover, body.light-mode .btn:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.6) 100%);
+}
+
+/* Primary/Highlighted buttons */
+button.primary, button[type="submit"], .btn-primary, .primary-btn, .confirm-btn, .save-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, rgba(139, 92, 246, 0.5) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    border-top: 1.5px solid rgba(255, 255, 255, 0.45) !important;
+    color: #ffffff !important;
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
+}
+
+button.primary:hover, button[type="submit"]:hover, .btn-primary:hover, .primary-btn:hover {
+    background: linear-gradient(135deg, var(--primary-light) 0%, rgba(139, 92, 246, 0.6) 100%) !important;
+    box-shadow: 0 14px 30px rgba(139, 92, 246, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* 5. Floating Bottom Navigation Bar (Apple Dock style) */
+.mobile-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 20px !important;
+    right: 20px !important;
+    height: 74px !important;
+    background: var(--surface-glass) !important;
+    backdrop-filter: blur(40px) saturate(220%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+    border-top: 2px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 37px !important;
+    box-shadow: 0 20px 50px rgba(10, 5, 25, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+    z-index: 10000 !important;
+    padding: 0 16px !important;
+    margin: 0 auto !important;
+    max-width: 600px !important;
+    transition: all 0.3s ease !important;
+}
+
+body.light-mode .mobile-nav {
+    border: 1.5px solid rgba(139, 92, 246, 0.2) !important;
+    border-top: 2px solid rgba(255, 255, 255, 0.7) !important;
+    box-shadow: 0 20px 50px rgba(139, 92, 246, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Selection and bounce effects for dock */
+.mobile-nav-btn {
     position: relative;
-    border-radius: 14px !important;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.mobile-nav-btn.active .nav-icon {
+    color: var(--primary-light) !important;
+    filter: drop-shadow(0 0 12px var(--primary)) !important;
+    transform: translateY(-4px) scale(1.18) !important;
+}
+
+.mobile-nav-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    width: 6px;
+    height: 6px;
+    background: var(--primary-light);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--primary-glow);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    opacity: 0;
+}
+
+.mobile-nav-btn.active::after {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+}
+
+/* 6. Control Center circular glass bubble icons */
+.nav-icon-pill, .nav-icon-pill-mobile, .shortcut-icon, .subject-icon, .icon-bubble {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-}
-
-.liquid-glass-nav-btn:hover {
-    background: rgba(139, 92, 246, 0.08) !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}
-
-.liquid-glass-nav-btn.active {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 12px rgba(139, 92, 246, 0.08) !important;
-}
-
-/* Pill icon containers — shared base */
-.nav-icon-pill,
-.nav-icon-pill-mobile {
     position: relative;
     overflow: hidden;
-    flex-shrink: 0;
 }
 
-/* Inner liquid light reflection effect on pills */
-.nav-icon-pill::after,
-.nav-icon-pill-mobile::after {
+.nav-icon-pill::before, .nav-icon-pill-mobile::before, .shortcut-icon::before, .subject-icon::before, .icon-bubble::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 10%;
-    right: 10%;
+    left: 0;
+    right: 0;
     height: 50%;
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.12) 0%,
-        transparent 100%
-    );
-    border-radius: 100px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 100%);
     pointer-events: none;
 }
 
-/* Hover scale effect on pill icons */
-.liquid-glass-nav-btn:hover .nav-icon-pill {
-    transform: scale(1.08);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 3px 10px rgba(139, 92, 246, 0.12) !important;
+body.light-mode .nav-icon-pill, body.light-mode .nav-icon-pill-mobile, body.light-mode .shortcut-icon, body.light-mode .subject-icon, body.light-mode .icon-bubble {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: 1px solid rgba(139, 92, 246, 0.25) !important;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.6) !important;
 }
 
-/* Mobile pill icon adjustments */
-.mobile-nav-btn .nav-icon-pill-mobile {
-    margin-bottom: 2px;
+.mobile-nav-btn.active .nav-icon-pill-mobile, .shortcut-card:hover .shortcut-icon, .subject-card:hover .subject-icon {
+    background: var(--primary-glow) !important;
+    border-color: var(--primary-light) !important;
+    box-shadow: 0 0 15px var(--primary-glow), inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
+    transform: scale(1.1) !important;
 }
 
-.mobile-nav-btn.active .nav-icon-pill-mobile {
-    transform: translateY(-2px) scale(1.05);
-    filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.4));
+/* 7. Spring-Loaded Glass Inputs & Dropdowns */
+input[type="text"], input[type="email"], input[type="password"], input[type="number"], select, textarea {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-top: 1.5px solid rgba(255, 255, 255, 0.28) !important;
+    border-radius: 16px !important;
+    color: var(--text-main) !important;
+    padding: 14px 18px !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    outline: none !important;
+    transform: var(--gpu-acceleration);
+    will-change: transform;
 }
 
-/* Bottom sheet drawer items — liquid glass style */
-@media (max-width: 768px) {
-    .mobile-nav-btn .nav-icon-pill-mobile {
-        margin-bottom: 1px;
-    }
-    
-    .mobile-nav-btn.active .nav-icon-pill-mobile {
-        transform: translateY(-1px) scale(1.05);
-    }
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+    transform: scale(1.02) !important;
+    border-color: var(--primary-light) !important;
+    background: rgba(255, 255, 255, 0.10) !important;
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Liquid glass pill button for refresh/action buttons */
-.liquid-glass-pill-icon {
-    position: relative;
-    overflow: hidden;
+body.light-mode input[type="text"], body.light-mode input[type="email"], body.light-mode input[type="password"], body.light-mode input[type="number"], body.light-mode select, body.light-mode textarea {
+    background: rgba(255, 255, 255, 0.75) !important;
+    border: 1px solid rgba(139, 92, 246, 0.25) !important;
+    border-top: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 4px 12px rgba(139, 92, 246, 0.05) !important;
 }
 
-.liquid-glass-pill-icon::after {
-    content: '';
-    position: absolute;
+body.light-mode input[type="text"]:focus, body.light-mode input[type="email"]:focus, body.light-mode input[type="password"]:focus, body.light-mode input[type="number"]:focus, body.light-mode select:focus, body.light-mode textarea:focus {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* 8. Floating Sheets, Modals, Action Drawers */
+.modal-content, .drawer-content, .popup-content, .bottom-sheet, .auth-modal, .terms-modal, .account-drawer, div[role="dialog"] {
+    background: rgba(20, 15, 35, 0.45) !important;
+    backdrop-filter: blur(40px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-top: 2px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 36px !important;
+    box-shadow: 0 30px 60px rgba(10, 5, 25, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.4s ease !important;
+}
+
+body.light-mode .modal-content, body.light-mode .drawer-content, body.light-mode .popup-content, body.light-mode .bottom-sheet, body.light-mode .auth-modal, body.light-mode .terms-modal, body.light-mode .account-drawer, body.light-mode div[role="dialog"] {
+    background: rgba(255, 255, 255, 0.80) !important;
+    border: 1px solid rgba(139, 92, 246, 0.25) !important;
+    border-top: 2px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 30px 60px rgba(139, 92, 246, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 9. Floating blurred View Header */
+.view-header, .mobile-header {
+    background: rgba(20, 15, 35, 0.15) !important;
+    backdrop-filter: blur(35px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+    border-bottom: 1px solid var(--border) !important;
+    position: sticky;
     top: 0;
-    left: 15%;
-    right: 15%;
-    height: 45%;
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.15) 0%,
-        transparent 100%
-    );
-    border-radius: 100px;
-    pointer-events: none;
+    z-index: 999;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    margin-bottom: 24px !important;
 }
 
-/* Liquid glass animation keyframe for subtle shimmer */
-@keyframes liquid-shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+.view-header h2, .mobile-header h2 {
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.03em !important;
+    color: var(--text-main) !important;
+    background: linear-gradient(135deg, var(--text-main) 0%, var(--text-dim) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-/* Apply shimmer to active pill icons */
-.liquid-glass-nav-btn.active .nav-icon-pill {
-    background-size: 200% 100%;
-    animation: liquid-shimmer 3s ease-in-out infinite;
+body.light-mode .view-header, body.light-mode .mobile-header {
+    background: rgba(255, 255, 255, 0.35) !important;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.15) !important;
 }
 
-.mobile-nav-btn.active .nav-icon-pill-mobile {
-    background-size: 200% 100%;
-    animation: liquid-shimmer 3s ease-in-out infinite;
+/* Metric Colors */
+.attendance-gradient-green {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.2));
+}
+
+.attendance-gradient-purple {
+    background: linear-gradient(135deg, #c084fc 0%, #8b5cf6 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.2));
+}
+
+.attendance-gradient-orange {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.2));
+}
+
+.attendance-gradient-red {
+    background: linear-gradient(135deg, #f87171 0%, #ef4444 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    filter: drop-shadow(0 2px 8px rgba(239, 68, 68, 0.2));
 }

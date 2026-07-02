@@ -48,16 +48,6 @@ const useAppStore = create(
         setTheme: (themeName) => {
           console.log(`🎨 [ThemeEngine] Switching to: ${themeName}`);
           
-          const { subscription } = get();
-          const isPremium = subscription?.status === 'active';
-          
-          // PREMIUM GATING: Allow 'default' and 'light' for everyone. Others require premium.
-          if (!isPremium && themeName !== 'default' && themeName !== 'light') {
-            console.warn("💎 [ThemeEngine] Theme locked: Premium required.");
-            // We return false so the UI can show a modal if needed
-            return false; 
-          }
-
           // Apply to DOM instantly
           applyTheme(themeName);
           

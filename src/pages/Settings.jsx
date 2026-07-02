@@ -626,24 +626,13 @@ function Settings() {
 
             <div className="theme-grid" style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+              gridTemplateColumns: 'repeat(2, 1fr)', 
               gap: '16px' 
             }}>
               {[
-                { id: 'default', name: 'Default Dark', type: 'free', bg: 'var(--bg-primary)', primary: 'var(--primary)', icon: '🌙' },
-                { id: 'light', name: 'Basic Light', type: 'free', bg: 'var(--text-main)', primary: '#7c3aed', icon: '☀️' },
-                { id: 'amoled', name: 'AMOLED Dark', type: 'premium', bg: '#000000', primary: '#ffffff', icon: '🌑' },
-                { id: 'neon', name: 'Neon Purple', type: 'premium', bg: '#1e1b4b', primary: '#d946ef', icon: '🔮' },
-                { id: 'cyberpunk', name: 'Cyberpunk', type: 'premium', bg: '#050505', primary: '#00f2ff', icon: '⚡' },
-                { id: 'midnight', name: 'Midnight Blue', type: 'premium', bg: 'var(--surface)', primary: '#38bdf8', icon: '🌊' },
-                { id: 'gold', name: 'Royal Gold', type: 'premium', bg: '#0c0a09', primary: '#f59e0b', icon: '👑' },
-                { id: 'minimal', name: 'Minimal White', type: 'premium', bg: '#ffffff', primary: '#111827', icon: '⬜' },
-                { id: 'pod', name: 'Pod Purple', type: 'premium', bg: 'var(--bg-primary)', primary: '#6366f1', icon: '📦' },
-                { id: 'sunset', name: 'Sunset Warm', type: 'premium', bg: '#1a0f0f', primary: '#f97316', icon: '🌇' },
-                { id: 'emerald', name: 'Emerald Mint', type: 'premium', bg: '#064e3b', primary: '#10b981', icon: '🌿' },
-                { id: 'custom', name: 'Premium Custom', type: 'premium', bg: 'linear-gradient(135deg, #ef4444 0%, #3b82f6 50%, #10b981 100%)', primary: 'hsl(var(--custom-hue, 270), 91%, 65%)', icon: '🎨' },
+                { id: 'default', name: 'Dark Mode', bg: 'var(--bg-primary)', primary: 'var(--primary)', icon: '🌙' },
+                { id: 'light', name: 'Light Mode', bg: 'var(--text-main)', primary: '#7c3aed', icon: '☀️' }
               ].map(t => {
-                const isLocked = t.type === 'premium' && subscription?.status !== 'active';
                 const isActive = theme === t.id;
 
                 return (
@@ -652,15 +641,12 @@ function Settings() {
                     whileHover={{ y: -4 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      const success = setTheme(t.id);
-                      if (!success) {
-                        navigate('/premium');
-                      }
+                      setTheme(t.id);
                     }}
                     className="theme-card"
                     style={{
                       background: t.bg,
-                      border: isActive ? `2px solid ${t.primary}` : '1px solid var(--border)',
+                      border: isActive ? `2.5px solid ${t.primary}` : '1px solid var(--border)',
                       cursor: 'pointer',
                       position: 'relative',
                       display: 'flex',
@@ -668,17 +654,15 @@ function Settings() {
                       gap: '12px',
                       minHeight: '100px',
                       boxShadow: isActive ? `0 0 20px ${t.primary}30` : 'none',
-                      opacity: isLocked ? 0.6 : 1,
                       transition: 'all 0.3s ease'
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '20px' }}>{t.icon}</span>
-                      {isLocked && <span style={{ fontSize: '14px' }}>🔒</span>}
                     </div>
                     
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: '700', color: t.id === 'light' || t.id === 'minimal' ? 'var(--surface)' : 'var(--text-main)' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: t.id === 'light' ? 'var(--surface)' : 'var(--text-main)' }}>
                         {t.name}
                       </div>
                       <div style={{ 

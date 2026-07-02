@@ -55,9 +55,9 @@ function Sidebar() {
 
   return (
     <aside className="sidebar liquid-glass-sidebar" data-nosnippet style={{
-      borderRight: isPremium ? '1px solid rgba(234, 179, 8, 0.25)' : '1px solid rgba(255, 255, 255, 0.08)',
+      borderRight: isPremium ? '1px solid rgba(234, 179, 8, 0.25)' : '1px solid var(--border)',
       boxShadow: isPremium ? '5px 0 35px rgba(234, 179, 8, 0.05)' : 'none',
-      background: 'rgba(15, 23, 42, 0.35)',
+      background: 'var(--surface-glass)',
       backdropFilter: 'blur(28px) saturate(180%)',
       WebkitBackdropFilter: 'blur(28px) saturate(180%)',
     }}>
