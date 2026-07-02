@@ -45,6 +45,7 @@
     /* Performance Tokens */
     --glass-blur: 16px;
     --gpu-acceleration: translateZ(0);
+    --transition-speed: 0.3s;
 }
 
 @media (max-width: 768px) {
@@ -57,7 +58,7 @@
 body {
     background-color: var(--bg-deep);
     color: var(--text-main);
-    transition: background-color 0.4s ease, color 0.4s ease; /* Simplified for performance */
+    transition: background-color var(--transition-speed, 0.3s) ease, color var(--transition-speed, 0.3s) ease; /* Simplified for performance */
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
 }
@@ -588,7 +589,7 @@ body::after {
     border-left: 1.5px solid var(--border-bright) !important;
     border-radius: var(--card-radius) !important;
     box-shadow: inset 0 1.5px 1.5px rgba(255, 255, 255, var(--glass-highlight)), var(--shadow-premium) !important;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease !important;
+    transition: transform var(--transition-speed, 0.3s) cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow var(--transition-speed, 0.3s) ease, border-color var(--transition-speed, 0.3s) ease !important;
     will-change: transform, box-shadow;
     transform: var(--gpu-acceleration);
     position: relative;
@@ -628,7 +629,7 @@ button, .btn, .primary-btn, .btn-primary, .action-btn, .glow-btn, .submit-btn, .
     letter-spacing: -0.01em;
     padding: 12px 24px;
     box-shadow: 0 8px 24px rgba(80, 60, 160, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, background 0.25s ease, opacity 0.25s ease;
+    transition: transform var(--transition-speed, 0.3s) cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow var(--transition-speed, 0.3s) ease, background var(--transition-speed, 0.3s) ease, opacity var(--transition-speed, 0.3s) ease;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -854,6 +855,7 @@ body.light-mode .modal-content, body.light-mode .drawer-content, body.light-mode
     color: var(--text-main) !important;
     background: linear-gradient(135deg, var(--text-main) 0%, var(--text-dim) 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -866,6 +868,7 @@ body.light-mode .view-header, body.light-mode .mobile-header {
 .attendance-gradient-green {
     background: linear-gradient(135deg, #34d399 0%, #10b981 100%) !important;
     -webkit-background-clip: text !important;
+    background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
     filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.2));
 }
@@ -873,6 +876,7 @@ body.light-mode .view-header, body.light-mode .mobile-header {
 .attendance-gradient-purple {
     background: linear-gradient(135deg, #c084fc 0%, #8b5cf6 100%) !important;
     -webkit-background-clip: text !important;
+    background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
     filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.2));
 }
@@ -880,6 +884,7 @@ body.light-mode .view-header, body.light-mode .mobile-header {
 .attendance-gradient-orange {
     background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
     -webkit-background-clip: text !important;
+    background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
     filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.2));
 }
@@ -887,6 +892,63 @@ body.light-mode .view-header, body.light-mode .mobile-header {
 .attendance-gradient-red {
     background: linear-gradient(135deg, #f87171 0%, #ef4444 100%) !important;
     -webkit-background-clip: text !important;
+    background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
     filter: drop-shadow(0 2px 8px rgba(239, 68, 68, 0.2));
+}
+
+/* --- Premium Appearance System Custom Additions --- */
+
+/* Compact Mode Overrides */
+body.compact-mode, html.compact-mode {
+    --section-gap: 16px !important;
+    --card-radius: 16px !important;
+}
+
+body.compact-mode .main-content {
+    padding: 16px !important;
+}
+
+body.compact-mode .dashboard-grid {
+    gap: 14px !important;
+}
+
+body.compact-mode .dashboard-card,
+body.compact-mode .subject-card,
+body.compact-mode .shortcut-card,
+body.compact-mode .insight-card,
+body.compact-mode .calculator-card,
+body.compact-mode .profile-card,
+body.compact-mode .theme-card {
+    padding: 16px 20px !important;
+    border-radius: 16px !important;
+}
+
+body.compact-mode .card-header {
+    margin-bottom: 12px !important;
+}
+
+body.compact-mode .attendance-overview-content {
+    gap: 16px !important;
+}
+
+/* Large Typography Overrides */
+body.large-text-mode, html.large-text-mode {
+    font-size: 17px !important;
+}
+
+body.large-text-mode .card-title,
+body.large-text-mode .view-header h2,
+body.large-text-mode .mobile-header h2,
+body.large-text-mode h1,
+body.large-text-mode h2,
+body.large-text-mode h3 {
+    font-size: 1.15em !important;
+}
+
+body.large-text-mode p,
+body.large-text-mode span,
+body.large-text-mode .pred-desc,
+body.large-text-mode div:not(.progress-ring-container) {
+    font-size: 1.05em;
 }

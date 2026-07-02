@@ -5,7 +5,7 @@ import useAppStore from '../store/appStore';
 import { motion } from 'framer-motion';
 
 function MainContent({ children }) {
-  const { user, subscription, setAccountDrawerOpen } = useAppStore();
+  const { user, subscription, setAccountDrawerOpen, setAuthModalOpen } = useAppStore();
   const isPremium = subscription?.status === 'active';
 
   return (
@@ -22,7 +22,7 @@ function MainContent({ children }) {
       <MobileHeader />
       <MobileNav />
       
-      {user && (
+      {user ? (
         <div className="desktop-only-header-btn" style={{
           position: 'fixed',
           top: '20px',
@@ -76,6 +76,33 @@ function MainContent({ children }) {
                 objectFit: 'cover'
               }}
             />
+          </motion.button>
+        </div>
+      ) : (
+        <div className="desktop-only-header-btn" style={{
+          position: 'fixed',
+          top: '20px',
+          right: '24px',
+          zIndex: 9990
+        }}>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setAuthModalOpen(true)}
+            style={{
+              background: 'linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%)',
+              border: 'none',
+              color: '#fff',
+              padding: '10px 24px',
+              borderRadius: '100px',
+              fontSize: '13px',
+              fontWeight: '800',
+              boxShadow: '0 8px 20px rgba(139, 92, 246, 0.3)',
+              cursor: 'pointer',
+              letterSpacing: '0.02em'
+            }}
+          >
+            Get Started 🚀
           </motion.button>
         </div>
       )}

@@ -4,7 +4,7 @@ import AttendanceEngine from '../services/attendanceEngine';
 import PodAiService from '../services/podaiService';
 import authService from '../services/authService';
 import syncService from '../services/syncService';
-import { applyTheme } from '../services/themeEngine';
+import { applyTheme, applyAppearanceSettings } from '../services/themeEngine';
 import { calculateAttendanceStats } from '../utils/attendanceUtils';
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
@@ -50,6 +50,19 @@ const useAppStore = create(
           
           // Apply to DOM instantly
           applyTheme(themeName);
+          
+          // Apply user appearance settings if they exist
+          const user = get().user;
+          if (user) {
+            const savedAppearance = localStorage.getItem(`tt_appearance_${user.uid}`);
+            if (savedAppearance) {
+              try {
+                applyAppearanceSettings(JSON.parse(savedAppearance));
+              } catch (e) {
+                console.error("Error applying appearance settings on theme switch", e);
+              }
+            }
+          }
           
           // Update State
           set((state) => ({ 
@@ -628,6 +641,16 @@ const useAppStore = create(
 
             // Trigger atomic state update
             set(atomicStateUpdate);
+
+            // Apply appearance settings for authenticated user on login/boot
+            const savedAppearance = localStorage.getItem(`tt_appearance_${user.uid}`);
+            if (savedAppearance) {
+              try {
+                applyAppearanceSettings(JSON.parse(savedAppearance));
+              } catch (e) {
+                console.error("Error applying appearance settings on login", e);
+              }
+            }
 
             // Trigger full sync calculations post-atomic update
             get().fullSync();

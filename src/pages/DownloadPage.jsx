@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 // ─── Centralized version constant ───
 // Update this single value for every new APK release (v4, v5, v6, etc.)
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.5.0';
 
 function DownloadPage() {
   const [countdown, setCountdown] = useState(2);

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 import { auth, db, storage } from '../services/firebase';
 import { doc, setDoc, deleteDoc, collection, addDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
+import { applyAppearanceSettings } from '../services/themeEngine';
 
 function AccountDrawer() {
   const {
@@ -24,6 +26,188 @@ function AccountDrawer() {
     setSemesterSettings,
     podaiSyncStatus
   } = useAppStore();
+
+  const navigate = useNavigate();
+  const [showPremiumPrompt, setShowPremiumPrompt] = useState(false);
+
+  const THEME_LIST = [
+    {
+      id: 'default',
+      name: 'TrackTaps Default',
+      description: 'The classic signature deep violet dark space.',
+      icon: '🔮',
+      isPremium: false,
+      isDark: true,
+      colors: {
+        bg: '#0e091b',
+        primary: '#8b5cf6',
+        accent: '#d946ef',
+        surface: 'rgba(255, 255, 255, 0.08)',
+        text: '#f8fafc',
+        glow: 'rgba(139, 92, 246, 0.35)'
+      }
+    },
+    {
+      id: 'light',
+      name: 'TrackTaps Light',
+      description: 'Clean, elegant default light interface.',
+      icon: '☀️',
+      isPremium: false,
+      isDark: false,
+      colors: {
+        bg: '#fcfaff',
+        primary: '#7c3aed',
+        accent: '#db2777',
+        surface: 'rgba(255, 255, 255, 0.65)',
+        text: '#120b30',
+        glow: 'rgba(124, 58, 237, 0.15)'
+      }
+    },
+    {
+      id: 'lavender_glass',
+      name: 'Lavender Abyss',
+      description: 'Deep space-purple theme with neon-lavender glows.',
+      icon: '🌌',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#0d081d',
+        primary: '#b794f4',
+        accent: '#f472b6',
+        surface: 'rgba(255, 255, 255, 0.05)',
+        text: '#f3e8ff',
+        glow: 'rgba(183, 148, 244, 0.25)'
+      }
+    },
+    {
+      id: 'midnight_graphite',
+      name: 'Midnight Graphite',
+      description: 'Sleek minimal slate graphite with ice-blue accents.',
+      icon: '🪨',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#0f172a',
+        primary: '#38bdf8',
+        accent: '#06b6d4',
+        surface: 'rgba(255, 255, 255, 0.05)',
+        text: '#f8fafc',
+        glow: 'rgba(56, 189, 248, 0.30)'
+      }
+    },
+    {
+      id: 'arctic_frost',
+      name: 'Nordic Aurora',
+      description: 'Teal polar lights glowing over deep dark blue skies.',
+      icon: '✨',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#040d1a',
+        primary: '#34d399',
+        accent: '#38bdf8',
+        surface: 'rgba(255, 255, 255, 0.04)',
+        text: '#e0f2fe',
+        glow: 'rgba(52, 211, 153, 0.20)'
+      }
+    },
+    {
+      id: 'ocean_breeze',
+      name: 'Abyssal Blue',
+      description: 'Obsidian deep-sea dark theme with cyan highlights.',
+      icon: '🌊',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#030712',
+        primary: '#3b82f6',
+        accent: '#06b6d4',
+        surface: 'rgba(255, 255, 255, 0.05)',
+        text: '#eff6ff',
+        glow: 'rgba(59, 130, 246, 0.25)'
+      }
+    },
+    {
+      id: 'forest_sage',
+      name: 'Emerald Abyss',
+      description: 'Deep forest-black with rich emerald green and gold glows.',
+      icon: '🌿',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#040d0a',
+        primary: '#10b981',
+        accent: '#f59e0b',
+        surface: 'rgba(255, 255, 255, 0.04)',
+        text: '#ecfdf5',
+        glow: 'rgba(16, 185, 129, 0.20)'
+      }
+    },
+    {
+      id: 'sunset_amber',
+      name: 'Solar Eclipse',
+      description: 'Volcanic dark chocolate theme with solar amber glows.',
+      icon: '🌇',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#0c0602',
+        primary: '#f97316',
+        accent: '#eab308',
+        surface: 'rgba(255, 255, 255, 0.05)',
+        text: '#fff7ed',
+        glow: 'rgba(249, 115, 22, 0.25)'
+      }
+    },
+    {
+      id: 'rose_quartz',
+      name: 'Cyberpunk Neon',
+      description: 'Vibrant high-contrast dark cyberpunk workspace.',
+      icon: '⚡',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#08040a',
+        primary: '#ec4899',
+        accent: '#a855f7',
+        surface: 'rgba(255, 255, 255, 0.05)',
+        text: '#fdf2f8',
+        glow: 'rgba(236, 72, 153, 0.30)'
+      }
+    },
+    {
+      id: 'royal_indigo',
+      name: 'Royal Indigo',
+      description: 'Regal dark indigo with glowing violet gradients.',
+      icon: '👑',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#090620',
+        primary: '#4f46e5',
+        accent: '#8b5cf6',
+        surface: 'rgba(255, 255, 255, 0.06)',
+        text: '#f8fafc',
+        glow: 'rgba(99, 102, 241, 0.25)'
+      }
+    },
+    {
+      id: 'monochrome_pro',
+      name: 'Monochrome Pro',
+      description: 'Pure grayscale jet-black minimal workspace.',
+      icon: '⚫',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#0c0c0c',
+        primary: '#f5f5f5',
+        accent: '#a3a3a3',
+        surface: 'rgba(255, 255, 255, 0.04)',
+        text: '#f5f5f5',
+        glow: 'rgba(255, 255, 255, 0.15)'
+      }
+    }
+  ];
 
   const [activePage, setActivePage] = useState('menu'); // 'menu', 'edit-profile', 'appearance', 'notifications', 'subscription', 'privacy', 'about', 'help', 'rate', 'feedback', 'downloads', 'security'
   const [profileData, setProfileData] = useState({
@@ -95,7 +279,15 @@ function AccountDrawer() {
       if (savedNotifs) setLocalNotifs(JSON.parse(savedNotifs));
 
       const savedAppearance = localStorage.getItem(`tt_appearance_${user.uid}`);
-      if (savedAppearance) setLocalAppearance(JSON.parse(savedAppearance));
+      if (savedAppearance) {
+        try {
+          const parsed = JSON.parse(savedAppearance);
+          setLocalAppearance(parsed);
+          applyAppearanceSettings(parsed);
+        } catch (e) {
+          console.error("Error parsing appearance settings on mount", e);
+        }
+      }
     }
   }, [user]);
 
@@ -172,15 +364,7 @@ function AccountDrawer() {
     localStorage.setItem(`tt_appearance_${user.uid}`, JSON.stringify(updated));
     
     // Apply changes instantly
-    if (key === 'accentColor') {
-      const hueMap = { purple: '270', blue: '210', lavender: '255', pink: '320' };
-      document.documentElement.style.setProperty('--custom-hue', hueMap[val]);
-      localStorage.setItem('tracktaps_custom_hue', hueMap[val]);
-    }
-    if (key === 'animationSpeed') {
-      const durationMap = { '0.5x': '0.15s', '1x': '0.3s', '1.5x': '0.45s' };
-      document.documentElement.style.setProperty('--animation-duration', durationMap[val]);
-    }
+    applyAppearanceSettings(updated);
     
     const userRef = doc(db, 'users', user.uid);
     setDoc(userRef, { appearanceSettings: updated }, { merge: true }).catch(() => {});
@@ -795,63 +979,150 @@ function AccountDrawer() {
                     exit={{ opacity: 0, x: -15 }}
                     style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
                   >
-                    {/* Theme Mode Toggle */}
+                    {/* Premium Themes Picker */}
                     <div>
-                      <h4 style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: '800' }}>🌙 Display Mode</h4>
+                      <h4 style={{ margin: '0 0 12px 0', fontSize: '13.5px', fontWeight: '850', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--text-main)' }}>
+                        <span>🎨 Premium Themes</span>
+                        {!isPremium && (
+                          <span style={{
+                            fontSize: '9px',
+                            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                            color: 'white',
+                            padding: '2px 8px',
+                            borderRadius: '100px',
+                            fontWeight: '900',
+                            boxShadow: '0 2px 6px rgba(245,158,11,0.2)'
+                          }}>PLUS</span>
+                        )}
+                      </h4>
+                      
                       <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.05)',
-                        borderRadius: '100px',
-                        padding: '4px'
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        maxHeight: '320px',
+                        overflowY: 'auto',
+                        paddingRight: '6px',
+                        marginRight: '-6px'
                       }}>
-                        {['default', 'light'].map((t) => (
-                          <button
-                            key={t}
-                            onClick={() => setTheme(t)}
-                            style={{
-                              background: theme === t ? 'rgba(139, 92, 246, 0.25)' : 'transparent',
-                              border: 'none',
-                              borderRadius: '100px',
-                              padding: '8px',
-                              color: 'inherit',
-                              fontWeight: '700',
-                              cursor: 'pointer',
-                              textTransform: 'capitalize'
-                            }}
-                          >
-                            {t === 'default' ? 'Dark' : 'Light'}
-                          </button>
-                        ))}
+                        {THEME_LIST.map((t) => {
+                          const isActive = theme === t.id;
+                          return (
+                            <motion.button
+                              key={t.id}
+                              whileHover={{ scale: 1.01 }}
+                              whileTap={{ scale: 0.99 }}
+                              onClick={() => {
+                                if (t.isPremium && !isPremium) {
+                                  setShowPremiumPrompt(true);
+                                } else {
+                                  setTheme(t.id);
+                                }
+                              }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                background: isActive ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                                border: isActive ? '1.5px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.06)',
+                                borderRadius: '12px',
+                                padding: '10px 12px',
+                                color: 'inherit',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                width: '100%',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                {/* Small color preview indicator */}
+                                <div style={{
+                                  width: '28px',
+                                  height: '28px',
+                                  borderRadius: '50%',
+                                  background: t.colors.bg,
+                                  border: `2px solid ${t.colors.primary}`,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '14px',
+                                  boxShadow: `0 2px 6px ${t.colors.primary}20`
+                                }}>
+                                  {t.icon}
+                                </div>
+                                <div>
+                                  <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
+                                    {t.name}
+                                  </div>
+                                  <div style={{ fontSize: '10px', color: 'var(--text-dim)' }}>
+                                    {t.isPremium ? 'Premium Theme' : 'Free Theme'}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {t.isPremium && !isPremium && (
+                                  <span style={{ fontSize: '12px' }}>🔒</span>
+                                )}
+                                {isActive && (
+                                  <div style={{
+                                    width: '18px',
+                                    height: '18px',
+                                    borderRadius: '50%',
+                                    background: 'var(--primary)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '10px',
+                                    color: 'white',
+                                    fontWeight: '900'
+                                  }}>✓</div>
+                                )}
+                              </div>
+                            </motion.button>
+                          );
+                        })}
                       </div>
                     </div>
 
                     {/* Accent Colors */}
                     <div>
                       <h4 style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: '800' }}>🎨 Accent Color</h4>
-                      <div style={{ display: 'flex', gap: '10px' }}>
+                      <div style={{ display: 'flex', gap: '12px' }}>
                         {[
                           { id: 'purple', color: '#8b5cf6' },
                           { id: 'blue', color: '#3b82f6' },
                           { id: 'lavender', color: '#a78bfa' },
                           { id: 'pink', color: '#ec4899' }
-                        ].map((c) => (
-                          <button
-                            key={c.id}
-                            onClick={() => handleUpdateAppearance('accentColor', c.id)}
-                            style={{
-                              flex: 1,
-                              height: '40px',
-                              borderRadius: '8px',
-                              background: c.color,
-                              border: localAppearance.accentColor === c.id ? '2px solid white' : 'none',
-                              cursor: 'pointer',
-                              boxShadow: localAppearance.accentColor === c.id ? `0 0 15px ${c.color}` : 'none'
-                            }}
-                            title={c.id}
-                          />
-                        ))}
+                        ].map((c) => {
+                          const isSelected = localAppearance.accentColor === c.id;
+                          return (
+                            <button
+                              key={c.id}
+                              onClick={() => handleUpdateAppearance('accentColor', c.id)}
+                              style={{
+                                width: '38px',
+                                height: '38px',
+                                borderRadius: '50%',
+                                background: `${c.color} !important`,
+                                border: isSelected ? '3px solid white' : '2px solid rgba(255,255,255,0.1)',
+                                cursor: 'pointer',
+                                boxShadow: isSelected ? `0 0 15px ${c.color}` : 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: 0,
+                                transition: 'all 0.2s ease',
+                                flexShrink: 0
+                              }}
+                              title={c.id}
+                            >
+                              {isSelected && (
+                                <span style={{ color: 'white', fontSize: '14px', fontWeight: '950' }}>✓</span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -1563,6 +1834,87 @@ function AccountDrawer() {
                   </button>
                 </div>
               </div>
+            </div>
+          )}
+          {/* Premium Themes Modal */}
+          {showPremiumPrompt && (
+            <div style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(2, 6, 23, 0.75)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              zIndex: 100004,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
+            }}>
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                style={{
+                  width: '100%',
+                  maxWidth: '360px',
+                  background: 'rgba(15, 23, 42, 0.85)',
+                  backdropFilter: 'blur(30px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: '28px',
+                  padding: '26px',
+                  color: 'white',
+                  textAlign: 'center',
+                  boxShadow: '0 25px 50px rgba(0,0,0,0.5)'
+                }}
+              >
+                <div style={{ fontSize: '40px', marginBottom: '12px' }}>👑</div>
+                <h3 style={{ fontSize: '18px', fontWeight: '850', marginBottom: '10px', letterSpacing: '-0.02em' }}>
+                  Unlock Premium Themes
+                </h3>
+                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', lineHeight: '1.45', marginBottom: '20px' }}>
+                  This theme requires TrackTaps Plus. Upgrade to customize your interface and unlock advanced calendar widgets and AI tools.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button
+                    onClick={() => {
+                      setShowPremiumPrompt(false);
+                      setAccountDrawerOpen(false);
+                      navigate('/premium');
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '100px',
+                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      color: 'white',
+                      fontWeight: '800',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      boxShadow: '0 4px 12px rgba(245, 158, 11, 0.25)'
+                    }}
+                  >
+                    🚀 Upgrade to TrackTaps Plus
+                  </button>
+                  <button
+                    onClick={() => setShowPremiumPrompt(false)}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '100px',
+                      background: 'rgba(255,255,255,0.06)',
+                      color: 'white',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    Maybe Later
+                  </button>
+                </div>
+              </motion.div>
             </div>
           )}
         </>

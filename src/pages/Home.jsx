@@ -5,8 +5,8 @@ import useAppStore from '../store/appStore';
 import ContactUs from '../components/ContactUs';
 
 const fadeInUp = {
-  initial: { opacity: 0, y: 20, filter: window.innerWidth < 768 ? 'none' : 'blur(4px)' },
-  animate: { opacity: 1, y: 0, filter: window.innerWidth < 768 ? 'none' : 'blur(0px)' },
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
   transition: { duration: 0.6, ease: [0.19, 1, 0.22, 1] }
 };
 
@@ -80,7 +80,7 @@ function Home() {
   // Non-logged-in landing page (Guest mode UI with premium onboarding cards)
   if (!user && !isAuthLoading) {
     return (
-      <div className="main-content guest-landing" style={{ display: 'flex', flexDirection: 'column', gap: '32px', position: 'relative', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
+      <div className="guest-landing-container" style={{ display: 'flex', flexDirection: 'column', gap: '32px', position: 'relative', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
         
         {/* Background Ambient Glows */}
         <div style={{ position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none', overflow: 'hidden' }}>
@@ -120,7 +120,10 @@ function Home() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '16px'
+            gap: '16px',
+            minHeight: '280px',
+            height: 'auto',
+            overflow: 'visible'
           }}
         >
           <div style={{ fontSize: '48px' }}>👋</div>

@@ -39,6 +39,7 @@ function Settings() {
     history,
     podaiSyncStatus,
     user,
+    role,
     isAuthLoading,
     isSyncing,
     lastCloudSync,
@@ -63,6 +64,197 @@ function Settings() {
     attendanceSettings,
     setAttendanceSettings
   } = useAppStore();
+
+  const [showPremiumPrompt, setShowPremiumPrompt] = useState(false);
+
+  const THEME_LIST = [
+    {
+      id: 'default',
+      name: 'TrackTaps Default',
+      description: 'The classic signature deep violet dark space.',
+      icon: '🔮',
+      isPremium: false,
+      isDark: true,
+      colors: {
+        bg: '#0e091b',
+        primary: '#8b5cf6',
+        accent: '#d946ef',
+        surface: 'rgba(255, 255, 255, 0.08)',
+        text: '#f8fafc',
+        glow: 'rgba(139, 92, 246, 0.35)'
+      }
+    },
+    {
+      id: 'light',
+      name: 'TrackTaps Light',
+      description: 'Clean, elegant default light interface.',
+      icon: '☀️',
+      isPremium: false,
+      isDark: false,
+      colors: {
+        bg: '#fcfaff',
+        primary: '#7c3aed',
+        accent: '#db2777',
+        surface: 'rgba(255, 255, 255, 0.65)',
+        text: '#120b30',
+        glow: 'rgba(124, 58, 237, 0.15)'
+      }
+    },
+    {
+      id: 'lavender_glass',
+      name: 'Lavender Abyss',
+      description: 'Deep space-purple theme with neon-lavender glows.',
+      icon: '🌌',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#0d081d',
+        primary: '#b794f4',
+        accent: '#f472b6',
+        surface: 'rgba(255, 255, 255, 0.05)',
+        text: '#f3e8ff',
+        glow: 'rgba(183, 148, 244, 0.25)'
+      }
+    },
+    {
+      id: 'midnight_graphite',
+      name: 'Midnight Graphite',
+      description: 'Sleek minimal slate graphite with ice-blue accents.',
+      icon: '🪨',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#0f172a',
+        primary: '#38bdf8',
+        accent: '#06b6d4',
+        surface: 'rgba(255, 255, 255, 0.05)',
+        text: '#f8fafc',
+        glow: 'rgba(56, 189, 248, 0.30)'
+      }
+    },
+    {
+      id: 'arctic_frost',
+      name: 'Nordic Aurora',
+      description: 'Teal polar lights glowing over deep dark blue skies.',
+      icon: '✨',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#040d1a',
+        primary: '#34d399',
+        accent: '#38bdf8',
+        surface: 'rgba(255, 255, 255, 0.04)',
+        text: '#e0f2fe',
+        glow: 'rgba(52, 211, 153, 0.20)'
+      }
+    },
+    {
+      id: 'ocean_breeze',
+      name: 'Abyssal Blue',
+      description: 'Obsidian deep-sea dark theme with cyan highlights.',
+      icon: '🌊',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#030712',
+        primary: '#3b82f6',
+        accent: '#06b6d4',
+        surface: 'rgba(255, 255, 255, 0.05)',
+        text: '#eff6ff',
+        glow: 'rgba(59, 130, 246, 0.25)'
+      }
+    },
+    {
+      id: 'forest_sage',
+      name: 'Emerald Abyss',
+      description: 'Deep forest-black with rich emerald green and gold glows.',
+      icon: '🌿',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#040d0a',
+        primary: '#10b981',
+        accent: '#f59e0b',
+        surface: 'rgba(255, 255, 255, 0.04)',
+        text: '#ecfdf5',
+        glow: 'rgba(16, 185, 129, 0.20)'
+      }
+    },
+    {
+      id: 'sunset_amber',
+      name: 'Solar Eclipse',
+      description: 'Volcanic dark chocolate theme with solar amber glows.',
+      icon: '🌇',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#0c0602',
+        primary: '#f97316',
+        accent: '#eab308',
+        surface: 'rgba(255, 255, 255, 0.05)',
+        text: '#fff7ed',
+        glow: 'rgba(249, 115, 22, 0.25)'
+      }
+    },
+    {
+      id: 'rose_quartz',
+      name: 'Cyberpunk Neon',
+      description: 'Vibrant high-contrast dark cyberpunk workspace.',
+      icon: '⚡',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#08040a',
+        primary: '#ec4899',
+        accent: '#a855f7',
+        surface: 'rgba(255, 255, 255, 0.05)',
+        text: '#fdf2f8',
+        glow: 'rgba(236, 72, 153, 0.30)'
+      }
+    },
+    {
+      id: 'royal_indigo',
+      name: 'Royal Indigo',
+      description: 'Regal dark indigo with glowing violet gradients.',
+      icon: '👑',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#090620',
+        primary: '#4f46e5',
+        accent: '#8b5cf6',
+        surface: 'rgba(255, 255, 255, 0.06)',
+        text: '#f8fafc',
+        glow: 'rgba(99, 102, 241, 0.25)'
+      }
+    },
+    {
+      id: 'monochrome_pro',
+      name: 'Monochrome Pro',
+      description: 'Pure grayscale jet-black minimal workspace.',
+      icon: '⚫',
+      isPremium: true,
+      isDark: true,
+      colors: {
+        bg: '#0c0c0c',
+        primary: '#f5f5f5',
+        accent: '#a3a3a3',
+        surface: 'rgba(255, 255, 255, 0.04)',
+        text: '#f5f5f5',
+        glow: 'rgba(255, 255, 255, 0.15)'
+      }
+    }
+  ];
+
+  const isPremiumUser = subscription?.status === 'active' || role === 'owner' || role === 'core_admin';
+
+  const handleSelectTheme = (t) => {
+    if (t.isPremium && !isPremiumUser) {
+      setShowPremiumPrompt(true);
+    } else {
+      setTheme(t.id);
+    }
+  };
 
   const [localCriteria, setLocalCriteria] = useState({
     defaultTarget: attendanceSettings?.defaultTarget || 75,
@@ -607,130 +799,229 @@ function Settings() {
         <div className="dashboard-card" style={{ overflow: 'hidden', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '28px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span className="card-title">🎨 Premium Themes & Appearance</span>
-            {subscription?.status !== 'active' && (
+            {!isPremiumUser && (
               <span style={{ 
                 fontSize: '10px', 
                 background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
                 color: 'white', 
                 padding: '4px 10px', 
                 borderRadius: '100px', 
-                fontWeight: '900' 
+                fontWeight: '900',
+                boxShadow: '0 2px 8px rgba(245, 158, 11, 0.2)'
               }}>UPGRADE TO PLUS</span>
             )}
           </div>
           
           <div style={{ padding: '24px' }}>
-            <p style={{ color: 'var(--text-dim)', fontSize: '13px', marginBottom: '20px' }}>
-              Personalize your TrackTaps experience with high-fidelity themes.
+            <p style={{ color: 'var(--text-dim)', fontSize: '13.5px', marginBottom: '24px', lineHeight: '1.5' }}>
+              Personalize your TrackTaps experience with high-fidelity themes. Premium themes feature curated typography, custom transparency, and distinct visual modes.
             </p>
 
             <div className="theme-grid" style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(2, 1fr)', 
-              gap: '16px' 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+              gap: '20px' 
             }}>
-              {[
-                { id: 'default', name: 'Dark Mode', bg: 'var(--bg-primary)', primary: 'var(--primary)', icon: '🌙' },
-                { id: 'light', name: 'Light Mode', bg: 'var(--text-main)', primary: '#7c3aed', icon: '☀️' }
-              ].map(t => {
+              {THEME_LIST.map(t => {
                 const isActive = theme === t.id;
 
                 return (
                   <motion.div
                     key={t.id}
-                    whileHover={{ y: -4 }}
+                    whileHover={{ y: -6, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setTheme(t.id);
-                    }}
+                    onClick={() => handleSelectTheme(t)}
                     className="theme-card"
                     style={{
-                      background: t.bg,
-                      border: isActive ? `2.5px solid ${t.primary}` : '1px solid var(--border)',
+                      background: `linear-gradient(135deg, ${t.colors.bg} 0%, ${t.colors.bg}dd 100%)`,
+                      border: isActive ? `2.5px solid ${t.colors.primary}` : '1.5px solid var(--border)',
+                      borderRadius: '20px',
+                      padding: '16px',
                       cursor: 'pointer',
                       position: 'relative',
+                      overflow: 'hidden',
+                      minHeight: '220px',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '12px',
-                      minHeight: '100px',
-                      boxShadow: isActive ? `0 0 20px ${t.primary}30` : 'none',
-                      transition: 'all 0.3s ease'
+                      justifyContent: 'space-between',
+                      boxShadow: isActive 
+                        ? `0 12px 30px ${t.colors.primary}30, 0 0 15px ${t.colors.primary}20` 
+                        : '0 4px 20px rgba(0,0,0,0.15)',
+                      transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '20px' }}>{t.icon}</span>
-                    </div>
-                    
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: '700', color: t.id === 'light' ? 'var(--surface)' : 'var(--text-main)' }}>
-                        {t.name}
+                    {/* Background glow orb representation */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '-20px',
+                      right: '-20px',
+                      width: '80px',
+                      height: '80px',
+                      background: t.colors.primary,
+                      opacity: t.isDark ? 0.25 : 0.15,
+                      filter: 'blur(20px)',
+                      borderRadius: '50%',
+                      pointerEvents: 'none'
+                    }} />
+
+                    {/* Top row: Icon, Name and Badge */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '20px' }}>{t.icon}</span>
+                        <span style={{ 
+                          fontSize: '13.5px', 
+                          fontWeight: '800', 
+                          color: t.isDark ? '#f8fafc' : '#0f172a',
+                          letterSpacing: '-0.02em'
+                        }}>
+                          {t.name}
+                        </span>
                       </div>
-                      <div style={{ 
-                        height: '4px', 
-                        width: '24px', 
-                        background: t.primary, 
-                        borderRadius: '100px',
-                        marginTop: '4px'
-                      }} />
+                      {t.isPremium && (
+                        <span style={{
+                          fontSize: '9px',
+                          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                          color: 'white',
+                          padding: '2px 8px',
+                          borderRadius: '100px',
+                          fontWeight: '900',
+                          boxShadow: '0 2px 8px rgba(245, 158, 11, 0.2)'
+                        }}>
+                          PLUS
+                        </span>
+                      )}
                     </div>
 
-                    {isActive && (
-                      <div style={{ 
-                        position: 'absolute', 
-                        top: '12px', 
-                        right: '12px', 
-                        width: '8px', 
-                        height: '8px', 
-                        background: t.primary, 
-                        borderRadius: '50%',
-                        boxShadow: `0 0 10px ${t.primary}`
-                      }} />
+                    {/* Mini App Mock Interface (Apple style) */}
+                    <div style={{
+                      margin: '12px 0',
+                      background: t.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.03)',
+                      border: t.isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.05)',
+                      borderRadius: '12px',
+                      padding: '10px',
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      position: 'relative',
+                      zIndex: 2,
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)'
+                    }}>
+                      {/* Mock Header */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ width: '40px', height: '6px', background: t.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', borderRadius: '3px' }} />
+                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: t.colors.primary }} />
+                      </div>
+
+                      {/* Mock Glass Card widget */}
+                      <div style={{
+                        background: t.colors.surface,
+                        border: t.isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.06)',
+                        borderRadius: '8px',
+                        padding: '6px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px'
+                      }}>
+                        <div style={{ width: '60%', height: '4px', background: t.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', borderRadius: '2px' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div style={{ flex: 1, height: '4px', background: t.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
+                            <div style={{ width: '70%', height: '100%', background: t.colors.primary }} />
+                          </div>
+                          <span style={{ fontSize: '7px', fontWeight: '950', color: t.colors.primary }}>75%</span>
+                        </div>
+                      </div>
+
+                      {/* Mock Buttons & Dock */}
+                      <div style={{ display: 'flex', gap: '4px', marginTop: 'auto' }}>
+                        <div style={{ flex: 1, height: '12px', borderRadius: '6px', background: t.colors.primary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ width: '15px', height: '2px', background: '#fff', borderRadius: '1px' }} />
+                        </div>
+                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: t.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+                      </div>
+                    </div>
+
+                    {/* Description / Info */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', zIndex: 2 }}>
+                      <span style={{ 
+                        fontSize: '11px', 
+                        color: t.isDark ? '#cbd5e1' : '#1e293b',
+                        maxWidth: '80%',
+                        lineHeight: '1.2'
+                      }}>
+                        {t.description}
+                      </span>
+                      {isActive && (
+                        <motion.div 
+                          layoutId="activeThemeCheck"
+                          style={{ 
+                            width: '18px', 
+                            height: '18px', 
+                            borderRadius: '50%', 
+                            background: t.colors.primary, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            fontSize: '10px',
+                            color: '#fff',
+                            boxShadow: `0 0 10px ${t.colors.primary}`
+                          }}
+                        >
+                          ✓
+                        </motion.div>
+                      )}
+                    </div>
+
+                    {/* Locked overlay for non-premium */}
+                    {t.isPremium && !isPremiumUser && (
+                      <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'rgba(15, 23, 42, 0.45)',
+                        backdropFilter: 'blur(3px)',
+                        WebkitBackdropFilter: 'blur(3px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        zIndex: 10,
+                        transition: 'all 0.3s ease'
+                      }}>
+                        <div style={{
+                          background: 'rgba(15, 23, 42, 0.85)',
+                          border: '1.5px solid rgba(255, 255, 255, 0.15)',
+                          borderRadius: '50%',
+                          width: '40px',
+                          height: '40px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '18px',
+                          color: '#f59e0b',
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+                        }}>
+                          🔒
+                        </div>
+                        <span style={{
+                          fontSize: '10px',
+                          fontWeight: '900',
+                          letterSpacing: '0.05em',
+                          color: '#f59e0b',
+                          textTransform: 'uppercase',
+                          background: 'rgba(245, 158, 11, 0.15)',
+                          padding: '2px 8px',
+                          borderRadius: '4px'
+                        }}>
+                          LOCKED
+                        </span>
+                      </div>
                     )}
                   </motion.div>
                 );
               })}
             </div>
-
-            {/* Custom Brand Hue Slider */}
-            {theme === 'custom' && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{
-                  marginTop: '24px',
-                  padding: '20px',
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px dashed var(--primary-glow)',
-                  borderRadius: '16px'
-                }}
-              >
-                <label style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-main)', fontSize: '13px', fontWeight: '800', marginBottom: '12px' }}>
-                  <span>🎨 Custom Brand Hue</span>
-                  <span style={{ color: 'var(--primary-light)' }}>{localStorage.getItem('tracktaps_custom_hue') || '270'}°</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  value={localStorage.getItem('tracktaps_custom_hue') || '270'}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    localStorage.setItem('tracktaps_custom_hue', val);
-                    document.documentElement.style.setProperty('--custom-hue', val);
-                    // Force update local view
-                    setSettings(prev => ({ ...prev, customHue: val }));
-                  }}
-                  style={{
-                    width: '100%',
-                    accentColor: 'var(--primary-light)',
-                    cursor: 'pointer'
-                  }}
-                />
-                <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '8px 0 0' }}>
-                  Drag the slider to dynamically change the entire accent coloring of your personal TrackTaps dashboard.
-                </p>
-              </motion.div>
-            )}
           </div>
         </div>
 
@@ -1084,6 +1375,89 @@ function Settings() {
           </div>
         </div>
         </div>
+        
+        {/* Premium Themes Modal */}
+        <AnimatePresence>
+          {showPremiumPrompt && (
+            <div style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(2, 6, 23, 0.7)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              zIndex: 100002,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
+            }}>
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                style={{
+                  width: '100%',
+                  maxWidth: '400px',
+                  background: 'rgba(15, 23, 42, 0.75)',
+                  backdropFilter: 'blur(30px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: '30px',
+                  padding: '28px',
+                  color: 'white',
+                  textAlign: 'center',
+                  boxShadow: '0 25px 50px rgba(0,0,0,0.5)'
+                }}
+              >
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>👑</div>
+                <h3 style={{ fontSize: '20px', fontWeight: '850', marginBottom: '12px', letterSpacing: '-0.02em' }}>
+                  Unlock Premium Themes
+                </h3>
+                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13.5px', lineHeight: '1.5', marginBottom: '24px' }}>
+                  This is a premium high-fidelity liquid glass theme. Upgrade to TrackTaps Plus to unlock complete personalization, advanced calendars, AI insights, and unlimited group bunk tracking.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <button
+                    onClick={() => {
+                      setShowPremiumPrompt(false);
+                      navigate('/premium');
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      borderRadius: '100px',
+                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      color: 'white',
+                      fontWeight: '800',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
+                    }}
+                  >
+                    🚀 Upgrade to TrackTaps Plus
+                  </button>
+                  <button
+                    onClick={() => setShowPremiumPrompt(false)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '100px',
+                      background: 'rgba(255,255,255,0.06)',
+                      color: 'white',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      fontSize: '13px'
+                    }}
+                  >
+                    Maybe Later
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }

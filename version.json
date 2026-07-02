@@ -1,8 +1,8 @@
 {
-  "version": "2.0.0",
+  "version": "3.5.0",
   "min_required_version": "1.0.0",
   "platform": "production",
-  "last_updated": "2026-06-07",
+  "last_updated": "2026-07-02",
   "update_url": "https://www.tracktaps.online/download",
-  "changelog": "🏆 Version 2.0.0: Unified Glassmorphism UI redesign and premium liquid-glow interface upgrades."
+  "changelog": "🏆 Version 3.5.0: Enhanced Premium Themes, customizable Accent Colors, dynamic Animation Speed control, Compact Mode, and Large Typography options."
 }
