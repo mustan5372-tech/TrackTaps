@@ -1,8 +1,8 @@
 {
-  "version": "3.0.0",
-  "min_required_version": "1.0.0",
-  "platform": "production",
-  "last_updated": "2026-06-30",
-  "update_url": "https://www.tracktaps.online/download",
-  "changelog": "🏆 Version 3.0.0: Premium Apple Liquid Glass Visual Evolution and UI enhancement."
+    "version":  "3.5.1",
+    "min_required_version":  "1.0.0",
+    "platform":  "production",
+    "last_updated":  "2026-07-03",
+    "update_url":  "https://www.tracktaps.online/download",
+    "changelog":  "? Version 3.5.1: Added Liquid Glass micro-animations, page transitions, hover pulses, and fluid UI elements."
 }
