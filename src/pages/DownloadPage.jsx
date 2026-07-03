@@ -2,19 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 // ─── Centralized version constant ───
-// Update this single value for every new APK release (v4, v5, v6, etc.)
-const APP_VERSION = '3.5.0';
+// We now fetch this dynamically from version.json so it never needs to be manually updated!
 
 function DownloadPage() {
   const [countdown, setCountdown] = useState(2);
+  const [appVersion, setAppVersion] = useState('3.5.0');
 
   useEffect(() => {
+    // Fetch the latest version dynamically
+    fetch('/version.json')
+      .then(res => res.json())
+      .then(data => {
+        if (data.version) setAppVersion(data.version);
+      })
+      .catch(err => console.warn('Failed to fetch version:', err));
+
     // Countdown timer before triggering download
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          triggerDownload();
+          triggerDownload(appVersion);
           return 0;
         }
         return prev - 1;
@@ -22,11 +30,11 @@ function DownloadPage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [appVersion]);
 
-  const triggerDownload = () => {
+  const triggerDownload = (version) => {
     // Redirect directly to the self-hosted path to download the latest compiled APK
-    window.location.href = `/TrackTaps_v${APP_VERSION}.apk`;
+    window.location.href = `/TrackTaps_v${version || appVersion}.apk`;
   };
 
   return (
@@ -114,11 +122,11 @@ function DownloadPage() {
         </div>
 
         <h2 style={{ fontSize: '24px', fontWeight: '850', color: 'white', margin: '0 0 8px 0', letterSpacing: '-0.02em' }}>
-          {countdown > 0 ? `Starting Download in ${countdown}s...` : `Downloading TrackTaps v${APP_VERSION}...`}
+          {countdown > 0 ? `Starting Download in ${countdown}s...` : `Downloading TrackTaps v${appVersion}...`}
         </h2>
         
         <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: '0 0 32px 0' }}>
-          Please wait while the latest stable v{APP_VERSION} APK package downloads to your phone.
+          Please wait while the latest stable v{appVersion} APK package downloads to your phone.
         </p>
 
         {/* Retry trigger */}
