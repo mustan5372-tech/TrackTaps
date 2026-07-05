@@ -77,6 +77,161 @@ function Home() {
 
   const isPremium = subscription?.status === 'active' || role === 'owner' || role === 'core_admin';
 
+  const getTotalBunkable = () => {
+    return Object.values(semesterStats || {}).reduce((acc, stat) => acc + (stat.bunkableNow || 0), 0);
+  };
+
+  // Guided Onboarding Setup Wizard States
+  const [wizardStep, setWizardStep] = useState(1);
+  const [semesterName, setSemesterName] = useState('Fall 2026');
+  const [targetCriteria, setTargetCriteria] = useState(75);
+  const [selectedSubjects, setSelectedSubjects] = useState(['Mathematics', 'Computer Science', 'Physics']);
+  const [customSubject, setCustomSubject] = useState('');
+  const [startDate, setStartDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 4);
+    return d.toISOString().split('T')[0];
+  });
+
+  const predefinedSubjects = [
+    'Mathematics', 'Computer Science', 'Physics', 'Chemistry',
+    'Biology', 'Economics', 'English Literature', 'Engineering Graphics'
+  ];
+
+  const handleToggleSubject = (sub) => {
+    if (selectedSubjects.includes(sub)) {
+      setSelectedSubjects(selectedSubjects.filter(s => s !== sub));
+    } else {
+      setSelectedSubjects([...selectedSubjects, sub]);
+    }
+  };
+
+  const handleAddCustomSubject = () => {
+    const cleanSub = customSubject.trim();
+    if (cleanSub && !selectedSubjects.includes(cleanSub)) {
+      setSelectedSubjects([...selectedSubjects, cleanSub]);
+      setCustomSubject('');
+    }
+  };
+
+  const handleFinishOnboarding = () => {
+    // 1. Save Semester Settings
+    setSemesterSettings({
+      startDate,
+      endDate,
+      minRequirement: Number(targetCriteria)
+    });
+
+    // 2. Add each subject
+    selectedSubjects.forEach(subName => {
+      addSubject({
+        name: subName,
+        present: 0,
+        total: 0,
+        criteria: Number(targetCriteria),
+        color: '#8b5cf6'
+      });
+    });
+
+    fullSync();
+  };
+
+  const [tourActive, setTourActive] = useState(false);
+  const [currentTourStep, setCurrentTourStep] = useState(0);
+  const [hasTourCompleted, setHasTourCompleted] = useState(() => localStorage.getItem('tracktaps_completed_tour') === 'true');
+  const [hasVisitedBunk, setHasVisitedBunk] = useState(() => localStorage.getItem('tracktaps_visited_bunk_calc') === 'true');
+  const [hasVisitedInsights, setHasVisitedInsights] = useState(() => localStorage.getItem('tracktaps_visited_insights') === 'true');
+  const [isGuideDismissed, setIsGuideDismissed] = useState(() => localStorage.getItem('tracktaps_guide_dismissed') === 'true');
+
+  const tourSteps = [
+    {
+      title: "👋 Welcome to TrackTaps!",
+      description: "Dominating your academic semester just got incredibly simple. Let's take a quick 30-second guided tour of your workspace.",
+      icon: "🚀"
+    },
+    {
+      title: "🔄 Pod.ai Direct Sync",
+      description: "Directly sync your college portals and subjects securely. All credentials are fully processed on-device and never stored.",
+      icon: "⚡"
+    },
+    {
+      title: "🏖️ Smart Bunk Calculator",
+      description: "Plan your skips safely. Instantly see how many classes you can skip while remaining above your default target criteria.",
+      icon: "🏖️"
+    },
+    {
+      title: "📈 AI Insights Strategy",
+      description: "Receive dynamic recommendations, critical risk alert warnings, and actionable guides to maintain perfect percentages.",
+      icon: "🔮"
+    },
+    {
+      title: "📅 Smart Academic Calendar",
+      description: "Map exams, teaching slots, and national holidays. Premium users can even import complex PDF schedules via visual AI.",
+      icon: "🗓️"
+    },
+    {
+      title: "💎 Referrals & Free Premium",
+      description: "Invite classmates and secure 15 Days of Premium Plus features for free. Track your valid milestones live.",
+      icon: "🎁"
+    },
+    {
+      title: "🎉 Domination Awaits!",
+      description: "You've unlocked the full potential of TrackTaps. Go crush your semester goals!",
+      icon: "🎓"
+    }
+  ];
+
+  const getOnboardingProgress = () => {
+    let progress = 0;
+    if (dashboardStats.totalSubjects > 0) progress += 25; // Pod.ai synced / First subject added
+    if (hasTourCompleted) progress += 25;
+    if (hasVisitedBunk) progress += 25;
+    if (hasVisitedInsights) progress += 25;
+    return progress;
+  };
+
+  const startTour = () => {
+    setCurrentTourStep(0);
+    setTourActive(true);
+  };
+
+  const nextTourStep = () => {
+    if (currentTourStep < tourSteps.length - 1) {
+      setCurrentTourStep(prev => prev + 1);
+    } else {
+      localStorage.setItem('tracktaps_completed_tour', 'true');
+      setHasTourCompleted(true);
+      setTourActive(false);
+      fullSync();
+    }
+  };
+
+  const prevTourStep = () => {
+    if (currentTourStep > 0) {
+      setCurrentTourStep(prev => prev - 1);
+    }
+  };
+
+  const skipTour = () => {
+    localStorage.setItem('tracktaps_completed_tour', 'true');
+    setHasTourCompleted(true);
+    setTourActive(false);
+    fullSync();
+  };
+
+
+  useEffect(() => {
+    fullSync();
+  }, [fullSync]);
+
+  const shortcuts = [
+    { icon: '☀️', title: 'Today', path: '/today' },
+    { icon: '📅', title: 'Calendar', path: '/calendar' },
+    { icon: '🕒', title: 'Timetable', path: '/timetable' },
+    { icon: '📚', title: 'Subjects', path: '/subjects' },
+  ];
+
   // Non-logged-in landing page (Guest mode UI with premium onboarding cards)
   if (!user && !isAuthLoading) {
     return (
@@ -249,161 +404,6 @@ function Home() {
       </div>
     );
   }
-
-  const getTotalBunkable = () => {
-    return Object.values(semesterStats || {}).reduce((acc, stat) => acc + (stat.bunkableNow || 0), 0);
-  };
-
-  // Guided Onboarding Setup Wizard States
-  const [wizardStep, setWizardStep] = useState(1);
-  const [semesterName, setSemesterName] = useState('Fall 2026');
-  const [targetCriteria, setTargetCriteria] = useState(75);
-  const [selectedSubjects, setSelectedSubjects] = useState(['Mathematics', 'Computer Science', 'Physics']);
-  const [customSubject, setCustomSubject] = useState('');
-  const [startDate, setStartDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(() => {
-    const d = new Date();
-    d.setMonth(d.getMonth() + 4);
-    return d.toISOString().split('T')[0];
-  });
-
-  const predefinedSubjects = [
-    'Mathematics', 'Computer Science', 'Physics', 'Chemistry',
-    'Biology', 'Economics', 'English Literature', 'Engineering Graphics'
-  ];
-
-  const handleToggleSubject = (sub) => {
-    if (selectedSubjects.includes(sub)) {
-      setSelectedSubjects(selectedSubjects.filter(s => s !== sub));
-    } else {
-      setSelectedSubjects([...selectedSubjects, sub]);
-    }
-  };
-
-  const handleAddCustomSubject = () => {
-    const cleanSub = customSubject.trim();
-    if (cleanSub && !selectedSubjects.includes(cleanSub)) {
-      setSelectedSubjects([...selectedSubjects, cleanSub]);
-      setCustomSubject('');
-    }
-  };
-
-  const handleFinishOnboarding = () => {
-    // 1. Save Semester Settings
-    setSemesterSettings({
-      startDate,
-      endDate,
-      minRequirement: Number(targetCriteria)
-    });
-
-    // 2. Add each subject
-    selectedSubjects.forEach(subName => {
-      addSubject({
-        name: subName,
-        present: 0,
-        total: 0,
-        criteria: Number(targetCriteria),
-        color: '#8b5cf6'
-      });
-    });
-
-    fullSync();
-  };
-
-  const [tourActive, setTourActive] = useState(false);
-  const [currentTourStep, setCurrentTourStep] = useState(0);
-  const [hasTourCompleted, setHasTourCompleted] = useState(() => localStorage.getItem('tracktaps_completed_tour') === 'true');
-  const [hasVisitedBunk, setHasVisitedBunk] = useState(() => localStorage.getItem('tracktaps_visited_bunk_calc') === 'true');
-  const [hasVisitedInsights, setHasVisitedInsights] = useState(() => localStorage.getItem('tracktaps_visited_insights') === 'true');
-  const [isGuideDismissed, setIsGuideDismissed] = useState(() => localStorage.getItem('tracktaps_guide_dismissed') === 'true');
-
-  const tourSteps = [
-    {
-      title: "👋 Welcome to TrackTaps!",
-      description: "Dominating your academic semester just got incredibly simple. Let's take a quick 30-second guided tour of your workspace.",
-      icon: "🚀"
-    },
-    {
-      title: "🔄 Pod.ai Direct Sync",
-      description: "Directly sync your college portals and subjects securely. All credentials are fully processed on-device and never stored.",
-      icon: "⚡"
-    },
-    {
-      title: "🏖️ Smart Bunk Calculator",
-      description: "Plan your skips safely. Instantly see how many classes you can skip while remaining above your default target criteria.",
-      icon: "🏖️"
-    },
-    {
-      title: "📈 AI Insights Strategy",
-      description: "Receive dynamic recommendations, critical risk alert warnings, and actionable guides to maintain perfect percentages.",
-      icon: "🔮"
-    },
-    {
-      title: "📅 Smart Academic Calendar",
-      description: "Map exams, teaching slots, and national holidays. Premium users can even import complex PDF schedules via visual AI.",
-      icon: "🗓️"
-    },
-    {
-      title: "💎 Referrals & Free Premium",
-      description: "Invite classmates and secure 15 Days of Premium Plus features for free. Track your valid milestones live.",
-      icon: "🎁"
-    },
-    {
-      title: "🎉 Domination Awaits!",
-      description: "You've unlocked the full potential of TrackTaps. Go crush your semester goals!",
-      icon: "🎓"
-    }
-  ];
-
-  const getOnboardingProgress = () => {
-    let progress = 0;
-    if (dashboardStats.totalSubjects > 0) progress += 25; // Pod.ai synced / First subject added
-    if (hasTourCompleted) progress += 25;
-    if (hasVisitedBunk) progress += 25;
-    if (hasVisitedInsights) progress += 25;
-    return progress;
-  };
-
-  const startTour = () => {
-    setCurrentTourStep(0);
-    setTourActive(true);
-  };
-
-  const nextTourStep = () => {
-    if (currentTourStep < tourSteps.length - 1) {
-      setCurrentTourStep(prev => prev + 1);
-    } else {
-      localStorage.setItem('tracktaps_completed_tour', 'true');
-      setHasTourCompleted(true);
-      setTourActive(false);
-      fullSync();
-    }
-  };
-
-  const prevTourStep = () => {
-    if (currentTourStep > 0) {
-      setCurrentTourStep(prev => prev - 1);
-    }
-  };
-
-  const skipTour = () => {
-    localStorage.setItem('tracktaps_completed_tour', 'true');
-    setHasTourCompleted(true);
-    setTourActive(false);
-    fullSync();
-  };
-
-
-  useEffect(() => {
-    fullSync();
-  }, [fullSync]);
-
-  const shortcuts = [
-    { icon: '☀️', title: 'Today', path: '/today' },
-    { icon: '📅', title: 'Calendar', path: '/calendar' },
-    { icon: '🕒', title: 'Timetable', path: '/timetable' },
-    { icon: '📚', title: 'Subjects', path: '/subjects' },
-  ];
 
   if (dashboardStats.totalSubjects === 0 && !isAuthLoading && user) {
      return (

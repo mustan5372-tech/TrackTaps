@@ -1,8 +1,8 @@
 {
-    "version":  "3.5.1",
+    "version":  "3.5.2",
     "min_required_version":  "1.0.0",
     "platform":  "production",
-    "last_updated":  "2026-07-03",
+    "last_updated":  "2026-07-05",
     "update_url":  "https://www.tracktaps.online/download",
-    "changelog":  "? Version 3.5.1: Added Liquid Glass micro-animations, page transitions, hover pulses, and fluid UI elements."
+    "changelog":  "✨ Version 3.5.2: Fixed critical login and logout rendering issues on web browsers."
 }
