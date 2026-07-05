@@ -375,23 +375,7 @@ const useAppStore = create(
             }
           }, 8000); // 8 seconds is plenty for most redirects/persistence checks
 
-          try {
-            // 1. Initialize Persistence (Critical for session recovery after redirect)
-            await authService.init();
-            
-            // 2. Handle Redirect Result (Catch users returning from Google)
-            const redirectUser = await authService.handleRedirectResult();
-            if (redirectUser) {
-              console.log("🎯 [AuthStore] Caught Redirect User:", redirectUser.email);
-              await get().handleUserAuthenticated(redirectUser);
-              clearTimeout(authTimeout);
-              return; // We are done, handleUserAuthenticated sets loading to false
-            }
-          } catch (err) {
-            console.error("❌ [AuthStore] Initial Redirect/Persistence check failed:", err);
-          }
-
-          // 3. Set up the ongoing listener
+          // 1. Set up the ongoing listener IMMEDIATELY so session recovery is instant and non-blocking
           const unsubscribe = authService.onAuthChange(async (user) => {
             clearTimeout(authTimeout);
             if (user) {
@@ -408,6 +392,22 @@ const useAppStore = create(
               set({ user: null, role: 'user', isAuthLoading: false, isRestoringSession: false, termsAccepted: false, termsVersion: '' });
             }
           });
+
+          // 2. Run redirect check in background (non-blocking)
+          (async () => {
+            try {
+              const redirectUser = await authService.handleRedirectResult();
+              if (redirectUser) {
+                const currentUser = get().user;
+                if (!currentUser || currentUser.uid !== redirectUser.uid) {
+                  console.log("🎯 [AuthStore] Caught Redirect User in background:", redirectUser.email);
+                  await get().handleUserAuthenticated(redirectUser);
+                }
+              }
+            } catch (err) {
+              console.error("❌ [AuthStore] Background Redirect check failed:", err);
+            }
+          })();
 
           // Theme initialization
           const localTheme = localStorage.getItem('tracktaps_theme') || 'default';

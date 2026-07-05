@@ -112,8 +112,16 @@ const authService = {
         } catch (e) {
           console.warn("⚠️ [Auth] Could not set custom prompt parameter:", e);
         }
-        const result = await signInWithPopup(auth, googleProvider);
-        return result.user;
+        
+        if (isMobileBrowser()) {
+          console.log("📱 [Auth] Mobile Browser Detected - Using Redirect Auth Flow.");
+          await signInWithRedirect(auth, googleProvider);
+          return new Promise(() => {}); // keeps promise pending as page redirects
+        } else {
+          console.log("💻 [Auth] Desktop Browser Detected - Using Popup Auth Flow.");
+          const result = await signInWithPopup(auth, googleProvider);
+          return result.user;
+        }
       }
     } catch (error) {
       console.error("❌ [Auth] Login Lifecycle Error:", error);
@@ -134,6 +142,7 @@ const authService = {
       throw new Error("This email is reserved for the beta testing account. Please login instead.");
     }
     try {
+      await authService.init(); // Ensure persistence is ready
       const result = await createUserWithEmailAndPassword(auth, email, password);
       // Update display name
       await updateProfile(result.user, { displayName: fullName });
@@ -162,6 +171,7 @@ const authService = {
     
     localStorage.removeItem('mock_beta_user');
     try {
+      await authService.init(); // Ensure persistence is ready
       const result = await signInWithEmailAndPassword(auth, email, password);
       return result.user;
     } catch (error) {
@@ -234,6 +244,7 @@ const authService = {
 
   verifyOTP: async (confirmationResult, code) => {
     try {
+      await authService.init(); // Ensure persistence is ready
       const result = await confirmationResult.confirm(code);
       return result.user;
     } catch (error) {
