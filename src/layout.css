@@ -502,22 +502,22 @@ html, body {
    ======================================== */
 
 :root {
-    --glass-blur: 40px;
+    --glass-blur: 12px;
     --gpu-acceleration: translateZ(0);
-    --card-radius: 32px;
-    --button-radius: 100px;
-    --glass-highlight: 0.15;
+    --card-radius: 20px;
+    --button-radius: 12px;
+    --glass-highlight: 0.05;
 }
 
 body.light-mode {
-    --glass-highlight: 0.55;
+    --glass-highlight: 0.2;
 }
 
-/* 1. Animated Organic Liquid Glass Wallpaper */
+/* 1. Subtle Ambient Background (Distraction Free) */
 body {
     position: relative;
     background-color: var(--bg-deep) !important;
-    transition: background-color 0.4s ease;
+    transition: background-color 0.3s ease;
 }
 
 body::before {
@@ -529,90 +529,56 @@ body::before {
     height: 100vh;
     z-index: -2;
     background: var(--bg-deep);
-    transition: background 0.4s ease;
+    transition: background 0.3s ease;
 }
 
 body::after {
     content: '';
     position: fixed;
-    top: -10%;
-    left: -10%;
-    width: 120vw;
-    height: 120vh;
+    top: -5%;
+    left: -5%;
+    width: 110vw;
+    height: 110vh;
     z-index: -1;
     background-image: 
-        radial-gradient(circle at 15% 25%, var(--bg-glow-1, rgba(168, 85, 247, 0.22)) 0%, transparent 50%),
-        radial-gradient(circle at 85% 15%, var(--bg-glow-2, rgba(139, 92, 246, 0.26)) 0%, transparent 60%),
-        radial-gradient(circle at 35% 85%, var(--bg-glow-3, rgba(196, 181, 253, 0.18)) 0%, transparent 55%),
-        radial-gradient(circle at 75% 75%, var(--bg-glow-4, rgba(236, 72, 153, 0.10)) 0%, transparent 50%);
-    filter: blur(90px);
-    opacity: 0.92;
+        radial-gradient(circle at 20% 20%, var(--bg-glow-1, rgba(139, 92, 246, 0.12)) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, var(--bg-glow-2, rgba(99, 102, 241, 0.10)) 0%, transparent 40%);
+    filter: blur(80px);
+    opacity: 0.35;
     pointer-events: none;
-    animation: bg-organic-float 22s ease-in-out infinite alternate;
-}
-
-@keyframes bg-organic-float {
-    0% {
-        transform: translate(0, 0) scale(1) rotate(0deg);
-    }
-    50% {
-        transform: translate(-3%, 4%) scale(1.04) rotate(4deg);
-    }
-    100% {
-        transform: translate(3%, -2%) scale(0.98) rotate(-3deg);
-    }
 }
 
 .app-container {
     background: transparent !important;
 }
 
-/* 2. True Liquid Glass Sidebar */
+/* 2. Crisp, Clean Sidebar */
 .liquid-glass-sidebar {
-    background: var(--surface-glass) !important;
-    backdrop-filter: blur(var(--glass-blur)) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(200%) !important;
+    background: var(--bg-primary) !important;
     border-right: 1px solid var(--border) !important;
-    box-shadow: 20px 0 50px rgba(10, 5, 25, 0.15) !important;
     position: relative;
     overflow-y: auto !important;
     overflow-x: hidden !important;
 }
 
-/* 3. Evolved Premium Glass Cards */
+/* 3. Clean High-Contrast Cards */
 .dashboard-card, .subject-card, .shortcut-card, .insight-card, .history-card, .calculator-card, .profile-card, .theme-card {
     background: var(--surface-glass) !important;
-    backdrop-filter: blur(var(--glass-blur)) saturate(190%) !important;
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(190%) !important;
-    border: 1.5px solid var(--border) !important;
-    border-top: 1.5px solid var(--border-bright) !important;
-    border-left: 1.5px solid var(--border-bright) !important;
+    backdrop-filter: blur(var(--glass-blur)) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+    border: 1px solid var(--border) !important;
     border-radius: var(--card-radius) !important;
-    box-shadow: inset 0 1.5px 1.5px rgba(255, 255, 255, var(--glass-highlight)), var(--shadow-premium) !important;
-    transition: transform var(--transition-speed, 0.3s) cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow var(--transition-speed, 0.3s) ease, border-color var(--transition-speed, 0.3s) ease !important;
-    will-change: transform, box-shadow;
-    transform: var(--gpu-acceleration);
+    box-shadow: var(--shadow-premium) !important;
+    transition: border-color var(--transition-speed, 0.2s) ease, box-shadow var(--transition-speed, 0.2s) ease, transform var(--transition-speed, 0.2s) ease !important;
     position: relative;
     overflow: hidden;
 }
 
-.dashboard-card::before, .subject-card::before, .shortcut-card::before, .insight-card::before, .history-card::before, .calculator-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 50%;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* Card hover scaling and highlight glows */
+/* Clean subtle hover states */
 .dashboard-card:hover, .subject-card:hover, .shortcut-card:hover, .insight-card:hover, .history-card:hover, .calculator-card:hover {
-    transform: translateY(-6px) scale(1.01) var(--gpu-acceleration) !important;
-    box-shadow: inset 0 1.5px 1.5px rgba(255, 255, 255, calc(var(--glass-highlight) + 0.1)), var(--shadow-premium), 0 0 30px var(--primary-glow) !important;
-    border-color: rgba(139, 92, 246, 0.4) !important;
+    transform: translateY(-2px) !important;
+    border-color: var(--border-bright) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* 4. Apple Glass Buttons */
@@ -677,32 +643,31 @@ button.primary:hover, button[type="submit"]:hover, .btn-primary:hover, .primary-
     box-shadow: 0 14px 30px rgba(139, 92, 246, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
 }
 
-/* 5. Floating Bottom Navigation Bar (Apple Dock style) */
+/* 5. Sleek Bottom Navigation Bar */
 .mobile-nav {
     display: flex !important;
     position: fixed;
-    bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
-    left: 20px !important;
-    right: 20px !important;
-    height: 74px !important;
-    background: var(--surface-glass) !important;
-    backdrop-filter: blur(40px) saturate(220%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
-    border-top: 2px solid rgba(255, 255, 255, 0.35) !important;
-    border-radius: 37px !important;
-    box-shadow: 0 20px 50px rgba(10, 5, 25, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 16px !important;
+    right: 16px !important;
+    height: 64px !important;
+    background: var(--bg-secondary) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid var(--border-bright) !important;
+    border-radius: 32px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
     z-index: 10000 !important;
-    padding: 0 16px !important;
+    padding: 0 12px !important;
     margin: 0 auto !important;
-    max-width: 600px !important;
-    transition: all 0.3s ease !important;
+    max-width: 540px !important;
+    transition: all 0.2s ease !important;
 }
 
 body.light-mode .mobile-nav {
-    border: 1.5px solid rgba(139, 92, 246, 0.2) !important;
-    border-top: 2px solid rgba(255, 255, 255, 0.7) !important;
-    box-shadow: 0 20px 50px rgba(139, 92, 246, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(139, 92, 246, 0.2) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Selection and bounce effects for dock */

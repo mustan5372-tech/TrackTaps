@@ -69,9 +69,25 @@ function Settings() {
 
   const THEME_LIST = [
     {
+      id: 'minimal_clean',
+      name: 'Minimal Clean Mode',
+      description: 'Flat, high-contrast, simple distraction-free UI.',
+      icon: '✨',
+      isPremium: false,
+      isDark: true,
+      colors: {
+        bg: '#0b0f19',
+        primary: '#6366f1',
+        accent: '#818cf8',
+        surface: '#1e293b',
+        text: '#f8fafc',
+        glow: 'rgba(99, 102, 241, 0.12)'
+      }
+    },
+    {
       id: 'default',
       name: 'TrackTaps Default',
-      description: 'The classic signature deep violet dark space.',
+      description: 'The signature subtle violet space.',
       icon: '🔮',
       isPremium: false,
       isDark: true,
