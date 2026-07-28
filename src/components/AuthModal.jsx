@@ -30,13 +30,24 @@ function AuthModal({ isOpen, onClose }) {
       }
     } catch (err) {
       console.error("Google Login Catch Block Triggered in Component:", err);
-      const errMsg = err.message || String(err);
-      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request' || errMsg.toLowerCase().includes('cancelled')) {
+      let errMsg = err?.message || (typeof err === 'string' ? err : '');
+      if (!errMsg || errMsg === '[object Object]' || errMsg === '{}') {
+        try {
+          errMsg = JSON.stringify(err);
+        } catch (e) {
+          errMsg = String(err);
+        }
+      }
+      if (!errMsg || errMsg === '[object Object]' || errMsg === '{}') {
+        errMsg = "Google Sign-In failed to complete. Please try again.";
+      }
+      const errCode = err?.code || 'None';
+      if (errCode === 'auth/popup-closed-by-user' || errCode === 'auth/cancelled-popup-request' || errMsg.toLowerCase().includes('cancelled')) {
         setError("Google Sign-In was cancelled.");
         return;
       }
       setError(errMsg);
-      alert(`❌ Google Login Failed!\n\nError: ${errMsg}\nCode: ${err.code || 'None'}`);
+      alert(`❌ Google Login Failed!\n\nError: ${errMsg}\nCode: ${errCode}`);
     } finally {
       setLoading(false);
     }
