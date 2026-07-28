@@ -20,13 +20,23 @@ function AuthModal({ isOpen, onClose }) {
     setLoading(true);
     setError('');
     try {
-      // Use the centralized store login which handles everything
+      console.log("Button clicked: Initiating store login()");
       const user = await login();
       if (user) {
+        console.log("login() returned user, closing modal");
         onClose();
+      } else {
+        console.log("login() returned no user, keeping modal open");
       }
     } catch (err) {
-      setError(err.message || 'Google Login failed');
+      console.error("Google Login Catch Block Triggered in Component:", err);
+      const errMsg = err.message || String(err);
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request' || errMsg.toLowerCase().includes('cancelled')) {
+        setError("Google Sign-In was cancelled.");
+        return;
+      }
+      setError(errMsg);
+      alert(`❌ Google Login Failed!\n\nError: ${errMsg}\nCode: ${err.code || 'None'}`);
     } finally {
       setLoading(false);
     }
@@ -163,6 +173,23 @@ function AuthModal({ isOpen, onClose }) {
             <motion.div key="select" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
               <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px', textAlign: 'center' }}>Welcome Back</h2>
               <p style={{ fontSize: '14px', color: 'var(--text-dim)', textAlign: 'center', marginBottom: '24px' }}>Choose your preferred login method.</p>
+              
+              {error && (
+                <div style={{ 
+                  color: '#ef4444', 
+                  background: 'rgba(239, 68, 68, 0.1)', 
+                  border: '1px solid rgba(239, 68, 68, 0.2)', 
+                  borderRadius: '12px', 
+                  padding: '12px', 
+                  fontSize: '13px', 
+                  marginBottom: '16px',
+                  lineHeight: '1.4',
+                  textAlign: 'center',
+                  fontWeight: '600'
+                }}>
+                  ⚠️ {error}
+                </div>
+              )}
               
               {/* Subtle Google Login Recommendation */}
               <motion.div 

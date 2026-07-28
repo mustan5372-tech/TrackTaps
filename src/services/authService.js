@@ -40,8 +40,6 @@ const authService = {
   init: async () => {
     try {
       console.log("🚀 [Auth] Initializing persistent storage...");
-      // IndexedDB is the gold standard for mobile/native persistence
-      // We force this early to ensure session recovery is stable
       await setPersistence(auth, indexedDBLocalPersistence).catch((err) => {
         console.warn("⚠️ [Auth] IndexedDB persistence failed, falling back to LocalStorage", err);
         return setPersistence(auth, browserLocalPersistence);
@@ -55,21 +53,28 @@ const authService = {
   loginWithGoogle: async () => {
     localStorage.removeItem('mock_beta_user');
     const isAPK = isNativeAPK();
-    console.log(`🔐 [Auth] Initiating Login: ${isAPK ? 'NATIVE APK' : 'WEB'}`);
     
-    // Detection for internal logging
-    if (isAPK) {
-      console.log("📱 [Auth] APK Mode Detected - Native flow active.");
-    }
-
+    console.log("========== LOGIN STARTED ==========");
+    console.log("Google Sign In button clicked");
+    console.log("Step: Environment Check -> isNativeAPK:", isAPK);
+    console.log("Step: Firebase Auth configuration:", {
+      apiKey: auth.config?.apiKey ? "Exposed" : "Missing",
+      authDomain: auth.config?.authDomain,
+      projectId: auth.config?.projectId
+    });
+    
     try {
-      if (!auth.app) throw new Error("Firebase not initialized");
+      if (!auth.app) {
+        console.log("FAILED STEP: Firebase initialization check");
+        throw new Error("Firebase app not initialized");
+      }
       
-      // Ensure persistence is ready before login
+      console.log("Step: Initializing persistence");
       await authService.init();
-
+      
       if (isAPK) {
         // --- 1. NATIVE APK FLOW ---
+        console.log("Step: Loading native Capacitor Google Auth");
         const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
         
         try { 
@@ -82,7 +87,6 @@ const authService = {
           console.warn("⚠️ [Auth] Non-critical initialization warning:", e);
         }
 
-        // PROACTIVE DISCONNECT: Completely flush Google Play Services session cache before sign-in to guarantee account chooser popup
         try {
           await GoogleAuth.signOut().catch(() => {});
           await GoogleAuth.disconnect().catch(e => console.log("ℹ️ [Auth] Session pre-cleanup skip:", e.message));
@@ -91,18 +95,36 @@ const authService = {
           console.warn("⚠️ [Auth] Non-critical native session pre-cleanup failure:", e);
         }
 
+        console.log("Step: Calling GoogleAuth.signIn()");
         const nativeUser = await GoogleAuth.signIn();
         
         if (!nativeUser || !nativeUser.authentication?.idToken) {
+          console.log("FAILED STEP: Native sign-in response invalid");
           throw new Error("Google Sign-In was cancelled or failed to return a valid token.");
         }
 
+        console.log("Step: Creating Firebase Credential");
         const credential = GoogleAuthProvider.credential(nativeUser.authentication.idToken);
+        
+        console.log("Step: signInWithCredential");
         const result = await signInWithCredential(auth, credential);
+        
+        if (!result || !result.user) {
+          console.log("FAILED STEP: signInWithCredential returned null/undefined user");
+          throw new Error("Firebase signInWithCredential returned no user.");
+        }
+
+        console.log("Credential received");
+        console.log("Firebase signIn completed");
+        console.log("User UID:", result.user.uid);
+        console.log("User Email:", result.user.email);
+        console.log("Firebase current user:", auth.currentUser?.email);
+        console.log("========== LOGIN COMPLETE ==========");
         return result.user;
 
       } else {
-        // --- 2. WEB FLOW (Browser Only) ---
+        // --- 2. WEB FLOW (Mobile & Desktop Web Browsers) ---
+        console.log("Step: Web Flow detected");
         try {
           if (googleProvider && typeof googleProvider.setCustomParameters === 'function') {
             googleProvider.setCustomParameters({
@@ -113,24 +135,49 @@ const authService = {
           console.warn("⚠️ [Auth] Could not set custom prompt parameter:", e);
         }
         
-        if (isMobileBrowser()) {
-          console.log("📱 [Auth] Mobile Browser Detected - Using Redirect Auth Flow.");
-          await signInWithRedirect(auth, googleProvider);
-          return new Promise(() => {}); // keeps promise pending as page redirects
-        } else {
-          console.log("💻 [Auth] Desktop Browser Detected - Using Popup Auth Flow.");
+        console.log("🌐 [Auth] Attempting Popup Auth Flow (Works on Mobile & Desktop)...");
+        try {
+          console.log("Popup started: signInWithPopup");
           const result = await signInWithPopup(auth, googleProvider);
+          console.log("Popup resolved successfully");
+          
+          if (!result || !result.user) {
+            console.log("FAILED STEP: Popup resolved but result.user is null/undefined");
+            throw new Error("Google Sign-In popup returned no user");
+          }
+          
+          console.log("Credential received");
+          console.log("Firebase signIn completed");
+          console.log("User UID:", result.user.uid);
+          console.log("User Email:", result.user.email);
+          console.log("Firebase current user:", auth.currentUser?.email);
+          console.log("========== LOGIN COMPLETE ==========");
           return result.user;
+        } catch (popupErr) {
+          console.warn("⚠️ [Auth] Popup auth error:", popupErr);
+          
+          // Handle user cancellation cleanly
+          if (popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request') {
+            throw new Error("Google Sign-In was cancelled.");
+          }
+          
+          // Fallback to redirect flow ONLY if popup was explicitly blocked by browser settings
+          if (popupErr.code === 'auth/popup-blocked') {
+            console.log("📱 [Auth] Popup blocked by browser! Falling back to Redirect Auth Flow...");
+            await signInWithRedirect(auth, googleProvider);
+            return new Promise(() => {}); // keep promise pending while page redirects
+          }
+          
+          throw popupErr;
         }
       }
     } catch (error) {
-      console.error("❌ [Auth] Login Lifecycle Error:", error);
-      
-      const isCancellation = error.message?.includes('cancel') || error.code?.includes('cancel') || error.message?.includes('12501');
-      if (!isCancellation && isAPK) {
-        console.error("🏁 [Auth] Final Native Error:", error.message || error.code);
-      }
-      
+      console.log("FAILED STEP: loginWithGoogle exception caught");
+      console.log("Exact error:", error);
+      console.log("Stack trace:", error.stack);
+      console.log("Firebase error code:", error.code);
+      console.log("Firebase error message:", error.message);
+      console.log("========== LOGIN FAILED ==========");
       throw error;
     }
   },
@@ -258,16 +305,33 @@ const authService = {
       return null;
     }
     
+    console.log("Step: handleRedirectResult invoked");
     try {
       const result = await getRedirectResult(auth);
+      console.log("getRedirectResult completed, result:", result);
       
       if (result && result.user) {
+        console.log("Redirect Result Received successfully");
+        console.log("User UID:", result.user.uid);
+        console.log("User Email:", result.user.email);
         return result.user;
       }
       return null;
     } catch (error) {
-      console.error("❌ [Auth] getRedirectResult Error:", error);
-      return null;
+      console.log("FAILED STEP: getRedirectResult exception caught");
+      console.log("Exact error:", error);
+      console.log("Stack trace:", error.stack);
+      console.log("Firebase error code:", error.code);
+      console.log("Firebase error message:", error.message);
+      
+      window.lastAuthError = {
+        step: "getRedirectResult",
+        error: error.message || String(error),
+        code: error.code,
+        stack: error.stack
+      };
+      
+      throw error;
     }
   },
 
@@ -278,7 +342,6 @@ const authService = {
         try {
           const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
           
-          // CRITICAL: Initialize GoogleAuth before signing out/disconnecting to prevent native NullPointerException/crash
           try {
             await GoogleAuth.initialize({
               clientId: '273530797417-bd8fuigvtn5pteccivud773ijo8s9ioe.apps.googleusercontent.com',
@@ -289,16 +352,13 @@ const authService = {
             console.warn("⚠️ [Auth] GoogleAuth init during logout warning:", initErr);
           }
 
-          // signOut clears the current session
           await GoogleAuth.signOut().catch(() => {});
-          // disconnect completely revokes authorization — forces account chooser next time
           await GoogleAuth.disconnect().catch(e => console.log("ℹ️ [Auth] GoogleAuth disconnect skip or already disconnected:", e.message));
           console.log("✅ [Auth] Native Google Auth disconnected and session cleared");
         } catch (e) {
           console.warn("⚠️ [Auth] Non-critical native GoogleAuth signout/disconnect warning:", e);
         }
 
-        // Clear WebView cookies/cache for Google domains (APK-specific)
         try {
           if (window.Capacitor?.Plugins?.CookieManager) {
             await window.Capacitor.Plugins.CookieManager.clearAllCookies().catch(() => {});
@@ -311,13 +371,10 @@ const authService = {
         try {
           const currentUser = auth.currentUser;
           if (currentUser) {
-            // Find Google provider data and revoke the token
             const googleProviderData = currentUser.providerData?.find(p => p.providerId === 'google.com');
             if (googleProviderData) {
-              // Attempt to revoke the Google OAuth token
               const accessToken = await currentUser.getIdToken().catch(() => null);
               if (accessToken) {
-                // Fire-and-forget revocation request to Google
                 fetch(`https://accounts.google.com/o/oauth2/revoke?token=${accessToken}`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
@@ -332,25 +389,19 @@ const authService = {
 
       // 3. Clear all auth-related local storage
       try {
-        // Pod.ai tokens
         localStorage.removeItem('pod_auth_token');
         localStorage.removeItem('pod_username');
         localStorage.removeItem('mock_beta_user');
         localStorage.removeItem('mock_beta_user_cloud_data');
-        // Referral cache (per-user keys will remain but are harmless)
-        // Onboarding state — keep it so user doesn't re-see onboarding
-        // Theme — already cleared by clearAppData
       } catch (e) {
         console.warn("⚠️ [Auth] localStorage cleanup non-critical:", e);
       }
 
-      // 4. Firebase sign out (must be last — triggers onAuthStateChanged)
+      // 4. Firebase sign out
       await signOut(auth);
-      
       console.log("✅ [Auth] Complete logout with full session cleanup");
     } catch (error) {
       console.error("❌ [Auth] Logout error:", error);
-      // Still try Firebase signOut even if other steps failed
       try { await signOut(auth); } catch (e) {}
       throw error;
     }
@@ -390,12 +441,26 @@ const authService = {
     if (isMock) {
       setTimeout(() => {
         if (localStorage.getItem('mock_beta_user') === 'true') {
-          callback(authService.getMockBetaUser());
+          console.log("📢 [Auth] Mock onAuthStateChanged fired!");
+          const mockUser = authService.getMockBetaUser();
+          console.log("UID:", mockUser.uid);
+          console.log("Email:", mockUser.email);
+          console.log("Current Route:", window.location.pathname);
+          callback(mockUser);
         }
       }, 0);
     }
 
     const unsub = onAuthStateChanged(auth, (user) => {
+      console.log("📢 [Auth] onAuthStateChanged fired!");
+      if (user) {
+        console.log("UID:", user.uid);
+        console.log("Email:", user.email);
+      } else {
+        console.log("User: null");
+      }
+      console.log("Current Route:", window.location.pathname);
+
       if (localStorage.getItem('mock_beta_user') === 'true') {
         callback(authService.getMockBetaUser());
       } else {

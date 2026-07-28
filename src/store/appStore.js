@@ -332,18 +332,7 @@ const useAppStore = create(
             console.error("❌ [Logout] clearAppData failed:", e);
           }
           
-          // 4. Clear all cached storage to secure authentication privacy
-          try {
-            const onboardingVal = localStorage.getItem('tracktaps_completed_tour');
-            localStorage.clear();
-            if (onboardingVal) {
-              localStorage.setItem('tracktaps_completed_tour', onboardingVal);
-            }
-          } catch (e) {
-            console.warn("⚠️ [Logout] localStorage clear non-critical:", e);
-          }
-
-          // 5. ATOMIC state reset — sets user=null which triggers SafeRoute redirect to /
+          // 4. Clear all cached storage t          // 5. ATOMIC state reset — sets user=null which triggers SafeRoute redirect to /
           // Do NOT set isAuthLoading=true at any point during logout to keep WebView stable
           try {
             set({ 
@@ -362,33 +351,34 @@ const useAppStore = create(
           }
         },
 
-
         initAuth: async () => {
+          console.log("⚙️ [AuthStore] initAuth called. Setting isAuthLoading=true, isRestoringSession=true");
           set({ isAuthLoading: true, isRestoringSession: true });
           
           // Safety Timeout: Prevent permanent "Initializing" screen
           const authTimeout = setTimeout(() => {
             const { isAuthLoading } = get();
             if (isAuthLoading) {
-              console.warn("⚠️ [AuthStore] Auth initialization timed out. Forcing UI unblock.");
+              console.warn("⚠️ [AuthStore] Auth initialization timed out after 8s! Forcing UI unblock.");
               set({ isAuthLoading: false, isRestoringSession: false });
             }
-          }, 8000); // 8 seconds is plenty for most redirects/persistence checks
+          }, 8000);
 
           // 1. Set up the ongoing listener IMMEDIATELY so session recovery is instant and non-blocking
+          console.log("⚙️ [AuthStore] Registering onAuthChange listener...");
           const unsubscribe = authService.onAuthChange(async (user) => {
             clearTimeout(authTimeout);
+            console.log("📢 [AuthStore] onAuthChange fired! Current route:", window.location.pathname);
             if (user) {
-              console.log("👤 [AuthStore] Active Session Found:", user.email);
+              console.log("👤 [AuthStore] Active Session Found in listener:", user.email, "UID:", user.uid);
               await get().handleUserAuthenticated(user);
             } else {
-              // If we are currently signing out, the logout() method already
-              // handles all state cleanup atomically. Don't duplicate it here.
               if (get().isSigningOut) {
-                console.log("👤 [AuthStore] onAuthChange fired during active logout — skipping (handled by logout())");
+                console.log("👤 [AuthStore] onAuthChange fired with user=null during active logout — skipping.");
                 return;
               }
-              console.log("👤 [AuthStore] No Active Session");
+              console.log("👤 [AuthStore] onAuthChange fired with user=null. No active session found.");
+              console.log("👤 [AuthStore] Redirecting/Setting Guest Mode: setting user: null");
               set({ user: null, role: 'user', isAuthLoading: false, isRestoringSession: false, termsAccepted: false, termsVersion: '' });
             }
           });
@@ -396,7 +386,9 @@ const useAppStore = create(
           // 2. Run redirect check in background (non-blocking)
           (async () => {
             try {
+              console.log("⚙️ [AuthStore] Initiating background redirect check...");
               const redirectUser = await authService.handleRedirectResult();
+              console.log("⚙️ [AuthStore] Background handleRedirectResult finished, redirectUser:", redirectUser?.email || "null");
               if (redirectUser) {
                 const currentUser = get().user;
                 if (!currentUser || currentUser.uid !== redirectUser.uid) {
