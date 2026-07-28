@@ -106,6 +106,17 @@ function App() {
     };
     window.addEventListener('swUpdateAvailable', handleUpdate);
 
+    // Auto-recover from stale Vite chunk fetch errors after fresh deployments
+    const handleChunkError = (e) => {
+      const msg = e?.message || e?.reason?.message || '';
+      if (msg.includes('Failed to fetch dynamically imported module')) {
+        console.warn("🔄 New version deployed! Reloading application to fetch latest build...");
+        window.location.reload();
+      }
+    };
+    window.addEventListener('error', handleChunkError);
+    window.addEventListener('unhandledrejection', handleChunkError);
+
     // 🔍 GROWTH PHASE: Capture Referral Code
     const params = new URLSearchParams(window.location.search);
     const refCode = params.get('ref');

@@ -22,13 +22,8 @@ import { auth, googleProvider } from "./firebase";
 
 // Robust detection: Check for Capacitor bridge and specific platform properties
 const isNativeAPK = () => {
-  const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform());
-  const isAndroid = /Android/i.test(navigator.userAgent);
-  
-  // Also check for the bridge existence even if isNativePlatform isn't ready
-  const hasCapacitorBridge = !!(window.Capacitor?.Plugins);
-  
-  return isNative || (isAndroid && hasCapacitorBridge);
+  if (typeof window === 'undefined') return false;
+  return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
 };
 
 const isMobileBrowser = () => {
@@ -75,77 +70,46 @@ const authService = {
       if (isAPK) {
         // --- 1. NATIVE APK FLOW ---
         console.log("Step: Loading native Capacitor Google Auth");
-        const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
-        
-        try { 
-          await GoogleAuth.initialize({
-            clientId: '273530797417-bd8fuigvtn5pteccivud773ijo8s9ioe.apps.googleusercontent.com',
-            scopes: ['profile', 'email'],
-            forceCodeForRefreshToken: true
-          }).catch(e => console.log("ℹ️ [Auth] GoogleAuth already initialized or skip: ", e.message)); 
-        } catch (e) {
-          console.warn("⚠️ [Auth] Non-critical initialization warning:", e);
-        }
-
         try {
-          await GoogleAuth.signOut().catch(() => {});
-          await GoogleAuth.disconnect().catch(e => console.log("ℹ️ [Auth] Session pre-cleanup skip:", e.message));
-          console.log("🧹 [Auth] Native pre-signIn session successfully flushed!");
-        } catch (e) {
-          console.warn("⚠️ [Auth] Non-critical native session pre-cleanup failure:", e);
-        }
-
-        console.log("Step: Calling GoogleAuth.signIn()");
-        const nativeUser = await GoogleAuth.signIn();
-        
-        if (!nativeUser || !nativeUser.authentication?.idToken) {
-          console.log("FAILED STEP: Native sign-in response invalid");
-          throw new Error("Google Sign-In was cancelled or failed to return a valid token.");
-        }
-
-        console.log("Step: Creating Firebase Credential");
-        const credential = GoogleAuthProvider.credential(nativeUser.authentication.idToken);
-        
-        console.log("Step: signInWithCredential");
-        const result = await signInWithCredential(auth, credential);
-        
-        if (!result || !result.user) {
-          console.log("FAILED STEP: signInWithCredential returned null/undefined user");
-          throw new Error("Firebase signInWithCredential returned no user.");
-        }
-
-        console.log("Credential received");
-        console.log("Firebase signIn completed");
-        console.log("User UID:", result.user.uid);
-        console.log("User Email:", result.user.email);
-        console.log("Firebase current user:", auth.currentUser?.email);
-        console.log("========== LOGIN COMPLETE ==========");
-        return result.user;
-
-      } else {
-        // --- 2. WEB FLOW (Mobile & Desktop Web Browsers) ---
-        console.log("Step: Web Flow detected");
-        try {
-          if (googleProvider && typeof googleProvider.setCustomParameters === 'function') {
-            googleProvider.setCustomParameters({
-              prompt: 'select_account'
-            });
+          const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+          
+          try { 
+            await GoogleAuth.initialize({
+              clientId: '273530797417-bd8fuigvtn5pteccivud773ijo8s9ioe.apps.googleusercontent.com',
+              scopes: ['profile', 'email'],
+              forceCodeForRefreshToken: true
+            }).catch(e => console.log("ℹ️ [Auth] GoogleAuth already initialized or skip: ", e.message)); 
+          } catch (e) {
+            console.warn("⚠️ [Auth] Non-critical initialization warning:", e);
           }
-        } catch (e) {
-          console.warn("⚠️ [Auth] Could not set custom prompt parameter:", e);
-        }
-        
-        console.log("🌐 [Auth] Attempting Popup Auth Flow (Works on Mobile & Desktop)...");
-        try {
-          console.log("Popup started: signInWithPopup");
-          const result = await signInWithPopup(auth, googleProvider);
-          console.log("Popup resolved successfully");
+
+          try {
+            await GoogleAuth.signOut().catch(() => {});
+            await GoogleAuth.disconnect().catch(e => console.log("ℹ️ [Auth] Session pre-cleanup skip:", e.message));
+            console.log("🧹 [Auth] Native pre-signIn session successfully flushed!");
+          } catch (e) {
+            console.warn("⚠️ [Auth] Non-critical native session pre-cleanup failure:", e);
+          }
+
+          console.log("Step: Calling GoogleAuth.signIn()");
+          const nativeUser = await GoogleAuth.signIn();
+          
+          if (!nativeUser || !nativeUser.authentication?.idToken) {
+            console.log("FAILED STEP: Native sign-in response invalid");
+            throw new Error("Google Sign-In was cancelled or failed to return a valid token.");
+          }
+
+          console.log("Step: Creating Firebase Credential");
+          const credential = GoogleAuthProvider.credential(nativeUser.authentication.idToken);
+          
+          console.log("Step: signInWithCredential");
+          const result = await signInWithCredential(auth, credential);
           
           if (!result || !result.user) {
-            console.log("FAILED STEP: Popup resolved but result.user is null/undefined");
-            throw new Error("Google Sign-In popup returned no user");
+            console.log("FAILED STEP: signInWithCredential returned null/undefined user");
+            throw new Error("Firebase signInWithCredential returned no user.");
           }
-          
+
           console.log("Credential received");
           console.log("Firebase signIn completed");
           console.log("User UID:", result.user.uid);
@@ -153,23 +117,58 @@ const authService = {
           console.log("Firebase current user:", auth.currentUser?.email);
           console.log("========== LOGIN COMPLETE ==========");
           return result.user;
-        } catch (popupErr) {
-          console.warn("⚠️ [Auth] Popup auth error:", popupErr);
-          
-          // Handle user cancellation cleanly
-          if (popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request') {
-            throw new Error("Google Sign-In was cancelled.");
-          }
-          
-          // Fallback to redirect flow ONLY if popup was explicitly blocked by browser settings
-          if (popupErr.code === 'auth/popup-blocked') {
-            console.log("📱 [Auth] Popup blocked by browser! Falling back to Redirect Auth Flow...");
-            await signInWithRedirect(auth, googleProvider);
-            return new Promise(() => {}); // keep promise pending while page redirects
-          }
-          
-          throw popupErr;
+        } catch (nativeErr) {
+          console.warn("⚠️ [Auth] Native GoogleAuth failed or chunk error, falling back to Web Auth Flow:", nativeErr);
+          // Fall through to Web Flow if Native flow fails
         }
+      }
+
+      // --- 2. WEB FLOW (Mobile & Desktop Web Browsers) ---
+      console.log("Step: Web Flow detected");
+      try {
+        if (googleProvider && typeof googleProvider.setCustomParameters === 'function') {
+          googleProvider.setCustomParameters({
+            prompt: 'select_account'
+          });
+        }
+      } catch (e) {
+        console.warn("⚠️ [Auth] Could not set custom prompt parameter:", e);
+      }
+      
+      console.log("🌐 [Auth] Attempting Popup Auth Flow (Works on Mobile & Desktop)...");
+      try {
+        console.log("Popup started: signInWithPopup");
+        const result = await signInWithPopup(auth, googleProvider);
+        console.log("Popup resolved successfully");
+        
+        if (!result || !result.user) {
+          console.log("FAILED STEP: Popup resolved but result.user is null/undefined");
+          throw new Error("Google Sign-In popup returned no user");
+        }
+        
+        console.log("Credential received");
+        console.log("Firebase signIn completed");
+        console.log("User UID:", result.user.uid);
+        console.log("User Email:", result.user.email);
+        console.log("Firebase current user:", auth.currentUser?.email);
+        console.log("========== LOGIN COMPLETE ==========");
+        return result.user;
+      } catch (popupErr) {
+        console.warn("⚠️ [Auth] Popup auth error:", popupErr);
+        
+        // Handle user cancellation cleanly
+        if (popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request') {
+          throw new Error("Google Sign-In was cancelled.");
+        }
+        
+        // Fallback to redirect flow ONLY if popup was explicitly blocked by browser settings
+        if (popupErr.code === 'auth/popup-blocked') {
+          console.log("📱 [Auth] Popup blocked by browser! Falling back to Redirect Auth Flow...");
+          await signInWithRedirect(auth, googleProvider);
+          return new Promise(() => {}); // keep promise pending while page redirects
+        }
+        
+        throw popupErr;
       }
     } catch (error) {
       console.log("FAILED STEP: loginWithGoogle exception caught");
