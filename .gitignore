@@ -7,4 +7,5 @@ dist
 .env.production
 *.apk
 public/*.apk
+!public/TrackTaps_v4.0.0.apk
 android/.gradle_home/
