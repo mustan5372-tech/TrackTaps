@@ -7,3 +7,4 @@ dist
 .env.production
 *.apk
 public/*.apk
+android/.gradle_home/

@@ -1,8 +1,8 @@
 {
-    "version":  "3.5.2",
-    "min_required_version":  "1.0.0",
-    "platform":  "production",
-    "last_updated":  "2026-07-05",
-    "update_url":  "https://www.tracktaps.online/download",
-    "changelog":  "✨ Version 3.5.2: Fixed critical login and logout rendering issues on web browsers."
+    "version": "4.0.0",
+    "min_required_version": "1.0.0",
+    "platform": "production",
+    "last_updated": "2026-07-29",
+    "update_url": "https://www.tracktaps.online/download",
+    "changelog": "✨ Version 4.0.0: Simplified modern high-contrast UI, subdued ambient themes, performance optimizations & minimal clean mode."
 }
