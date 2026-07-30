@@ -6,14 +6,15 @@ import { motion } from 'framer-motion';
 
 function DownloadPage() {
   const [countdown, setCountdown] = useState(2);
-  const [appVersion, setAppVersion] = useState('3.5.0');
+  const [downloadUrl, setDownloadUrl] = useState('');
 
   useEffect(() => {
-    // Fetch the latest version dynamically
+    // Fetch the latest version & download URL dynamically
     fetch('/version.json')
       .then(res => res.json())
       .then(data => {
         if (data.version) setAppVersion(data.version);
+        if (data.download_url) setDownloadUrl(data.download_url);
       })
       .catch(err => console.warn('Failed to fetch version:', err));
 
@@ -22,7 +23,7 @@ function DownloadPage() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          triggerDownload(appVersion);
+          triggerDownload();
           return 0;
         }
         return prev - 1;
@@ -30,11 +31,11 @@ function DownloadPage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [appVersion]);
+  }, [downloadUrl, appVersion]);
 
-  const triggerDownload = (version) => {
-    // Redirect directly to the self-hosted path to download the latest compiled APK
-    window.location.href = `/TrackTaps_v${version || appVersion}.apk`;
+  const triggerDownload = () => {
+    const target = downloadUrl || `/TrackTaps_v${appVersion}.apk`;
+    window.location.href = target;
   };
 
   return (

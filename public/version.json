@@ -4,5 +4,6 @@
     "platform": "production",
     "last_updated": "2026-07-29",
     "update_url": "https://www.tracktaps.online/download",
+    "download_url": "",
     "changelog": "✨ Version 4.0.0: Simplified modern high-contrast UI, subdued ambient themes, performance optimizations & minimal clean mode."
 }
