@@ -60,6 +60,7 @@ export const getSubscriptionDetails = (subscription = {}, role = 'user', banned 
 
   const subStatus = subscription?.status || 'inactive';
   const expiryDate = subscription?.expiryDate;
+  const isTrial = subscription?.planType === 'trial' || subscription?.isTrial;
 
   // Check if expired
   if (expiryDate && expiryDate !== '2099-12-31') {
@@ -70,6 +71,9 @@ export const getSubscriptionDetails = (subscription = {}, role = 'user', banned 
   }
 
   if (subStatus === 'active') {
+    if (isTrial) {
+      return { statusLabel: '10-Day Free Trial', isExpired: false, isPaid: false, color: '#a855f7' };
+    }
     return { statusLabel: 'Active Premium', isExpired: false, isPaid: true, color: '#d946ef' };
   }
 

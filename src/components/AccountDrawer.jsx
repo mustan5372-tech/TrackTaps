@@ -547,7 +547,7 @@ function AccountDrawer() {
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(2, 6, 23, 0.7)',
+              background: 'rgba(2, 6, 23, 0.85)',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
               zIndex: 100000
@@ -567,11 +567,9 @@ function AccountDrawer() {
               bottom: 0,
               width: '80%',
               maxWidth: '420px',
-              background: theme === 'light' ? 'rgba(255, 255, 255, 0.75)' : 'rgba(15, 23, 42, 0.45)',
-              backdropFilter: 'blur(35px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-              borderLeft: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.12)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), -10px 0 40px rgba(0,0,0,0.4)',
+              background: theme === 'light' ? '#ffffff' : '#0f172a',
+              borderLeft: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(139, 92, 246, 0.3)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), -10px 0 40px rgba(0,0,0,0.6)',
               zIndex: 100001,
               display: 'flex',
               flexDirection: 'column',

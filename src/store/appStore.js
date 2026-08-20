@@ -462,6 +462,7 @@ const useAppStore = create(
             let showExpiryWarning = false;
             let showExpiredWarning = false;
             let expiryWarningDate = '';
+            const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
 
             if (finalSub && finalSub.status === 'active' && finalSub.expiryDate) {
               const now = new Date();
@@ -514,6 +515,49 @@ const useAppStore = create(
               }
             }
 
+            // 🎁 10-DAY FREE TRIAL FOR ALL NEW SIGN-INS & OLD FREE USERS
+            if (dbRole !== 'owner' && dbRole !== 'core_admin') {
+              const isSubActive = finalSub && finalSub.status === 'active' && finalSub.expiryDate && new Date(finalSub.expiryDate) > new Date();
+              if (!isSubActive) {
+                const trialExpiryISO = new Date(Date.now() + TEN_DAYS_MS).toISOString();
+                finalSub = {
+                  plan: 'plus',
+                  planType: 'trial',
+                  status: 'active',
+                  isTrial: true,
+                  trialStartDate: new Date().toISOString(),
+                  expiryDate: trialExpiryISO,
+                  features: {
+                    aiUsageLimit: 999,
+                    aiRequestsToday: 0,
+                    aiImportLimit: 999,
+                    aiImportsToday: 0,
+                    lastAiImportDate: null,
+                    hasBadge: true,
+                    hasGlow: true,
+                    theme: 'default'
+                  }
+                };
+
+                // Back-sync 10-day trial to Firestore immediately
+                (async () => {
+                  try {
+                    const { doc, setDoc } = await import('firebase/firestore');
+                    const { db } = await import('../services/firebase');
+                    const userRef = doc(db, 'users', user.uid);
+                    await setDoc(userRef, {
+                      premium: true,
+                      subscription: finalSub,
+                      updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                    console.log("🎁 [Subscription] Auto-granted 10-Day Free Trial to user!");
+                  } catch (e) {
+                    console.warn("⚠️ [Subscription] Trial sync failed:", e);
+                  }
+                })();
+              }
+            }
+
             // STRICT SECURITY: Determine subscription and role
             let updatedSub = { ...get().subscription };
             let updatedRole = dbRole; // Uses 'owner', 'core_admin', or 'user'
@@ -528,9 +572,8 @@ const useAppStore = create(
               };
             } else if (finalSub && finalSub.status === 'active') {
               updatedSub = { ...updatedSub, ...finalSub };
-              // Keeps updatedRole as 'user' but updates subscription
+              // Keeps updatedRole as 'user' but updates subscription with trial/active status
             } else if (cloudData) {
-              // Only downgrade to free if we successfully fetched cloudData and it indicates they are not premium!
               updatedSub = { 
                 ...updatedSub, 
                 plan: 'free', 

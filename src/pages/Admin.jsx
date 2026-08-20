@@ -257,8 +257,36 @@ function Admin() {
 
       querySnapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        const sub = data.subscription || { plan: 'free', status: 'inactive' };
+        let sub = data.subscription || { plan: 'free', status: 'inactive' };
         const userRoleRaw = data.role || 'user';
+        const isOwnerRole = (userRoleRaw === 'owner' || userRoleRaw === 'admin');
+        const isCoreRole = (userRoleRaw === 'core_admin' || userRoleRaw === 'core');
+
+        // Created / Registered date for accurate sorting (newest/oldest)
+        const createdAtRaw = data.createdAt || data.registeredAt || data.joinedAt || data.lastSynced || null;
+        let createdAtMs = createdAtRaw ? new Date(createdAtRaw).getTime() : 0;
+        if (isNaN(createdAtMs) || createdAtMs === 0) {
+          createdAtMs = docSnap._document?.createTime?.timestamp ? (docSnap._document.createTime.timestamp.seconds * 1000) : 0;
+        }
+
+        // Auto-grant 10-day trial for free / inactive users so Admin dashboard reflects trial access
+        if (!isOwnerRole && !isCoreRole && !data.banned) {
+          const isSubActive = sub && sub.status === 'active' && sub.expiryDate && new Date(sub.expiryDate) > new Date();
+          if (!isSubActive) {
+            const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
+            const trialExpiryMs = (createdAtMs > 0 && (Date.now() - createdAtMs < TEN_DAYS_MS))
+              ? (createdAtMs + TEN_DAYS_MS)
+              : (Date.now() + TEN_DAYS_MS);
+
+            sub = {
+              plan: 'plus',
+              planType: 'trial',
+              status: 'active',
+              isTrial: true,
+              expiryDate: new Date(trialExpiryMs).toISOString()
+            };
+          }
+        }
         
         // Strict Subscription Validation & Expiry Check
         const subDetails = getSubscriptionDetails(sub, userRoleRaw, data.banned);
@@ -266,6 +294,7 @@ function Admin() {
 
         // Map internal plan IDs to attractive names
         const planMap = {
+          'trial': '10-Day Trial',
           'monthly': 'Starter',
           'half_yearly': 'Super Saver',
           'yearly': 'Mega Saver',
@@ -275,19 +304,9 @@ function Admin() {
 
         const planName = planMap[sub.planType] || planMap[sub.plan] || sub.planType || sub.plan || 'Free';
 
-        const isOwnerRole = (userRoleRaw === 'owner' || userRoleRaw === 'admin');
-        const isCoreRole = (userRoleRaw === 'core_admin' || userRoleRaw === 'core');
-
         const userRoleLabel = isOwnerRole ? 'OWNER' : 
                               isCoreRole ? 'CORE ADMIN' : 
                               (isCurrentlyPremium ? 'PREMIUM' : 'USER');
-
-        // Created / Registered date for accurate sorting (newest/oldest)
-        const createdAtRaw = data.createdAt || data.registeredAt || data.joinedAt || data.lastSynced || null;
-        let createdAtMs = createdAtRaw ? new Date(createdAtRaw).getTime() : 0;
-        if (isNaN(createdAtMs) || createdAtMs === 0) {
-          createdAtMs = docSnap._document?.createTime?.timestamp ? (docSnap._document.createTime.timestamp.seconds * 1000) : 0;
-        }
 
         const userObj = {
           uid: docSnap.id,
@@ -456,6 +475,7 @@ function Admin() {
   };
 
   const planOptions = [
+    { id: 'trial', name: '10-Day Trial', days: 10 },
     { id: 'monthly', name: 'Monthly', days: 30 },
     { id: 'half_yearly', name: '6-Month', days: 180 },
     { id: 'yearly', name: 'Yearly', days: 365 },
@@ -473,6 +493,7 @@ function Admin() {
     if (!matchesSearch) return false;
 
     // 2. Status Filter
+    if (filterStatus === 'trial' && u.plan !== '10-Day Trial' && u.status !== '10-Day Free Trial') return false;
     if (filterStatus === 'active' && !u.isPremium && u.status !== 'Active Premium' && u.role !== 'OWNER' && u.role !== 'CORE ADMIN') return false;
     if (filterStatus === 'expired' && !u.isExpired && u.status !== 'Expired') return false;
     if (filterStatus === 'free' && u.status !== 'Free') return false;
@@ -761,6 +782,7 @@ function Admin() {
                 }}
               >
                 <option value="all">🌐 All Statuses</option>
+                <option value="trial">🎁 10-Day Free Trial</option>
                 <option value="active">👑 Active Premium</option>
                 <option value="expired">⏳ Expired Plans</option>
                 <option value="free">👤 Free Tier</option>

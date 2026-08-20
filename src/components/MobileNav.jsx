@@ -209,7 +209,7 @@ function MobileNav() {
       <AnimatePresence>
         {isMoreOpen && (
           <>
-            {/* Glass Dim Backdrop (20-30% opacity overlay with blur) */}
+            {/* Solid Dim Backdrop (85% opacity dark overlay) */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -218,15 +218,15 @@ function MobileNav() {
               style={{
                 position: 'fixed',
                 inset: 0,
-                background: 'rgba(2, 6, 23, 0.25)',
-                backdropFilter: 'blur(10px) saturate(140%)',
-                WebkitBackdropFilter: 'blur(10px) saturate(140%)',
+                background: 'rgba(2, 6, 23, 0.85)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
                 zIndex: 100000,
                 pointerEvents: isMoreOpen ? 'auto' : 'none'
               }}
             />
 
-            {/* Apple iOS 26 Liquid Glass Bottom Sheet */}
+            {/* Apple iOS Solid Dark Bottom Sheet Modal */}
             <motion.div
               initial={{ y: '100%', opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -238,14 +238,12 @@ function MobileNav() {
                 left: '12px',
                 right: '12px',
                 width: 'calc(100% - 24px)',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(216, 180, 254, 0.12) 100%)',
-                backdropFilter: 'blur(24px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                border: '1.5px solid rgba(255, 255, 255, 0.18)',
-                borderRadius: '36px',
+                background: 'linear-gradient(145deg, #0f172a 0%, #1e1b4b 100%)',
+                border: '1.5px solid rgba(139, 92, 246, 0.3)',
+                borderRadius: '32px',
                 padding: '20px 16px calc(20px + env(safe-area-inset-bottom, 0px)) 16px',
                 zIndex: 100001,
-                boxShadow: '0 24px 60px rgba(0, 0, 0, 0.35), 0 0 25px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.25)',
+                boxShadow: '0 24px 60px rgba(0, 0, 0, 0.75), 0 0 30px rgba(139, 92, 246, 0.25)',
                 maxWidth: '568px',
                 margin: '0 auto',
                 pointerEvents: isMoreOpen ? 'auto' : 'none',
@@ -308,7 +306,7 @@ function MobileNav() {
                 </motion.button>
               </div>
 
-              {/* Features Grid - Glass Pills */}
+              {/* Features Grid - Solid High-Contrast Pills */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 {moreItems.map((item) => (
                   <Link
@@ -323,11 +321,11 @@ function MobileNav() {
                       transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                       style={{
                         background: location.pathname === item.path 
-                          ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(139, 92, 246, 0.18) 100%)' 
-                          : 'rgba(255, 255, 255, 0.08)',
+                          ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.35) 0%, rgba(139, 92, 246, 0.25) 100%)' 
+                          : 'rgba(30, 41, 59, 0.85)',
                         border: location.pathname === item.path 
-                          ? '1.5px solid rgba(168, 85, 247, 0.5)' 
-                          : '1px solid rgba(255, 255, 255, 0.18)',
+                          ? '1.5px solid rgba(168, 85, 247, 0.6)' 
+                          : '1px solid rgba(255, 255, 255, 0.12)',
                         borderRadius: '100px',
                         height: '58px',
                         padding: '0 18px',
@@ -336,11 +334,9 @@ function MobileNav() {
                         gap: '14px',
                         color: location.pathname === item.path ? '#c084fc' : '#f8fafc',
                         cursor: 'pointer',
-                        backdropFilter: 'blur(16px)',
-                        WebkitBackdropFilter: 'blur(16px)',
                         boxShadow: location.pathname === item.path 
-                          ? '0 8px 24px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25)'
-                          : '0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                          ? '0 8px 24px rgba(139, 92, 246, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                          : '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
                       }}
                     >
                       {/* Apple Control Center-style Icon bubble */}
@@ -351,10 +347,8 @@ function MobileNav() {
                         width: '38px',
                         height: '38px',
                         borderRadius: '50%',
-                        background: location.pathname === item.path ? 'rgba(168, 85, 247, 0.3)' : 'rgba(139, 92, 246, 0.2)',
-                        backdropFilter: 'blur(5px)',
-                        WebkitBackdropFilter: 'blur(5px)',
-                        border: location.pathname === item.path ? '1.5px solid rgba(168, 85, 247, 0.45)' : '1px solid rgba(255, 255, 255, 0.15)',
+                        background: location.pathname === item.path ? 'rgba(168, 85, 247, 0.4)' : 'rgba(139, 92, 246, 0.25)',
+                        border: location.pathname === item.path ? '1.5px solid rgba(168, 85, 247, 0.6)' : '1px solid rgba(255, 255, 255, 0.2)',
                         boxShadow: '0 2px 8px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
                         fontSize: '18px',
                         flexShrink: 0
