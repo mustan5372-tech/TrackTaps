@@ -1,7 +1,57 @@
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "./firebase";
+
 /**
  * Service for Pod.ai data processing and syncing
  */
 class PodAiService {
+  /**
+   * Validates if a Pod.ai account can be synced by the current user.
+   * If on a 10-day trial (or free tier), prevents the same Pod.ai account from being used across multiple TrackTaps accounts within 10 days.
+   * Paid users can sync across multiple accounts without restriction.
+   */
+  static async validateAndRegisterTrialSync(podUsername, user, subscription, role) {
+    if (!podUsername || !user) return true;
+
+    const podId = podUsername.toLowerCase().trim();
+    const isOwnerOrCore = role === 'owner' || role === 'core_admin';
+    const isPaidUser = isOwnerOrCore || (subscription?.status === 'active' && subscription?.planType !== 'trial' && subscription?.paymentId !== 'MANUAL_ADMIN_ASSIGNMENT' && (subscription?.amountPaid > 0 || subscription?.paymentSource === 'razorpay'));
+
+    try {
+      const docRef = doc(db, 'podai_trial_syncs', podId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const record = docSnap.data();
+        const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
+        const syncedAtMs = record.syncedAt ? new Date(record.syncedAt).getTime() : 0;
+        const isWithin10Days = (Date.now() - syncedAtMs) < TEN_DAYS_MS;
+
+        // If another user account synced this Pod.ai account within 10 days and current user is NOT paid
+        if (record.uid !== user.uid && isWithin10Days && !isPaidUser) {
+          throw new Error(
+            `🚫 This Pod.ai account (${podUsername}) has already been synced on another TrackTaps account for a 10-Day Free Trial. Upgrade to a paid plan to sync this Pod.ai account across multiple accounts!`
+          );
+        }
+      }
+
+      // If user is on trial, register this Pod.ai account to lock it for this account's 10-day trial
+      if (!isPaidUser && !isOwnerOrCore) {
+        await setDoc(docRef, {
+          uid: user.uid,
+          userEmail: user.email || '',
+          username: podUsername,
+          syncedAt: new Date().toISOString()
+        }, { merge: true });
+      }
+
+      return true;
+    } catch (err) {
+      console.error("⚠️ [PodAi Validation] Trial sync check:", err.message);
+      throw err;
+    }
+  }
+
   /**
    * Merges fetched Pod.ai subjects with existing subjects in the store
    * @param {Array} existingSubjects - Current subjects in the store

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
+import PodAiService from '../services/podaiService';
 
 const Eye = ({ size = 24 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -118,7 +119,7 @@ export default function Pod() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
-  const { syncPodaiSubjects, setPodaiSyncStatus, fullSync, subscription } = useAppStore();
+  const { syncPodaiSubjects, setPodaiSyncStatus, fullSync, subscription, user, role } = useAppStore();
 
   // Check if already logged in
   useEffect(() => {
@@ -253,6 +254,14 @@ export default function Pod() {
         throw new Error('Could not retrieve valid attendance data to sync. Please try again.');
       }
       
+      // 🔒 Trial Sync Rule: Verify Pod.ai account is not already bound to another trial
+      await PodAiService.validateAndRegisterTrialSync(
+        localStorage.getItem('pod_username'),
+        user,
+        subscription,
+        role
+      );
+
       await syncPodaiSubjects(subjectsToSync);
       fullSync();
       setPodaiSyncStatus({ connected: true, lastSync: new Date().toISOString() });
@@ -289,6 +298,9 @@ export default function Pod() {
       }
 
       if (!res.ok) throw new Error(data.error || 'Invalid credentials or server busy.');
+
+      // 🔒 Trial Sync Rule: Verify Pod.ai account is not already bound to another trial
+      await PodAiService.validateAndRegisterTrialSync(username, user, subscription, role);
       
       localStorage.setItem('pod_auth_token', data.auth_token);
       localStorage.setItem('pod_username', username);
