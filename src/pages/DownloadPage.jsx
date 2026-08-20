@@ -1,42 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-
-// ─── Centralized version constant ───
-// We now fetch this dynamically from version.json so it never needs to be manually updated!
+import { useNavigate } from 'react-router-dom';
 
 function DownloadPage() {
-  const [countdown, setCountdown] = useState(2);
-  const [downloadUrl, setDownloadUrl] = useState('');
-
-  useEffect(() => {
-    // Fetch the latest version & download URL dynamically
-    fetch('/version.json')
-      .then(res => res.json())
-      .then(data => {
-        if (data.version) setAppVersion(data.version);
-        if (data.download_url) setDownloadUrl(data.download_url);
-      })
-      .catch(err => console.warn('Failed to fetch version:', err));
-
-    // Countdown timer before triggering download
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          triggerDownload();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [downloadUrl, appVersion]);
-
-  const triggerDownload = () => {
-    const target = downloadUrl || `/TrackTaps_v${appVersion}.apk`;
-    window.location.href = target;
-  };
+  const navigate = useNavigate();
 
   return (
     <div style={{
@@ -50,32 +17,6 @@ function DownloadPage() {
       fontFamily: 'system-ui, -apple-system, sans-serif',
       boxSizing: 'border-box'
     }}>
-      <style>{`
-        .step-card {
-          background: rgba(30, 41, 59, 0.4);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 16px;
-          padding: 16px 20px;
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          text-align: left;
-        }
-        .step-num {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: rgba(139, 92, 246, 0.2);
-          border: 1px solid rgba(139, 92, 246, 0.4);
-          color: #a78bfa;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 850;
-          flex-shrink: 0;
-        }
-      `}</style>
-
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -93,16 +34,16 @@ function DownloadPage() {
           boxSizing: 'border-box'
         }}
       >
-        {/* Animated Download Orb */}
+        {/* Animated Icon Orb */}
         <div style={{ position: 'relative', width: '90px', height: '90px', margin: '0 auto 28px auto' }}>
           <motion.div
             animate={{ scale: [1, 1.15, 1] }}
-            transition={{ repeat: Infinity, duration: 2 }}
+            transition={{ repeat: Infinity, duration: 2.5 }}
             style={{
               position: 'absolute',
               inset: 0,
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(139, 92, 246, 0) 70%)',
+              background: 'radial-gradient(circle, rgba(234, 179, 8, 0.4) 0%, rgba(234, 179, 8, 0) 70%)',
               filter: 'blur(8px)'
             }}
           />
@@ -110,83 +51,64 @@ function DownloadPage() {
             width: '90px',
             height: '90px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-            border: '2px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
+            background: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)',
+            border: '2px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 0 20px rgba(234, 179, 8, 0.4)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '36px'
           }}>
-            📥
+            🛠️
           </div>
         </div>
 
-        <h2 style={{ fontSize: '24px', fontWeight: '850', color: 'white', margin: '0 0 8px 0', letterSpacing: '-0.02em' }}>
-          {countdown > 0 ? `Starting Download in ${countdown}s...` : `Downloading TrackTaps v${appVersion}...`}
+        <h2 style={{ fontSize: '24px', fontWeight: '850', color: 'white', margin: '0 0 12px 0', letterSpacing: '-0.02em' }}>
+          APK Coming Soon! ⏳
         </h2>
         
-        <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: '0 0 32px 0' }}>
-          Please wait while the latest stable v{appVersion} APK package downloads to your phone.
+        <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', margin: '0 0 24px 0' }}>
+          The native TrackTaps Android APK is currently under internal stability testing to ensure high performance and seamless background sync.
         </p>
 
-        {/* Retry trigger */}
-        {countdown === 0 && (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={triggerDownload}
-            style={{
-              width: '100%',
-              background: 'rgba(139, 92, 246, 0.1)',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
-              color: '#c084fc',
-              padding: '14px 20px',
-              borderRadius: '14px',
-              fontSize: '13px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              marginBottom: '36px',
-              transition: 'background 0.2s'
-            }}
-          >
-            Not downloading? Tap to retry 🔄
-          </motion.button>
-        )}
-
-        {/* Reassuring Steps */}
-        <h4 style={{ fontSize: '13px', fontWeight: '800', color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px 0', textAlign: 'left' }}>
-          Quick Installation Steps
-        </h4>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div className="step-card">
-            <div className="step-num">1</div>
-            <div>
-              <h5 style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: '700', color: 'white' }}>Tap "Download Anyway"</h5>
-              <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>If your phone warns you about third-party applications.</p>
-            </div>
-          </div>
-
-          <div className="step-card">
-            <div className="step-num">2</div>
-            <div>
-              <h5 style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: '700', color: 'white' }}>Open the APK file</h5>
-              <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>Pull down your notification drawer or check your downloads.</p>
-            </div>
-          </div>
-
-          <div className="step-card">
-            <div className="step-num">3</div>
-            <div>
-              <h5 style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: '700', color: 'white' }}>Allow Installation</h5>
-              <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>Allow "Install from Unknown Sources" if prompted by Android.</p>
-            </div>
-          </div>
+        <div style={{ 
+          background: 'rgba(234, 179, 8, 0.1)', 
+          border: '1px solid rgba(234, 179, 8, 0.25)', 
+          borderRadius: '16px', 
+          padding: '16px 20px',
+          color: '#fde047',
+          fontSize: '13px',
+          fontWeight: '600',
+          marginBottom: '28px',
+          textAlign: 'left',
+          lineHeight: '1.5'
+        }}>
+          💡 <b>Tip:</b> TrackTaps Web App is 100% functional, responsive, and syncs across all your devices!
         </div>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/')}
+          style={{
+            width: '100%',
+            background: 'linear-gradient(135deg, var(--primary, #8b5cf6) 0%, #6d28d9 100%)',
+            border: 'none',
+            color: 'white',
+            padding: '16px 20px',
+            borderRadius: '16px',
+            fontSize: '15px',
+            fontWeight: '800',
+            cursor: 'pointer',
+            boxShadow: '0 8px 25px rgba(139, 92, 246, 0.4)'
+          }}
+        >
+          Open TrackTaps Web App 🚀
+        </motion.button>
       </motion.div>
     </div>
   );
 }
 
 export default DownloadPage;
+

@@ -88,18 +88,7 @@ const DownloadAPK = () => {
   }, [location.pathname, setApkModalOpen]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY.current && currentScrollY > 60) {
-        setIsVisible(false);
-        setIsMenuOpen(false);
-      } else {
-        setIsVisible(true);
-      }
-      lastScrollY.current = currentScrollY;
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    setIsVisible(true);
   }, []);
 
   useEffect(() => {
@@ -390,7 +379,7 @@ const DownloadAPK = () => {
                 { label: '🏖️ Smart Bunk', action: () => { navigate('/bunk-calculator'); setIsMenuOpen(false); } },
                 { label: '📅 Semester AI', action: () => { navigate('/calendar'); setIsMenuOpen(false); } },
                 { label: '📈 Quick Insights', action: () => { navigate('/insights'); setIsMenuOpen(false); } },
-                ...(!isNativeAPK() ? [{ label: '📲 Get Native App', action: () => { setIsOpen(true); setIsMenuOpen(false); } }] : [])
+                ...(!isNativeAPK() ? [{ label: '⏳ APK Coming Soon', action: () => { setIsOpen(true); setIsMenuOpen(false); } }] : [])
               ].map((item, idx) => (
                 <motion.button
                   key={idx}
@@ -777,29 +766,44 @@ const DownloadAPK = () => {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -10 }}
                     >
-                      <div style={{ marginBottom: '24px' }}>
-                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🤖</div>
-                        <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '8px' }}>Android Application</h3>
-                        <p style={{ color: 'var(--text-dim)', fontSize: '13px', lineHeight: 1.5 }}>
-                          Download the native APK for the best performance and offline capabilities.
+                      <div style={{ marginBottom: '20px' }}>
+                        <div style={{ fontSize: '48px', marginBottom: '12px' }}>🛠️</div>
+                        <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '8px' }}>APK Coming Soon</h3>
+                        <p style={{ color: 'var(--text-dim)', fontSize: '13px', lineHeight: 1.5, margin: '0 0 12px 0' }}>
+                          Our native Android APK is currently under stability testing to ensure maximum performance and reliable notifications.
                         </p>
+                        <div style={{ 
+                          background: 'rgba(234, 179, 8, 0.1)', 
+                          border: '1px solid rgba(234, 179, 8, 0.25)', 
+                          borderRadius: '12px', 
+                          padding: '10px 14px',
+                          color: '#fde047',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          textAlign: 'left'
+                        }}>
+                          ⚡ <b>Status:</b> Under Active Optimization. Use the TrackTaps Web App for full features in the meantime!
+                        </div>
                       </div>
                       <button
-                        onClick={downloadAPK}
+                        onClick={() => alert("⏳ TrackTaps Android APK is coming soon! We're refining stability before public launch.")}
                         style={{
                           width: '100%',
                           padding: '16px',
                           borderRadius: '14px',
-                          background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)',
-                          border: 'none',
-                          color: 'white',
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          border: '1px solid rgba(255, 255, 255, 0.15)',
+                          color: 'var(--text-main)',
                           fontWeight: '800',
                           fontSize: '15px',
                           cursor: 'pointer',
-                          boxShadow: '0 8px 20px var(--primary-glow)'
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
                         }}
                       >
-                        Download TrackTaps v{APP_VERSION} APK ({apkSize})
+                        <span>⏳</span> APK Coming Soon
                       </button>
                     </motion.div>
                   )}

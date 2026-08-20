@@ -72,8 +72,8 @@ function MobileHeader() {
               letterSpacing: '0.05em'
             }}
           >
-            <span style={{ fontSize: '11px' }}>📱</span> 
-            <span>GET APK</span>
+            <span style={{ fontSize: '11px' }}>⏳</span> 
+            <span>APK COMING SOON</span>
           </motion.button>
         )}
       </div>
