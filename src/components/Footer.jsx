@@ -167,7 +167,7 @@ export default function Footer() {
                   boxShadow: '0 4px 12px rgba(34, 197, 94, 0.1)'
                 }}
               >
-                <span>💬</span> 1st Year WhatsApp Community
+                <span>💬</span> TrackTaps Official Community
               </a>
             </div>
           </div>
