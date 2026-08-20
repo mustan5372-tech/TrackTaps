@@ -7,6 +7,7 @@ import { doc, setDoc, deleteDoc, collection, addDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { applyAppearanceSettings } from '../services/themeEngine';
+import { checkIsPremium } from '../utils/subscriptionUtils';
 
 function AccountDrawer() {
   const {
@@ -293,7 +294,7 @@ function AccountDrawer() {
 
   if (!user) return null;
 
-  const isPremium = subscription?.status === 'active' || role === 'owner' || role === 'core_admin';
+  const isPremium = checkIsPremium(subscription, role);
 
   // --- Profile Edit Save ---
   const handleSaveProfile = async () => {

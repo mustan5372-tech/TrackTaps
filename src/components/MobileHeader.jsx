@@ -2,15 +2,16 @@ import React from 'react';
 import logo from '../../icon.png';
 import { motion } from 'framer-motion';
 import useAppStore from '../store/appStore';
+import { checkIsPremium } from '../utils/subscriptionUtils';
 
 function MobileHeader() {
-  const { user, login, subscription, podaiSyncStatus, setAuthModalOpen, setApkModalOpen, setAccountDrawerOpen } = useAppStore();
+  const { user, role, login, subscription, podaiSyncStatus, setAuthModalOpen, setApkModalOpen, setAccountDrawerOpen } = useAppStore();
   
   const isNativeAPK = () => {
     return !!(window.Capacitor && window.Capacitor.isNativePlatform());
   };
 
-  const isPremium = subscription?.status === 'active';
+  const isPremium = checkIsPremium(subscription, role);
   const isSyncing = podaiSyncStatus?.syncing;
 
   return (

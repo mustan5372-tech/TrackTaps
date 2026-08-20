@@ -4,10 +4,11 @@ import MainContent from './MainContent';
 import DownloadAPK from './DownloadAPK';
 import useAppStore from '../store/appStore';
 import { motion } from 'framer-motion';
+import { checkIsPremium } from '../utils/subscriptionUtils';
 
 function AppShell({ children }) {
   const { subscription, role } = useAppStore();
-  const isPremium = subscription?.status === 'active' || role === 'owner' || role === 'core_admin';
+  const isPremium = checkIsPremium(subscription, role);
 
   return (
     <div className={`app-container ${isPremium ? 'premium-theme-active' : ''}`} style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>

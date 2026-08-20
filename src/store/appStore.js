@@ -9,6 +9,7 @@ import { calculateAttendanceStats } from '../utils/attendanceUtils';
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
 import presenceService from '../services/presenceService';
+import { checkIsPremium } from '../utils/subscriptionUtils';
 
 /**
  * Centralized App Store using Zustand
@@ -748,7 +749,7 @@ const useAppStore = create(
             let dataToSync = { ...profileInfo };
 
             // Full data sync is gated for premium users
-            const isPremium = subscription.plan === 'plus' || subscription.status === 'active';
+            const isPremium = checkIsPremium(subscription, get().role);
             if (isPremium) {
               const stats = calculateAttendanceStats(subjects, calendarEvents, attendanceData);
               // Fallback for activity score if not defined
@@ -920,8 +921,8 @@ const useAppStore = create(
 
 
         isPremium: () => {
-          const { subscription } = get();
-          return subscription.status === 'active';
+          const { subscription, role } = get();
+          return checkIsPremium(subscription, role);
         },
 
         // ─── SUBJECTS ───────────────────────────────────────────────────────

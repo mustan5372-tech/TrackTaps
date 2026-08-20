@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import syncService from '../services/syncService';
+import { checkIsPremium, getSubscriptionDetails } from '../utils/subscriptionUtils';
 
 function Admin() {
   const navigate = useNavigate();
@@ -29,10 +30,15 @@ function Admin() {
   const [users, setUsers] = useState([]);
   const [queries, setQueries] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('newest'); // 'newest', 'oldest', 'name_asc', 'name_desc', 'plan', 'status', 'revenue'
+  const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'active', 'expired', 'free', 'paid', 'admin_assigned', 'banned'
+  const [filterRole, setFilterRole] = useState('all'); // 'all', 'owner', 'core_admin', 'user'
   const [querySearchTerm, setQuerySearchTerm] = useState('');
   const [stats, setStats] = useState({
     totalUsers: 0,
     premiumUsers: 0,
+    expiredUsers: 0,
+    freeUsers: 0,
     totalRevenue: 0,
     activeSubscriptions: 0
   });
@@ -234,23 +240,30 @@ function Admin() {
       const querySnapshot = await getDocs(collection(db, "users"));
       const userList = [];
       let premiumCount = 0;
+      let expiredCount = 0;
+      let freeCount = 0;
 
       // 2. Fetch Payments for True Revenue Tracking
       let revenue = 0;
       try {
         const paymentsSnapshot = await getDocs(collection(db, "payments"));
-        paymentsSnapshot.forEach((doc) => {
-          const payData = doc.data();
+        paymentsSnapshot.forEach((docSnap) => {
+          const payData = docSnap.data();
           revenue += (Number(payData.amount) || 0);
         });
       } catch (payErr) {
         console.warn("⚠️ Failed to fetch payments collection:", payErr);
       }
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
         const sub = data.subscription || { plan: 'free', status: 'inactive' };
+        const userRoleRaw = data.role || 'user';
         
+        // Strict Subscription Validation & Expiry Check
+        const subDetails = getSubscriptionDetails(sub, userRoleRaw, data.banned);
+        const isCurrentlyPremium = checkIsPremium(sub, userRoleRaw);
+
         // Map internal plan IDs to attractive names
         const planMap = {
           'monthly': 'Starter',
@@ -262,28 +275,52 @@ function Admin() {
 
         const planName = planMap[sub.planType] || planMap[sub.plan] || sub.planType || sub.plan || 'Free';
 
-        const userRole = (data.role === 'owner' || data.role === 'admin') ? 'OWNER' : 
-                         (data.role === 'core_admin' || data.role === 'core') ? 'CORE ADMIN' : 
-                         (sub.status === 'active' ? 'PREMIUM' : 'USER');
+        const isOwnerRole = (userRoleRaw === 'owner' || userRoleRaw === 'admin');
+        const isCoreRole = (userRoleRaw === 'core_admin' || userRoleRaw === 'core');
 
-        userList.push({
-          uid: doc.id,
+        const userRoleLabel = isOwnerRole ? 'OWNER' : 
+                              isCoreRole ? 'CORE ADMIN' : 
+                              (isCurrentlyPremium ? 'PREMIUM' : 'USER');
+
+        // Created / Registered date for accurate sorting (newest/oldest)
+        const createdAtRaw = data.createdAt || data.registeredAt || data.joinedAt || data.lastSynced || null;
+        let createdAtMs = createdAtRaw ? new Date(createdAtRaw).getTime() : 0;
+        if (isNaN(createdAtMs) || createdAtMs === 0) {
+          createdAtMs = docSnap._document?.createTime?.timestamp ? (docSnap._document.createTime.timestamp.seconds * 1000) : 0;
+        }
+
+        const userObj = {
+          uid: docSnap.id,
           name: data.displayName || data.phoneNumber || 'Anonymous',
           email: data.email || (data.phoneNumber ? `Phone: ${data.phoneNumber}` : 'No email'),
-          role: userRole,
+          role: userRoleLabel,
+          rawRole: userRoleRaw,
           plan: planName,
-          status: data.banned ? 'Banned' : (sub.status === 'active' ? 'Premium' : 'Free'),
+          status: subDetails.statusLabel,
+          statusColor: subDetails.color,
+          isExpired: subDetails.isExpired,
+          isPremium: isCurrentlyPremium,
           activityStatus: data.banned ? 'banned' : (data.isOnline ? 'online' : (data.lastSeen ? 'offline' : 'unknown')),
           lastSeen: data.lastSeen || null,
-          expiry: sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString() : '-',
+          createdAtMs: createdAtMs,
+          createdAtFormatted: createdAtMs > 0 ? new Date(createdAtMs).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown',
+          expiry: sub.expiryDate ? (sub.expiryDate === '2099-12-31' ? 'Lifetime' : new Date(sub.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })) : '-',
           rawExpiry: sub.expiryDate || null,
           amountPaid: sub.amountPaid || 0,
           paymentSource: sub.paymentSource || (sub.amountPaid > 0 ? 'razorpay' : 'unknown'),
           banned: data.banned || false
-        });
+        };
 
-        if (sub.status === 'active' && !data.banned) {
+        userList.push(userObj);
+
+        if (isCurrentlyPremium && !data.banned && !isOwnerRole && !isCoreRole) {
           premiumCount++;
+        }
+        if (subDetails.isExpired) {
+          expiredCount++;
+        }
+        if (!isCurrentlyPremium && !subDetails.isExpired && !isOwnerRole && !isCoreRole) {
+          freeCount++;
         }
       });
 
@@ -291,6 +328,8 @@ function Admin() {
       setStats({
         totalUsers: userList.length,
         premiumUsers: premiumCount,
+        expiredUsers: expiredCount,
+        freeUsers: freeCount,
         totalRevenue: revenue,
         activeSubscriptions: premiumCount
       });
@@ -379,7 +418,7 @@ function Admin() {
             assignedBy: user?.email || 'admin',
             lastAssigned: new Date().toISOString()
           },
-          role: customPlan.id === 'lifetime' ? 'owner' : 'user'
+          role: (targetUser.rawRole === 'owner' || targetUser.rawRole === 'core_admin') ? targetUser.rawRole : 'user'
         });
         alert(`✅ ${targetUser.name}'s plan updated to ${customPlan.name}!`);
       } else if (action === 'remove_premium') {
@@ -423,10 +462,56 @@ function Admin() {
     { id: 'lifetime', name: 'Lifetime', days: 99999 }
   ];
 
-  const filteredUsers = users.filter(u => 
-    u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredAndSortedUsers = users.filter(u => {
+    // 1. Text Search Filter (Name, Email, or UID)
+    const term = searchTerm.toLowerCase().trim();
+    const matchesSearch = !term || 
+      u.name.toLowerCase().includes(term) || 
+      u.email.toLowerCase().includes(term) ||
+      u.uid.toLowerCase().includes(term);
+
+    if (!matchesSearch) return false;
+
+    // 2. Status Filter
+    if (filterStatus === 'active' && !u.isPremium && u.status !== 'Active Premium' && u.role !== 'OWNER' && u.role !== 'CORE ADMIN') return false;
+    if (filterStatus === 'expired' && !u.isExpired && u.status !== 'Expired') return false;
+    if (filterStatus === 'free' && u.status !== 'Free') return false;
+    if (filterStatus === 'paid' && u.paymentSource !== 'razorpay' && u.amountPaid <= 0) return false;
+    if (filterStatus === 'admin_assigned' && u.paymentSource !== 'admin') return false;
+    if (filterStatus === 'banned' && !u.banned) return false;
+
+    // 3. Role Filter
+    if (filterRole === 'owner' && u.role !== 'OWNER') return false;
+    if (filterRole === 'core_admin' && u.role !== 'CORE ADMIN') return false;
+    if (filterRole === 'user' && (u.role === 'OWNER' || u.role === 'CORE ADMIN')) return false;
+
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === 'newest') {
+      return b.createdAtMs - a.createdAtMs;
+    }
+    if (sortBy === 'oldest') {
+      return a.createdAtMs - b.createdAtMs;
+    }
+    if (sortBy === 'name_asc') {
+      return a.name.localeCompare(b.name);
+    }
+    if (sortBy === 'name_desc') {
+      return b.name.localeCompare(a.name);
+    }
+    if (sortBy === 'plan') {
+      const planRank = { 'Lifetime': 5, 'Mega Saver': 4, 'Super Saver': 3, 'Starter': 2, 'Plus': 2, 'Free': 1 };
+      return (planRank[b.plan] || 0) - (planRank[a.plan] || 0);
+    }
+    if (sortBy === 'status') {
+      const statusRank = { 'Owner': 6, 'Core Admin': 6, 'Active Premium': 5, 'Expired': 3, 'Free': 2, 'Banned': 1 };
+      return (statusRank[b.status] || 0) - (statusRank[a.status] || 0);
+    }
+    if (sortBy === 'revenue') {
+      return (b.amountPaid || 0) - (a.amountPaid || 0);
+    }
+    return 0;
+  });
 
   if (isAuthLoading || loading) {
     return (
@@ -540,10 +625,11 @@ function Admin() {
               marginBottom: '32px' 
             }}>
               {[
-                { label: 'Total Users', value: stats.totalUsers, icon: '👥', color: 'var(--primary)' },
-                { label: 'Premium Users', value: stats.premiumUsers, icon: '👑', color: '#d946ef' },
-                { label: 'Active Subs', value: stats.activeSubscriptions, icon: '📅', color: '#10b981' },
-                ...(isOwner ? [{ label: 'Total Revenue', value: `₹${stats.totalRevenue}`, icon: '💰', color: '#f59e0b' }] : [])
+                { label: 'Total Real Users', value: stats.totalUsers, icon: '👥', color: 'var(--primary)' },
+                { label: 'Active Premium', value: stats.premiumUsers, icon: '👑', color: '#d946ef' },
+                { label: 'Expired Plans', value: stats.expiredUsers, icon: '⏳', color: '#f59e0b' },
+                { label: 'Free Tier Users', value: stats.freeUsers, icon: '👤', color: '#10b981' },
+                ...(isOwner ? [{ label: 'Total Revenue', value: `₹${stats.totalRevenue}`, icon: '💰', color: '#3b82f6' }] : [])
               ].map((stat, i) => (
                 <motion.div
                   key={i}
@@ -582,25 +668,160 @@ function Admin() {
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '700' }}>User Management ({stats.totalUsers} Total Users)</h3>
-          <input 
-            type="text" 
-            placeholder="Search users..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ 
-              background: 'rgba(0, 0, 0, 0.3)', 
-              border: '1px solid rgba(255, 255, 255, 0.15)', 
-              color: 'var(--text-main)',
-              padding: '10px 20px',
-              borderRadius: '100px',
-              width: '100%',
-              maxWidth: '300px',
-              fontFamily: 'inherit',
-              outline: 'none'
-            }}
-          />
+        {/* Sorting and Filtering Control Bar */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+          marginBottom: '24px',
+          background: 'rgba(0, 0, 0, 0.25)',
+          padding: '20px',
+          borderRadius: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.08)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span>👥 User Management</span>
+              <span style={{ fontSize: '12px', background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '2px 12px', borderRadius: '100px', fontWeight: '800' }}>
+                Showing {filteredAndSortedUsers.length} of {stats.totalUsers}
+              </span>
+            </h3>
+
+            {/* Search Box */}
+            <input 
+              type="text" 
+              placeholder="🔍 Search name, email or UID..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ 
+                background: 'rgba(0, 0, 0, 0.4)', 
+                border: '1px solid rgba(255, 255, 255, 0.15)', 
+                color: 'var(--text-main)',
+                padding: '10px 20px',
+                borderRadius: '100px',
+                width: '100%',
+                maxWidth: '280px',
+                fontFamily: 'inherit',
+                fontSize: '13px',
+                outline: 'none'
+              }}
+            />
+          </div>
+
+          {/* Filter & Sort Parameters */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px' }}>
+            {/* Sort By Parameter */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Sort By
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                style={{
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  color: 'var(--text-main)',
+                  padding: '10px 14px',
+                  borderRadius: '14px',
+                  fontSize: '12.5px',
+                  fontWeight: '700',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="newest">🕒 Newest First</option>
+                <option value="oldest">⏳ Oldest First</option>
+                <option value="name_asc">🔤 Name (A → Z)</option>
+                <option value="name_desc">🔤 Name (Z → A)</option>
+                <option value="plan">💎 Plan Tier</option>
+                <option value="status">📊 Status Priority</option>
+                <option value="revenue">💰 Revenue Paid</option>
+              </select>
+            </div>
+
+            {/* Filter Status Parameter */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Filter Status
+              </label>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                style={{
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  color: 'var(--text-main)',
+                  padding: '10px 14px',
+                  borderRadius: '14px',
+                  fontSize: '12.5px',
+                  fontWeight: '700',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="all">🌐 All Statuses</option>
+                <option value="active">👑 Active Premium</option>
+                <option value="expired">⏳ Expired Plans</option>
+                <option value="free">👤 Free Tier</option>
+                <option value="paid">💰 Paid (Razorpay)</option>
+                <option value="admin_assigned">🛠️ Admin Assigned</option>
+                <option value="banned">🚫 Banned</option>
+              </select>
+            </div>
+
+            {/* Filter Role Parameter */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Filter Role
+              </label>
+              <select
+                value={filterRole}
+                onChange={(e) => setFilterRole(e.target.value)}
+                style={{
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  color: 'var(--text-main)',
+                  padding: '10px 14px',
+                  borderRadius: '14px',
+                  fontSize: '12.5px',
+                  fontWeight: '700',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="all">🛡️ All Roles</option>
+                <option value="owner">👑 Owner</option>
+                <option value="core_admin">🔹 Core Admin</option>
+                <option value="user">👤 Regular User</option>
+              </select>
+            </div>
+
+            {/* Clear Filters Reset */}
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setSortBy('newest');
+                  setFilterStatus('all');
+                  setFilterRole('all');
+                }}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  color: 'var(--text-dim)',
+                  padding: '10px 14px',
+                  borderRadius: '14px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                🔄 Clear Filters
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="admin-table-container" style={{ overflowX: 'auto' }}>
@@ -619,42 +840,54 @@ function Admin() {
             <tbody>
               {loading ? (
                 <tr><td colSpan="7" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading user data...</td></tr>
-              ) : filteredUsers.length === 0 ? (
-                <tr><td colSpan="7" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>No users found.</td></tr>
-              ) : filteredUsers.map((u, i) => (
+              ) : filteredAndSortedUsers.length === 0 ? (
+                <tr><td colSpan="7" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>No users found matching current filters.</td></tr>
+              ) : filteredAndSortedUsers.map((u, i) => (
                 <tr key={u.uid} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}>
                   <td data-label="User" style={{ padding: '16px', textAlign: 'left' }}>
-                    <div style={{ fontWeight: '600' }}>{u.name}</div>
+                    <div style={{ fontWeight: '700', color: 'var(--text-main)' }}>{u.name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{u.email}</div>
+                    <div style={{ fontSize: '10.5px', color: 'var(--text-dim)', marginTop: '2px' }}>📅 Joined: {u.createdAtFormatted}</div>
                   </td>
                   <td data-label="Role" style={{ padding: '16px', textAlign: 'left' }}>
                     <span style={{ 
                       fontSize: '10px', 
-                      padding: '2px 8px', 
-                      borderRadius: '4px', 
+                      padding: '3px 10px', 
+                      borderRadius: '100px', 
                       background: u.role === 'OWNER' ? 'var(--primary-glow)' : 
-                                 u.role === 'CORE ADMIN' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(100, 116, 139, 0.1)',
+                                 u.role === 'CORE ADMIN' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(100, 116, 139, 0.15)',
                       color: u.role === 'OWNER' ? 'var(--primary-light)' : 
                              u.role === 'CORE ADMIN' ? '#3b82f6' : 'var(--text-dim)',
-                      fontWeight: '700'
+                      fontWeight: '800'
                     }}>
                       {u.role}
                     </span>
                   </td>
-                  <td data-label="Plan" style={{ padding: '16px', fontSize: '14px', textAlign: 'left' }}>{u.plan}</td>
+                  <td data-label="Plan" style={{ padding: '16px', fontSize: '13.5px', textAlign: 'left', fontWeight: '600' }}>{u.plan}</td>
                   <td data-label="Status" style={{ padding: '16px', textAlign: 'left' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <span style={{ color: u.status === 'Premium' ? '#d946ef' : u.status === 'Banned' ? '#ef4444' : '#10b981', fontSize: '12px', fontWeight: '700' }}>{u.status}</span>
-                      <span style={{ fontSize: '11px', color: u.activityStatus === 'online' ? '#10b981' : u.activityStatus === 'offline' ? 'var(--text-muted)' : '#64748b' }}>{u.activityStatus === 'online' ? '🟢 Online' : u.activityStatus === 'offline' ? '⚫ Offline' : '—'}</span>
+                      <span style={{ 
+                        color: u.statusColor || (u.status === 'Active Premium' ? '#d946ef' : u.status === 'Expired' ? '#f59e0b' : u.status === 'Banned' ? '#ef4444' : '#10b981'), 
+                        fontSize: '12px', 
+                        fontWeight: '800',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        {u.status === 'Active Premium' ? '👑 Active Premium' : u.status === 'Expired' ? '⏳ Expired' : u.status === 'Free' ? '👤 Free Tier' : u.status}
+                      </span>
+                      <span style={{ fontSize: '11px', color: u.activityStatus === 'online' ? '#10b981' : u.activityStatus === 'offline' ? 'var(--text-muted)' : '#64748b' }}>
+                        {u.activityStatus === 'online' ? '🟢 Online' : u.activityStatus === 'offline' ? '⚫ Offline' : '—'}
+                      </span>
                     </div>
                   </td>
-                  {isOwner && <td data-label="Expiry" style={{ padding: '16px', fontSize: '14px', color: 'var(--text-dim)', textAlign: 'left' }}>{u.expiry}</td>}
+                  {isOwner && <td data-label="Expiry" style={{ padding: '16px', fontSize: '13px', color: u.isExpired ? '#f59e0b' : 'var(--text-dim)', textAlign: 'left', fontWeight: u.isExpired ? '800' : '500' }}>{u.expiry}</td>}
                   {isOwner && (
                     <td data-label="Source" style={{ padding: '16px', textAlign: 'left' }}>
                       {u.paymentSource === 'razorpay' || u.amountPaid > 0 ? (
-                        <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontWeight: '700' }}>💰 PAID</span>
-                      ) : u.status === 'Premium' ? (
-                        <span style={{ fontSize: '10px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', padding: '4px 8px', borderRadius: '4px', fontWeight: '700' }}>🛠️ ADMIN</span>
+                        <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '4px 10px', borderRadius: '100px', fontWeight: '800' }}>💰 PAID</span>
+                      ) : u.isPremium ? (
+                        <span style={{ fontSize: '10px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', padding: '4px 10px', borderRadius: '100px', fontWeight: '800' }}>🛠️ ADMIN</span>
                       ) : (
                         <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>-</span>
                       )}

@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import logo from '../../icon.png';
 import useAppStore from '../store/appStore';
 import { motion } from 'framer-motion';
+import { checkIsPremium } from '../utils/subscriptionUtils';
 
 function Sidebar() {
   const location = useLocation();
@@ -51,7 +52,7 @@ function Sidebar() {
     }
   }
 
-  const isPremium = subscription?.status === 'active' || role === 'owner' || role === 'core_admin';
+  const isPremium = checkIsPremium(subscription, role);
 
   return (
     <aside className="sidebar liquid-glass-sidebar" data-nosnippet style={{
