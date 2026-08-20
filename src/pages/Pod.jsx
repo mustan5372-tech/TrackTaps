@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAppStore from '../store/appStore';
 import PodAiService from '../services/podaiService';
+import Footer from '../components/Footer';
 
 const Eye = ({ size = 24 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -886,6 +887,7 @@ export default function Pod() {
               )}
             </div>
           )}
+          <Footer />
         </div>
       </div>
     </div>

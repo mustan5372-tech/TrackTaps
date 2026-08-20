@@ -4,6 +4,8 @@ import MobileNav from './MobileNav';
 import useAppStore from '../store/appStore';
 import { motion } from 'framer-motion';
 
+import Footer from './Footer';
+
 function MainContent({ children }) {
   const { user, subscription, setAccountDrawerOpen, setAuthModalOpen } = useAppStore();
   const isPremium = subscription?.status === 'active';
@@ -109,6 +111,7 @@ function MainContent({ children }) {
 
       <main className="main-content">
         {children}
+        <Footer />
       </main>
     </div>
   );
