@@ -141,9 +141,9 @@ export default function Footer() {
           <div>
             <h4 className="footer-title">Contact & Support</h4>
             <div className="footer-contact-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <a href="mailto:support@tracktaps.online" className="footer-contact-item">
+              <a href="mailto:tracktaps@gmail.com" className="footer-contact-item">
                 <span style={{ fontSize: '16px' }}>✉️</span>
-                <span style={{ fontWeight: '600' }}>support@tracktaps.online</span>
+                <span style={{ fontWeight: '600' }}>tracktaps@gmail.com</span>
               </a>
 
               <a 
